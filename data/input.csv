@@ -1,0 +1,5 @@
+instance,market_name,p_hr,p_up,y
+a,on_demand,2,0,1
+a,reserved,1,0,4
+b,on_demand,2,0,1
+b,reserved,1,0,4
