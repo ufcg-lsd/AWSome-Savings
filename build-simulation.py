@@ -1,42 +1,42 @@
 import csv
 import pandas as pd
-from new_aws_model import otimizaModelo
+from new_aws_model import optimize_model
 
-def checkInputSP(sp_input, instances): #Fazer
+def checkInputSP(sp_input, instances): #TO DO
     #if sp_input['instance'].value_counts() != instances: return False
     #if len(sp_input['y'].value_counts()) != 1: return False
 
     return True
 
-def outputInstances(values, t, instance_names, market_names, input_data, writerCost): #como calcular o custo por instancia se o custo do savings plan é compartilhado?
+def outputInstances(values, t, instance_names, market_names, input_data, writerCost): #is it possible to calcule the savings plan cost of each instance?
 
-    for i_instancia in range(len(instance_names)):
+    for i_instance in range(len(instance_names)):
         cost = 0
 
-        output = open('total_purchases_' + instance_names[i_instancia] + '.csv', 'w')
+        output = open('total_purchases_' + instance_names[i_instance] + '.csv', 'w')
         writer = csv.writer(output)
         writer.writerow(['instanceType', 'market', 'count_active', 'count_reserves'])
 
         #Savings plan
-        for i_tempo in range(t):
-            activ = values[i_tempo][i_instancia + 1][0][0]
-            writer.writerow([instance_names[i_instancia], 'savings_plan', activ, 0])
+        for i_time in range(t):
+            active = values[i_time][i_instance + 1][0][0]
+            writer.writerow([instance_names[i_instance], 'savings_plan', active, 0])
 
-            #por enquanto, o custo individual das instâncias não considera o custo do savings plan
+            #the individual instance cost in the output does not considers savings plan cost
                 
-        #Others
-        for i_mercado in range(len(market_names)):
-            im_values = input_data[i_instancia][i_mercado]
+        #Other markets
+        for i_market in range(len(market_names)):
+            im_values = input_data[i_instance][i_market]
             cr_im = im_values[0] * im_values[2] + im_values[1]
 
-            for i_tempo in range(t):
-                activ = values[i_tempo][i_instancia + 1][i_mercado + 1][0]
-                reserves = values[i_tempo][i_instancia + 1][i_mercado + 1][1]
-                writer.writerow([instance_names[i_instancia], market_names[i_mercado], activ, reserves])
+            for i_time in range(t):
+                active = values[i_time][i_instance + 1][i_market + 1][0]
+                reserves = values[i_time][i_instance + 1][i_market + 1][1]
+                writer.writerow([instance_names[i_instance], market_names[i_market], active, reserves])
 
                 cost += reserves * cr_im
 
-        writerCost.writerow([instance_names[i_instancia], cost])        
+        writerCost.writerow([instance_names[i_instance], cost])        
         output.close()
 
 def outputSavingsPlan(values, t, y_sp, writerCost):
@@ -45,31 +45,31 @@ def outputSavingsPlan(values, t, y_sp, writerCost):
     writer.writerow(['market', 'value_active', 'value_reserves'])
     cost = 0
 
-    for i_tempo in range(t):
-        values_sp = values[i_tempo][0][0]
+    for i_time in range(t):
+        values_sp = values[i_time][0][0]
         cost += values_sp[1] * y_sp
         writer.writerow(['savings_plan', values_sp[0], values_sp[1]])
 
     writerCost.writerow(['savings_plan', cost])
 
 
-def tranformarEmLista(values, t, num_instances, num_markets):
+def generate_list(values, t, num_instances, num_markets):
     index = 0
-    lista = []
-    for i_tempo in range(t):
-        lista_tempo = []
-        lista_tempo.append([[values[index], values[index + 1]]])
+    list = []
+    for i_time in range(t):
+        list_time = []
+        list_time.append([[values[index], values[index + 1]]])
         index += 2
-        for i_instancia in range(num_instances):
-            lista_instancia = []
-            lista_instancia.append([values[index]])
+        for i_instance in range(num_instances):
+            list_instance = []
+            list_instance.append([values[index]])
             index += 1
-            for i_mercado in range(num_markets):
-                lista_instancia.append([values[index], values[index + 1]])
+            for i_market in range(num_markets):
+                list_instance.append([values[index], values[index + 1]])
                 index += 2
-            lista_tempo.append(lista_instancia)
-        lista.append(lista_tempo)
-    return lista
+            list_time.append(list_instance)
+        list.append(list_time)
+    return list
 
 raw_input = pd.read_csv('data/input.csv')
 raw_sp_input = pd.read_csv('data/input_sp.csv')
@@ -109,9 +109,9 @@ for instance in instances.index:
 t = len(total_demand[0])
 y_sp = (raw_sp_input.iloc[0])['y']
 
-result = otimizaModelo(t, total_demand, input_data, input_sp, y_sp)
+result = optimize_model(t, total_demand, input_data, input_sp, y_sp)
 cost = result[0]
-values = tranformarEmLista(result[1], t, len(instance_names), len(market_names))
+values = generate_list(result[1], t, len(instance_names), len(market_names))
 
 writerCost.writerow(['all', cost])
 
