@@ -1,6 +1,6 @@
 import csv
 import pandas as pd
-from new_aws_model import optimize_model
+from aws_model import optimize_model
 
 def checkInputSP(sp_input, instances): #TO DO
     #if sp_input['instance'].value_counts() != instances: return False
