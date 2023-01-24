@@ -1,29 +1,42 @@
 from ortools.linear_solver import pywraplp
 import copy
 
-#Model for optimizing instance selection in aws ec2
+# Model for optimizing instance selection in aws ec2.
+# This file generates and runs the model, using ortools linear solver,
+# and returns the value of the objective function and the solution values.
 
-# instance_values = [[[p_hr, p_up, y], [p_hr, p_up, y]], i = 0 
-#                    [[p_hr, p_up, y], [p_hr, p_up, y]]] i = 1
-# the first market in every instance is the savings plan market.
-#
+# This model considers that all instances are in the same savings plan family/group
+# All instances must have the same markets in input_data
+# All instances must have the savings plan values in input_sp
+
+# Input:
+# t: the length of the simulation (in hours)
+
+# demand: a matrix with the demand of each instance.
 # demand = [[1, 2, ...], i=0
 #           [1, 2, ...], i=1
 #           [1, 2, ...]] i=2
 
-#All instances have the same markets
+# input_data: for every market of every instance, values of hourly price (p_hr), 
+# up front price (p_up) and reserve duration (y)
+# input_data = [[[p_hr, p_up, y], [p_hr, p_up, y]], i = 0 
+#                    [[p_hr, p_up, y], [p_hr, p_up, y]]] i = 1
 
-# Equations format:
+# input_sp: list with the savings plan hourly price (p_hr) for every instance
+# input_sp = [p_sp_i0, p_sp_i1, p_sp_i2, ...]
+
+# y_sp: savings plan reserve duration
+
+
+# Equations format in the model:
 # List of times (T) -> List of instances (I) -> List of markets (M)
 # 1° element of each T: [[s_t, rs_t]]
-# 1° element of each I: [a_t,i,sp]
+# 1° element of each I: [a_t,i,sp] (first market in every instance is the savings plan market)
 
 # [[[s_t, rs_t]], 
 # [[a_t,i,sp], [a_t,i,m, r_t,i,m], [a_t,i,m, r_t,i,m]], i=0
 # [[a_t,i,sp], [a_t,i,m, r_t,i,m], [a_t,i,m, r_t,i,m]]], i=1
 # [... t=1
-
-# input_sp = [p_sp_i0, p_sp_i1, p_sp_i2, ...]
 
 def optimize_model(t, demand, input_data, input_sp, y_sp):
 
@@ -42,16 +55,16 @@ def optimize_model(t, demand, input_data, input_sp, y_sp):
         x[j] = solver.IntVar(0, infinity, 'x[%i]' % j)
     print('Number of variables =', solver.NumVariables())
 
-    #Adding constraints
+    # coefficientsBase is a list in the equations format with all values 0
     coefficientsBase = create_coefficients_base(t, num_instances, num_markets)
 
-    #Demand <= 1*a
+    # Adding constraints
     constraint1(solver, x, num_vars, demand, coefficientsBase)
-    # a_t = sum(r_t)
     constraint2(solver, x, num_vars, coefficientsBase, input_data)
     constraint3(solver, x, num_vars, coefficientsBase, input_sp)
     constraint4(solver, x, num_vars, coefficientsBase, y_sp)
 
+    # Creating the objetive function
     obj_func = [0, 1 * y_sp] #savings plan coefficients (0 * s_t + 1 * rs_t * y_sp) - considers in the begining the total reserve cost
 
     for instance in input_data:
@@ -86,6 +99,7 @@ def optimize_model(t, demand, input_data, input_sp, y_sp):
     else:
         print('The problem does not have an optimal solution.')
 
+# Demand <= 1*a
 def constraint1(solver, x, num_vars, demand, coefficientsBase):
     for i_time in range(len(coefficientsBase)):
         time = coefficientsBase[i_time]
@@ -99,6 +113,7 @@ def constraint1(solver, x, num_vars, demand, coefficientsBase):
             constraint_expr = change_coefficients_format(generate_array(coefficients), x, num_vars)
             solver.Add(sum(constraint_expr) >= demand[i_instance - 1][i_time])
 
+# a_t = sum(r_t)
 def constraint2(solver, x, num_vars, coefficientsBase, input_data):
     for i_time in range(len(coefficientsBase)):
         time = coefficientsBase[i_time]
