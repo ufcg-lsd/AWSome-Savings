@@ -1,6 +1,55 @@
 import csv
+import sys
 import pandas as pd
 from aws_model import optimize_model
+
+def main():
+    raw_input = pd.read_csv(sys.argv[1])
+    raw_sp_input = pd.read_csv(sys.argv[2])
+    instances = raw_input['instance'].value_counts()
+
+    if checkInputSP(raw_sp_input, instances) == False:
+        raise ValueError("Error in the savings plan input.")
+
+    raw_demand = pd.read_csv('data/TOTAL_demand.csv')
+
+    resultCost = open('data/resultCost.csv', 'w')
+    writerCost = csv.writer(resultCost)
+    writerCost.writerow(['instance','total_cost'])
+
+    input_data = []
+    input_sp = []
+    total_demand = []
+    instance_names = []
+
+    for instance in instances.index:
+        line_sp = raw_sp_input[raw_sp_input['instance'] == instance]
+        input_sp.append(line_sp['p_hr'])
+        instance_input = []
+        market_names = []
+        instance_names.append(instance)
+
+        for i in range(len(raw_input)):
+            line = raw_input.iloc[i]
+            if line['instance'] == instance:
+                instance_input.append([line['p_hr'],line['p_up'], line['y']])
+                market_names.append(line['market_name'])
+        input_data.append(instance_input)
+
+        instance_demand = raw_demand[instance].values.tolist()
+        total_demand.append(instance_demand)
+
+    t = len(total_demand[0])
+    y_sp = (raw_sp_input.iloc[0])['y']
+
+    result = optimize_model(t, total_demand, input_data, input_sp, y_sp)
+    cost = result[0]
+    values = generate_list(result[1], t, len(instance_names), len(market_names))
+
+    writerCost.writerow(['all', cost])
+
+    outputSavingsPlan(values, t, y_sp, writerCost)
+    outputInstances(values, t, instance_names, market_names, input_data, writerCost)
 
 def checkInputSP(sp_input, instances): #TO DO
     #if sp_input['instance'].value_counts() != instances: return False
@@ -71,49 +120,5 @@ def generate_list(values, t, num_instances, num_markets):
         list.append(list_time)
     return list
 
-raw_input = pd.read_csv('data/input.csv')
-raw_sp_input = pd.read_csv('data/input_sp.csv')
-instances = raw_input['instance'].value_counts()
-
-if checkInputSP(raw_sp_input, instances) == False:
-    raise ValueError("Error in the savings plan input.")
-
-raw_demand = pd.read_csv('data/TOTAL_demand.csv')
-
-resultCost = open('data/resultCost.csv', 'w')
-writerCost = csv.writer(resultCost)
-writerCost.writerow(['instance','total_cost'])
-
-input_data = []
-input_sp = []
-total_demand = []
-instance_names = []
-
-for instance in instances.index:
-    line_sp = raw_sp_input[raw_sp_input['instance'] == instance]
-    input_sp.append(line_sp['p_hr'])
-    instance_input = []
-    market_names = []
-    instance_names.append(instance)
-
-    for i in range(len(raw_input)):
-        line = raw_input.iloc[i]
-        if line['instance'] == instance:
-            instance_input.append([line['p_hr'],line['p_up'], line['y']])
-            market_names.append(line['market_name'])
-    input_data.append(instance_input)
-
-    instance_demand = raw_demand[instance].values.tolist()
-    total_demand.append(instance_demand)
-
-t = len(total_demand[0])
-y_sp = (raw_sp_input.iloc[0])['y']
-
-result = optimize_model(t, total_demand, input_data, input_sp, y_sp)
-cost = result[0]
-values = generate_list(result[1], t, len(instance_names), len(market_names))
-
-writerCost.writerow(['all', cost])
-
-outputSavingsPlan(values, t, y_sp, writerCost)
-outputInstances(values, t, instance_names, market_names, input_data, writerCost)
+if __name__ == "__main__":
+    main()
