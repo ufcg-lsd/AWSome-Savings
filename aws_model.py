@@ -1,44 +1,55 @@
+"""Model for optimizing instance selection in aws ec2.
+
+Generates and runs the model, using ortools linear solver,
+and returns the value of the objective function and the solution values.
+This model considers that all instances are in the same savings plan family/group,
+so it is only possible to optmize one instance group at a time.
+"""
+
 from ortools.linear_solver import pywraplp
 import copy
 
-# Model for optimizing instance selection in aws ec2.
-# This file generates and runs the model, using ortools linear solver,
-# and returns the value of the objective function and the solution values.
-
-# This model considers that all instances are in the same savings plan family/group
-# All instances must have the same markets in input_data
-# All instances must have the savings plan values in input_sp
-
-# Input:
-# t: the length of the simulation (in hours)
-
-# demand: a matrix with the demand of each instance.
-# demand = [[1, 2, ...], i=0
-#           [1, 2, ...], i=1
-#           [1, 2, ...]] i=2
-
-# input_data: for every market of every instance, values of hourly price (p_hr), 
-# up front price (p_up) and reserve duration (y)
-# input_data = [[[p_hr, p_up, y], [p_hr, p_up, y]], i = 0 
-#                    [[p_hr, p_up, y], [p_hr, p_up, y]]] i = 1
-
-# input_sp: list with the savings plan hourly price (p_hr) for every instance
-# input_sp = [p_sp_i0, p_sp_i1, p_sp_i2, ...]
-
-# y_sp: savings plan reserve duration
-
-
-# Equations format in the model:
-# List of times (T) -> List of instances (I) -> List of markets (M)
-# 1° element of each T: [[s_t, rs_t]]
-# 1° element of each I: [a_t,i,sp] (first market in every instance is the savings plan market)
-
-# [[[s_t, rs_t]], 
-# [[a_t,i,sp], [a_t,i,m, r_t,i,m], [a_t,i,m, r_t,i,m]], i=0
-# [[a_t,i,sp], [a_t,i,m, r_t,i,m], [a_t,i,m, r_t,i,m]]], i=1
-# [... t=1
-
 def optimize_model(t, demand, input_data, input_sp, y_sp):
+    """Builds and runs the model.
+
+    Creates the objective function and four constraints. Adds them to the solver
+    and runs it. After the simulation, prints some stats of the simulation and returns
+    the results.
+
+    Equations format used in the model:
+    List of times (T) -> List of instances (I) -> List of markets (M)
+    1° element of each T: [[s_t, rs_t]] (active savings plan value, value of savings plans reserves made)
+    1° element of each I: [a_t,i,sp] (first market in every instance is the savings plan market)
+
+    [[[s_t, rs_t]], 
+    [[a_t,i,sp], [a_t,i,m, r_t,i,m], [a_t,i,m, r_t,i,m]], i=0
+    [[a_t,i,sp], [a_t,i,m, r_t,i,m], [a_t,i,m, r_t,i,m]]], i=1
+    [... t=1
+
+    Args:
+        t: the length of the simulation (in hours).
+        demand: a matrix with the demand of each instance.
+            demand = [[1, 2, ...], i=0
+                    [1, 2, ...], i=1
+                    [1, 2, ...]] i=2
+        input_data: for every market of every instance, values of hourly price (p_hr), 
+            up front price (p_up) and reserve duration (y).
+            input_data = [[[p_hr, p_up, y], [p_hr, p_up, y]], i = 0
+                        [[p_hr, p_up, y], [p_hr, p_up, y]]] i = 1
+        input_sp: list with the savings plan hourly price (p_hr) for every instance.
+            input_sp = [p_sp_i0, p_sp_i1, p_sp_i2, ...]
+        y_sp: savings plan reserve duration.
+        
+        All instances must have the same markets in input_data.
+        All instances must have the savings plan values in input_sp.
+    
+    Returns:
+        A list with 2 elements. The first element is the value of the objective function, which
+        is the total cost of the simulation. The second element is the list of values in the simulation.
+        This list is composed by, for every hour, the number of active instances, number of reserves made,
+        active value of savings plan and value of savings plan reserves made. It follows the equations
+        format defined above.
+    """
 
     solver = pywraplp.Solver.CreateSolver('SCIP')
     if not solver:
