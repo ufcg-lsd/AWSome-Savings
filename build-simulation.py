@@ -6,12 +6,12 @@ from aws_model import optimize_model
 def main():
     raw_input = pd.read_csv(sys.argv[1])
     raw_sp_input = pd.read_csv(sys.argv[2])
+    raw_demand = pd.read_csv(sys.argv[3])
+
     instances = raw_input['instance'].value_counts()
 
     if checkInputSP(raw_sp_input, instances) == False:
         raise ValueError("Error in the savings plan input.")
-
-    raw_demand = pd.read_csv('data/TOTAL_demand.csv')
 
     resultCost = open('data/resultCost.csv', 'w')
     writerCost = csv.writer(resultCost)
