@@ -1,3 +1,25 @@
+"""Generates the input and output for aws_model.
+
+Reads the files with the values for the simulation and converts the data to the format that the
+aws_model module receives. Calls aws_model to build and run the simulation and generates output 
+files with the results.
+
+It receives 3 csv files:
+- input: values for every market for every instance used in the simulation;
+- input_sp: values for savings plan for every instance used in the simulation;
+- TOTAL_demand: demand for all instances (including instances not used in the simulation).
+There are examples of thoses files in the data folder.
+
+It generates the following csv files:
+- resultCost: the total cost of the simulation, the cost for every instance and the total 
+    savings plan cost;
+- total_purchases_savings_plan: for every hour, the active value and the value reserved 
+    for savings plan;
+- total_purchases_{instance_name}: one file for every instance. It has, for every hour 
+    and every market type (including savings plan), the number of active instances and 
+    the number of reserves made.
+"""
+
 import csv
 import pandas as pd
 from aws_model import optimize_model
@@ -8,6 +30,7 @@ def checkInputSP(sp_input, instances): #TO DO
 
     return True
 
+# Generates total_purchases for every instance and the instance values in resultCost
 def outputInstances(values, t, instance_names, market_names, input_data, writerCost): #is it possible to calcule the savings plan cost of each instance?
 
     for i_instance in range(len(instance_names)):
@@ -39,6 +62,7 @@ def outputInstances(values, t, instance_names, market_names, input_data, writerC
         writerCost.writerow([instance_names[i_instance], cost])        
         output.close()
 
+# Generates total_purchases_savings_plan and the savings plan value in resultCost
 def outputSavingsPlan(values, t, y_sp, writerCost):
     output = open('total_purchases_savings_plan.csv', 'w')
     writer = csv.writer(output)
