@@ -29,7 +29,6 @@ def validate_column_names(raw_input, raw_sp_input, raw_demand):
 
 def validate_instance_names(input_instances, sp_input_instances, raw_demand):
     #the instance names in both input files should be the same
-
     if input_instances != sp_input_instances:
         raise Exception('The instances names in input.csv and input_sp.csv are not the same.')
     
