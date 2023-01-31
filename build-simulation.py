@@ -3,61 +3,64 @@ import pandas as pd
 from aws_model import optimize_model
 
 # the validations could be in another file?
-def validate_input(raw_input, raw_sp_input, raw_demand):
-    validate_column_names(raw_input, raw_sp_input, raw_demand)
-    validate_savings_plan(raw_sp_input)
-
-    input_instances = list(raw_input['instance'].value_counts().index)
-    sp_input_instances = list(raw_sp_input.loc[:,'instance'])
-    input_instances.sort
-    sp_input_instances.sort
-
-    validate_instance_names(input_instances, sp_input_instances, raw_demand)
-    validate_markets(raw_input, input_instances)
-
-    #other validations (that may cause performance overhead):
-    #no blank or null values
-    #all the demand values and the reserve durations must be integers
-
-def validate_column_names(raw_input, raw_sp_input, raw_demand):
-    if list(raw_input.columns) != ['instance', 'market_name', 'p_hr', 'p_up', 'y']:
-        raise Exception('Column names in input.csv are incorrect.')
-    if list(raw_sp_input.columns) != ['instance', 'p_hr', 'y']:
-        raise Exception('Column names in input_sp.csv are incorrect.')
-    if raw_demand.columns[0] != 'Hour': #could i just correct in the code?
-        raise Exception('The first column name in the demand file is incorrect.')
-
-def validate_instance_names(input_instances, sp_input_instances, raw_demand):
-    #the instance names in both input files should be the same
-    if input_instances != sp_input_instances:
-        raise Exception('The instances names in input.csv and input_sp.csv are not the same.')
+def validate_input(raw_input):
+    validate_columns('input.csv', raw_input, ['instance', 'market_name', 'p_hr', 'p_up', 'y'])
     
-    #the demand should contain all the instances passed on the input
-    demand_col = list(raw_demand.columns)
-    for instance in input_instances:
-        if instance not in demand_col:
-            raise Exception('The instance ' + instance + ' is not on the demand file.')
+    instances = list(raw_input['instance'].value_counts().index)
+    instances.sort()
+    validate_markets(raw_input, instances)
 
-def validate_markets(raw_input, input_instances):
+def validate_columns(file_name, data_frame, names):
+    if list(data_frame.columns) != names:
+        raise Exception('The column names in ' + file_name +  ' are incorrect.')
+
+def validate_markets(raw_input, instances):
     #All instances should have the same markets
-    instance_input = raw_input[raw_input['instance'] == input_instances[0]]
-    market_names = list(instance_input.loc[:,'market_name'])
-    market_names.sort
-    previous_market_names = market_names
+    instance_input = raw_input[raw_input['instance'] == instances[0]]
+    markets = list(instance_input.loc[:,'market_name'])
+    markets.sort()
+    previous_markets = markets
     
-    for instance in input_instances:
+    for instance in instances:
         instance_input = raw_input[raw_input['instance'] == instance]
-        market_names = list(instance_input.loc[:,'market_name'])
-        market_names.sort
-        if market_names != previous_market_names:
+        markets = list(instance_input.loc[:,'market_name'])
+        markets.sort()
+        if markets != previous_markets:
             raise Exception('Not all instances have the same market names.')
-        previous_market_names = market_names
+        previous_markets = markets
 
-def validate_savings_plan(raw_sp_input):
+#sp means savings plan
+def validate_sp_input(raw_sp_input, instances):
+    validate_columns('input_sp.csv', raw_sp_input, ['instance', 'p_hr', 'y'])
+    validate_sp_instances(raw_sp_input, instances)
+    validate_sp_durations(raw_sp_input)
+
+def validate_sp_instances(raw_sp_input, instances):
+    #The instances in savings plan should be the same as the other markets
+    sp_instances = list(raw_sp_input.loc[:,'instance'])
+    sp_instances.sort()
+
+    if instances != sp_instances:
+        raise Exception('The instances names in input.csv and input_sp.csv are not the same.')
+
+def validate_sp_durations(raw_sp_input):
     #All savings plan durations should be the same
     sp_durations = list(raw_sp_input['y'].value_counts().index)
     if len(sp_durations) != 1:
         raise Exception('All instances must have the same savings plan duration.')
+
+def validate_demand(raw_demand, instances):
+    if raw_demand.columns[0] != 'Hour': #could i just correct in the code?
+        raise Exception('The first column name in the demand file is incorrect.')
+    
+    validate_demand_instances(raw_demand, instances)
+
+def validate_demand_instances(raw_demand, instances):
+    #the demand should contain all the instances passed on the input
+    demand_col = list(raw_demand.columns)
+    for instance in instances:
+        if instance not in demand_col:
+            raise Exception('The instance ' + instance + ' is not on the demand file.')   
 
 def outputInstances(values, t, instance_names, market_names, input_data, writerCost): #is it possible to calcule the savings plan cost of each instance?
 
@@ -103,7 +106,6 @@ def outputSavingsPlan(values, t, y_sp, writerCost):
 
     writerCost.writerow(['savings_plan', cost])
 
-
 def generate_list(values, t, num_instances, num_markets):
     index = 0
     list = []
@@ -123,12 +125,16 @@ def generate_list(values, t, num_instances, num_markets):
     return list
 
 raw_input = pd.read_csv('data/input.csv')
-raw_sp_input = pd.read_csv('data/input_sp.csv')
-instances = raw_input['instance'].value_counts()
-
+raw_sp_input = pd.read_csv('data/input_sp.csv') #sp means savings plan
 raw_demand = pd.read_csv('data/TOTAL_demand.csv')
 
-validate_input(raw_input, raw_sp_input, raw_demand)
+validate_input(raw_input)
+
+instances = list(raw_input['instance'].value_counts().index)
+instances.sort()
+
+validate_sp_input(raw_sp_input, instances)
+validate_demand(raw_demand, instances)
 
 resultCost = open('data/resultCost.csv', 'w')
 writerCost = csv.writer(resultCost)
@@ -137,14 +143,12 @@ writerCost.writerow(['instance','total_cost'])
 input_data = []
 input_sp = []
 total_demand = []
-instance_names = []
 
-for instance in instances.index:
+for instance in instances:
     line_sp = raw_sp_input[raw_sp_input['instance'] == instance]
     input_sp.append(line_sp['p_hr'])
     instance_input = []
     market_names = []
-    instance_names.append(instance)
 
     for i in range(len(raw_input)):
         line = raw_input.iloc[i]
@@ -161,9 +165,9 @@ y_sp = (raw_sp_input.iloc[0])['y']
 
 result = optimize_model(t, total_demand, input_data, input_sp, y_sp)
 cost = result[0]
-values = generate_list(result[1], t, len(instance_names), len(market_names))
+values = generate_list(result[1], t, len(instances), len(market_names))
 
 writerCost.writerow(['all', cost])
 
 outputSavingsPlan(values, t, y_sp, writerCost)
-outputInstances(values, t, instance_names, market_names, input_data, writerCost)
+outputInstances(values, t, instances, market_names, input_data, writerCost)
