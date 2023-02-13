@@ -1,6 +1,78 @@
+"""Generates the input and output for aws_model.
+
+Reads the files with the values for the simulation and converts the data to the format that the
+aws_model module receives. Calls aws_model to build and run the simulation and generates output 
+files with the results.
+
+It receives 3 csv files:
+- input: values for every market for every instance used in the simulation;
+- input_sp: values for savings plan for every instance used in the simulation;
+- TOTAL_demand: demand for all instances (including instances not used in the simulation).
+There are examples of thoses files in the data folder.
+
+It generates the following csv files:
+- resultCost: the total cost of the simulation, the cost for every instance and the total 
+    savings plan cost;
+- total_purchases_savings_plan: for every hour, the active value and the value reserved 
+    for savings plan;
+- total_purchases_{instance_name}: one file for every instance. It has, for every hour 
+    and every market type (including savings plan), the number of active instances and 
+    the number of reserves made.
+"""
+
 import csv
+import sys
 import pandas as pd
 from aws_model import optimize_model
+
+def main():
+    raw_input = pd.read_csv(sys.argv[1])
+    raw_sp_input = pd.read_csv(sys.argv[2])
+    raw_demand = pd.read_csv(sys.argv[3])
+
+    validate_input(raw_input)
+    
+    instances = list(raw_input['instance'].value_counts().index)
+    instances.sort()
+    
+    validate_sp_input(raw_sp_input, instances)
+    validate_demand(raw_demand, instances)
+
+    resultCost = open('data/resultCost.csv', 'w')
+    writerCost = csv.writer(resultCost)
+    writerCost.writerow(['instance','total_cost'])
+
+    input_data = []
+    input_sp = []
+    total_demand = []
+
+    for instance in instances:
+        line_sp = raw_sp_input[raw_sp_input['instance'] == instance]
+        input_sp.append(line_sp['p_hr'])
+        instance_input = []
+        market_names = []
+
+        for i in range(len(raw_input)):
+            line = raw_input.iloc[i]
+            if line['instance'] == instance:
+                instance_input.append([line['p_hr'],line['p_up'], line['y']])
+                market_names.append(line['market_name'])
+        input_data.append(instance_input)
+
+        instance_demand = raw_demand[instance].values.tolist()
+        total_demand.append(instance_demand)
+
+    t = len(total_demand[0])
+    y_sp = (raw_sp_input.iloc[0])['y']
+
+    result = optimize_model(t, total_demand, input_data, input_sp, y_sp)
+    cost = result[0]
+    values = generate_list(result[1], t, len(instances), len(market_names))
+
+    writerCost.writerow(['all', cost])
+
+    outputSavingsPlan(values, t, y_sp, writerCost)
+    outputInstances(values, t, instances, market_names, input_data, writerCost)
 
 # the validations could be in another file?
 def validate_input(raw_input):
@@ -62,6 +134,7 @@ def validate_demand_instances(raw_demand, instances):
         if instance not in demand_col:
             raise Exception('The instance ' + instance + ' is not on the demand file.')   
 
+# Generates total_purchases for every instance and the instance values in resultCost
 def outputInstances(values, t, instance_names, market_names, input_data, writerCost): #is it possible to calcule the savings plan cost of each instance?
 
     for i_instance in range(len(instance_names)):
@@ -93,6 +166,7 @@ def outputInstances(values, t, instance_names, market_names, input_data, writerC
         writerCost.writerow([instance_names[i_instance], cost])        
         output.close()
 
+# Generates total_purchases_savings_plan and the savings plan value in resultCost
 def outputSavingsPlan(values, t, y_sp, writerCost):
     output = open('total_purchases_savings_plan.csv', 'w')
     writer = csv.writer(output)
@@ -124,50 +198,5 @@ def generate_list(values, t, num_instances, num_markets):
         list.append(list_time)
     return list
 
-raw_input = pd.read_csv('data/input.csv')
-raw_sp_input = pd.read_csv('data/input_sp.csv') #sp means savings plan
-raw_demand = pd.read_csv('data/TOTAL_demand.csv')
-
-validate_input(raw_input)
-
-instances = list(raw_input['instance'].value_counts().index)
-instances.sort()
-
-validate_sp_input(raw_sp_input, instances)
-validate_demand(raw_demand, instances)
-
-resultCost = open('data/resultCost.csv', 'w')
-writerCost = csv.writer(resultCost)
-writerCost.writerow(['instance','total_cost'])
-
-input_data = []
-input_sp = []
-total_demand = []
-
-for instance in instances:
-    line_sp = raw_sp_input[raw_sp_input['instance'] == instance]
-    input_sp.append(line_sp['p_hr'])
-    instance_input = []
-    market_names = []
-
-    for i in range(len(raw_input)):
-        line = raw_input.iloc[i]
-        if line['instance'] == instance:
-            instance_input.append([line['p_hr'],line['p_up'], line['y']])
-            market_names.append(line['market_name'])
-    input_data.append(instance_input)
-
-    instance_demand = raw_demand[instance].values.tolist()
-    total_demand.append(instance_demand)
-
-t = len(total_demand[0])
-y_sp = (raw_sp_input.iloc[0])['y']
-
-result = optimize_model(t, total_demand, input_data, input_sp, y_sp)
-cost = result[0]
-values = generate_list(result[1], t, len(instances), len(market_names))
-
-writerCost.writerow(['all', cost])
-
-outputSavingsPlan(values, t, y_sp, writerCost)
-outputInstances(values, t, instances, market_names, input_data, writerCost)
+if __name__ == "__main__":
+    main()

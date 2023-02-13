@@ -1,8 +1,10 @@
-# This code generates tables with the demand of each instance family, using a demand file.
-# It receives the demand file path as an argument. 
-# This file should follow the same model as the TOTAL_demand.csv file in this folder.
-# The output is one csv file for each family, with the instances demand.
-# The output files have the same format as the input file.
+"""Generates tables with the demand of each instance family, using a demand file.
+
+It receives the demand file path as an argument. 
+This file should follow the same model as the TOTAL_demand.csv file in this folder.
+The output is one csv file for each family, with the instances demand.
+The output files have the same format as the input file.
+"""
 
 import sys
 import pandas as pd
