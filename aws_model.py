@@ -9,7 +9,7 @@ so it is only possible to optmize one instance group at a time.
 from ortools.linear_solver import pywraplp
 import copy
 
-def optimize_model(t, demand, input_data, input_sp, y_sp):
+def optimize_model(t, demand, markets_data, savings_plan_data, savings_plan_duration):
     """Builds and runs the model.
 
     Creates the objective function and four constraints. Adds them to the solver
@@ -32,16 +32,16 @@ def optimize_model(t, demand, input_data, input_sp, y_sp):
             demand = [[1, 2, ...], i=0
                     [1, 2, ...], i=1
                     [1, 2, ...]] i=2
-        input_data: for every market of every instance, values of hourly price (p_hr), 
+        markets_data: for every market of every instance, values of hourly price (p_hr), 
             up front price (p_up) and reserve duration (y).
             input_data = [[[p_hr, p_up, y], [p_hr, p_up, y]], i = 0
                         [[p_hr, p_up, y], [p_hr, p_up, y]]] i = 1
-        input_sp: list with the savings plan hourly price (p_hr) for every instance.
+        savings_plan_data: list with the savings plan hourly price (p_hr) for every instance.
             input_sp = [p_sp_i0, p_sp_i1, p_sp_i2, ...]
         y_sp: savings plan reserve duration.
         
-        All instances must have the same markets in input_data.
-        All instances must have the savings plan values in input_sp.
+        All instances must have the same markets in markets_data.
+        All instances must have the savings plan values in savings_plan_data.
     
     Returns:
         A list with 2 elements. The first element is the value of the objective function, which
@@ -57,8 +57,8 @@ def optimize_model(t, demand, input_data, input_sp, y_sp):
     
     infinity = solver.infinity()
    
-    num_markets = len(input_data[0])
-    num_instances = len(input_data)
+    num_markets = len(markets_data[0])
+    num_instances = len(markets_data)
     num_vars = ((2 * num_markets + 1) * num_instances + 2) * t
 
     x = {}
@@ -71,14 +71,14 @@ def optimize_model(t, demand, input_data, input_sp, y_sp):
 
     # Adding constraints
     constraint1(solver, x, num_vars, demand, coefficientsBase)
-    constraint2(solver, x, num_vars, coefficientsBase, input_data)
-    constraint3(solver, x, num_vars, coefficientsBase, input_sp)
-    constraint4(solver, x, num_vars, coefficientsBase, y_sp)
+    constraint2(solver, x, num_vars, coefficientsBase, markets_data)
+    constraint3(solver, x, num_vars, coefficientsBase, savings_plan_data)
+    constraint4(solver, x, num_vars, coefficientsBase, savings_plan_duration)
 
     # Creating the objetive function
-    obj_func = [0, 1 * y_sp] #savings plan coefficients (0 * s_t + 1 * rs_t * y_sp) - considers in the begining the total reserve cost
+    obj_func = [0, 1 * savings_plan_duration] #savings plan coefficients (0 * s_t + 1 * rs_t * y_sp) - considers in the begining the total reserve cost
 
-    for instance in input_data:
+    for instance in markets_data:
         obj_func.append(0) #coefficient of number of active instances in savings plan (a_t,i,SP)
         for market in instance: #market = [p_hr, p_up, y]
             cr_im = market[0] * market[2] + market[1]
@@ -125,7 +125,7 @@ def constraint1(solver, x, num_vars, demand, coefficientsBase):
             solver.Add(sum(constraint_expr) >= demand[i_instance - 1][i_time])
 
 # a_t = sum(r_t)
-def constraint2(solver, x, num_vars, coefficientsBase, input_data):
+def constraint2(solver, x, num_vars, coefficientsBase, markets_data):
     for i_time in range(len(coefficientsBase)):
         time = coefficientsBase[i_time]
         for i_instance in range(1, len(time)): #jumps savings plan coefficients
@@ -135,7 +135,7 @@ def constraint2(solver, x, num_vars, coefficientsBase, input_data):
 
                 coefficients[i_time][i_instance][i_market] = [1, -1]
                 
-                y = input_data[i_instance - 1][i_market - 1][2]
+                y = markets_data[i_instance - 1][i_market - 1][2]
                 reserve_duration = y - 1
 
                 for i in range(i_time - 1, -1, -1):
@@ -147,26 +147,26 @@ def constraint2(solver, x, num_vars, coefficientsBase, input_data):
                 constraint_expr = change_coefficients_format(generate_array(coefficients), x, num_vars)
                 solver.Add(sum(constraint_expr) == 0)
 
-def constraint3(solver, x, num_vars,coefficientsBase, input_sp):
+def constraint3(solver, x, num_vars, coefficientsBase, savings_plan_data):
     for i_time in range(len(coefficientsBase)):
         coefficients = copy.deepcopy(coefficientsBase) #making a copy before altering the coefficients
 
         coefficients[i_time][0][0] = [-1, 0] #total sp active value in t
 
         for i_instance in range(1, len(coefficients[i_time])): #pula os coef do SP
-            coefficients[i_time][i_instance][0][0] = float([input_sp[i_instance - 1]][0])
+            coefficients[i_time][i_instance][0][0] = float([savings_plan_data[i_instance - 1]][0])
         
         constraint_expr = change_coefficients_format(generate_array(coefficients), x, num_vars)
         solver.Add(sum(constraint_expr) <= 0)
 
 
-def constraint4(solver, x, num_vars, coefficientsBase, y_sp):
+def constraint4(solver, x, num_vars, coefficientsBase, savings_plan_duration):
     for i_time in range(len(coefficientsBase)):
         coefficients = copy.deepcopy(coefficientsBase) #making a copy before altering the coefficients
 
         coefficients[i_time][0][0] = [1, -1]
 
-        reserve_duration = y_sp - 1
+        reserve_duration = savings_plan_duration - 1
         for i in range(i_time - 1, -1, -1):
             if reserve_duration > 0:
                 coefficients[i][0][0] = [0, -1]

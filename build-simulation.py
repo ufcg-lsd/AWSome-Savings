@@ -4,9 +4,10 @@ Reads the files with the values for the simulation and converts the data to the 
 aws_model module receives. Calls aws_model to build and run the simulation and generates output 
 files with the results.
 
-It receives 3 csv files:
-- input: values for every market for every instance used in the simulation;
-- input_sp: values for savings plan for every instance used in the simulation;
+It receives 4 csv files:
+- on_demand_config: values for the on demand market for every instance used in the simulation;
+- reserves_config: values for the reserve markets for every instance used in the simulation;
+- savings_plan_config: values for savings plan for every instance used in the simulation;
 - TOTAL_demand: demand for all instances (including instances not used in the simulation).
 There are examples of thoses files in the data folder.
 
@@ -26,99 +27,104 @@ import pandas as pd
 from aws_model import optimize_model
 
 def main():
-    raw_input = pd.read_csv(sys.argv[1])
-    raw_sp_input = pd.read_csv(sys.argv[2])
-    raw_demand = pd.read_csv(sys.argv[3])
+    on_demand_config = pd.read_csv(sys.argv[1])
+    reserves_config = pd.read_csv(sys.argv[2])
+    savings_plan_config = pd.read_csv(sys.argv[3])
+    raw_demand = pd.read_csv(sys.argv[4])
 
-    validate_input(raw_input)
+    validate_on_demand_config(on_demand_config)
     
-    instances = list(raw_input['instance'].value_counts().index)
+    instances = list(on_demand_config['instance'].value_counts().index)
     instances.sort()
     
-    validate_sp_input(raw_sp_input, instances)
+    validate_reserves_config(reserves_config, instances)
+    validate_savings_plan_config(savings_plan_config, instances)
     validate_demand(raw_demand, instances)
 
     resultCost = open('data/resultCost.csv', 'w')
     writerCost = csv.writer(resultCost)
     writerCost.writerow(['instance','total_cost'])
 
-    input_data = []
-    input_sp = []
+    markets_data = []
+    savings_plan_data = []
     total_demand = []
 
     for instance in instances:
-        line_sp = raw_sp_input[raw_sp_input['instance'] == instance]
-        input_sp.append(line_sp['p_hr'])
-        instance_input = []
-        market_names = []
+        line_savings_plan = savings_plan_config[savings_plan_config['instance'] == instance]
+        savings_plan_data.append(line_savings_plan['p_hr'])
+        instance_data = []
+        market_names = ['on_demand']
 
-        for i in range(len(raw_input)):
-            line = raw_input.iloc[i]
+        line_on_demand = on_demand_config[on_demand_config['instance'] == instance]
+        instance_data.append([float(line_on_demand['p_hr']), 0, 1])
+
+        for i in range(len(reserves_config)):
+            line = reserves_config.iloc[i]
             if line['instance'] == instance:
-                instance_input.append([line['p_hr'],line['p_up'], line['y']])
+                instance_data.append([line['p_hr'],line['p_up'], line['y']])
                 market_names.append(line['market_name'])
-        input_data.append(instance_input)
+        markets_data.append(instance_data)
 
         instance_demand = raw_demand[instance].values.tolist()
         total_demand.append(instance_demand)
 
     t = len(total_demand[0])
-    y_sp = (raw_sp_input.iloc[0])['y']
+    savings_plan_duration = (savings_plan_config.iloc[0])['y']
 
-    result = optimize_model(t, total_demand, input_data, input_sp, y_sp)
+    result = optimize_model(t, total_demand, markets_data, savings_plan_data, savings_plan_duration)
     cost = result[0]
     values = generate_list(result[1], t, len(instances), len(market_names))
 
     writerCost.writerow(['all', cost])
 
-    outputSavingsPlan(values, t, y_sp, writerCost)
-    outputInstances(values, t, instances, market_names, input_data, writerCost)
+    outputSavingsPlan(values, t, savings_plan_duration, writerCost)
+    outputInstances(values, t, instances, market_names, markets_data, writerCost)
 
 # the validations could be in another file?
-def validate_input(raw_input):
-    validate_columns('input.csv', raw_input, ['instance', 'market_name', 'p_hr', 'p_up', 'y'])
-    
-    instances = list(raw_input['instance'].value_counts().index)
-    instances.sort()
-    validate_markets(raw_input, instances)
+def validate_on_demand_config(on_demand_config):
+    validate_columns('on_demand_config', on_demand_config, ['instance', 'p_hr'])
 
 def validate_columns(file_name, data_frame, names):
     if list(data_frame.columns) != names:
         raise Exception('The column names in ' + file_name +  ' are incorrect.')
 
-def validate_markets(raw_input, instances):
-    #All instances should have the same markets
-    instance_input = raw_input[raw_input['instance'] == instances[0]]
-    markets = list(instance_input.loc[:,'market_name'])
+def validate_reserves_config(reserves_config, instances):
+    validate_columns('reserves_config', reserves_config, ['instance', 'market_name', 'p_hr', 'p_up', 'y'])
+    validate_instances_names('reserves_config', reserves_config, instances)
+    validate_reserves_markets(reserves_config, instances)
+
+def validate_instances_names(file_name, data_frame, instances):
+    #Checks if the instance names in the data_frame are the same as in the other files
+    file_instances = list(data_frame.loc[:,'instance'])
+    file_instances.sort()
+
+    if instances != file_instances:
+        raise Exception('The instances names in on_demand_config and ' + file_name + ' are not the same.')
+
+def validate_reserves_markets(reserves_config, instances):
+    #All instances should have the same reserve markets
+    instance_line = reserves_config[reserves_config['instance'] == instances[0]]
+    markets = list(instance_line.loc[:,'market_name'])
     markets.sort()
     previous_markets = markets
     
     for instance in instances:
-        instance_input = raw_input[raw_input['instance'] == instance]
-        markets = list(instance_input.loc[:,'market_name'])
+        instance_line = reserves_config[reserves_config['instance'] == instance]
+        markets = list(instance_line.loc[:,'market_name'])
         markets.sort()
         if markets != previous_markets:
-            raise Exception('Not all instances have the same market names.')
+            raise Exception('Not all instances have the same reserve market names.')
         previous_markets = markets
 
-#sp means savings plan
-def validate_sp_input(raw_sp_input, instances):
-    validate_columns('input_sp.csv', raw_sp_input, ['instance', 'p_hr', 'y'])
-    validate_sp_instances(raw_sp_input, instances)
-    validate_sp_durations(raw_sp_input)
+def validate_savings_plan_config(savings_plan_config, instances):
+    validate_columns('savings_plan_config', savings_plan_config, ['instance', 'p_hr', 'y'])
+    validate_instances_names('savings_plan_config', savings_plan_config, instances)
+    validate_savings_plan_durations(savings_plan_config)
 
-def validate_sp_instances(raw_sp_input, instances):
-    #The instances in savings plan should be the same as the other markets
-    sp_instances = list(raw_sp_input.loc[:,'instance'])
-    sp_instances.sort()
-
-    if instances != sp_instances:
-        raise Exception('The instances names in input.csv and input_sp.csv are not the same.')
-
-def validate_sp_durations(raw_sp_input):
+def validate_savings_plan_durations(savings_plan_config):
     #All savings plan durations should be the same
-    sp_durations = list(raw_sp_input['y'].value_counts().index)
-    if len(sp_durations) != 1:
+    savings_plan_durations = list(savings_plan_config['y'].value_counts().index)
+    if len(savings_plan_durations) != 1:
         raise Exception('All instances must have the same savings plan duration.')
 
 def validate_demand(raw_demand, instances):
@@ -132,10 +138,10 @@ def validate_demand_instances(raw_demand, instances):
     demand_col = list(raw_demand.columns)
     for instance in instances:
         if instance not in demand_col:
-            raise Exception('The instance ' + instance + ' is not on the demand file.')   
+            raise Exception('The instance ' + instance + ' is not on the demand file.') 
 
 # Generates total_purchases for every instance and the instance values in resultCost
-def outputInstances(values, t, instance_names, market_names, input_data, writerCost): #is it possible to calcule the savings plan cost of each instance?
+def outputInstances(values, t, instance_names, market_names, markets_data, writerCost): #is it possible to calcule the savings plan cost of each instance?
 
     for i_instance in range(len(instance_names)):
         cost = 0
@@ -153,7 +159,7 @@ def outputInstances(values, t, instance_names, market_names, input_data, writerC
                 
         #Other markets
         for i_market in range(len(market_names)):
-            im_values = input_data[i_instance][i_market]
+            im_values = markets_data[i_instance][i_market]
             cr_im = im_values[0] * im_values[2] + im_values[1]
 
             for i_time in range(t):
@@ -167,16 +173,16 @@ def outputInstances(values, t, instance_names, market_names, input_data, writerC
         output.close()
 
 # Generates total_purchases_savings_plan and the savings plan value in resultCost
-def outputSavingsPlan(values, t, y_sp, writerCost):
+def outputSavingsPlan(values, t, savings_plan_duration, writerCost):
     output = open('total_purchases_savings_plan.csv', 'w')
     writer = csv.writer(output)
     writer.writerow(['market', 'value_active', 'value_reserves'])
     cost = 0
 
     for i_time in range(t):
-        values_sp = values[i_time][0][0]
-        cost += values_sp[1] * y_sp
-        writer.writerow(['savings_plan', values_sp[0], values_sp[1]])
+        values_savings_plan = values[i_time][0][0]
+        cost += values_savings_plan[1] * savings_plan_duration
+        writer.writerow(['savings_plan', values_savings_plan[0], values_savings_plan[1]])
 
     writerCost.writerow(['savings_plan', cost])
 
