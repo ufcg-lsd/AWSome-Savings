@@ -33,7 +33,7 @@ def main():
     raw_demand = pd.read_csv(sys.argv[4])
 
     validate_on_demand_config(on_demand_config)
-    
+
     instances = list(on_demand_config['instance'].value_counts().index)
     instances.sort()
     
@@ -83,10 +83,20 @@ def main():
 # the validations could be in another file?
 def validate_on_demand_config(on_demand_config):
     validate_columns('on_demand_config', on_demand_config, ['instance', 'p_hr'])
+    validate_on_demand_instances(on_demand_config)
 
 def validate_columns(file_name, data_frame, names):
     if list(data_frame.columns) != names:
         raise Exception('The column names in ' + file_name +  ' are incorrect.')
+
+def validate_on_demand_instances(on_demand_config):
+    instances = on_demand_config['instance'].values.tolist()
+    instances.sort()
+    unique_instances = list(on_demand_config['instance'].value_counts().index)
+    unique_instances.sort()
+
+    if (instances != unique_instances):
+        raise Exception('The instances names in on_demand_config should be unique')
 
 def validate_reserves_config(reserves_config, instances):
     validate_columns('reserves_config', reserves_config, ['instance', 'market_name', 'p_hr', 'p_up', 'y'])
