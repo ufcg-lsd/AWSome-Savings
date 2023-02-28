@@ -64,7 +64,6 @@ def optimize_model(t, demand, input_data, input_sp, y_sp):
     x = {}
     for j in range(num_vars):
         x[j] = solver.IntVar(0, infinity, 'x[%i]' % j)
-    print('Number of variables =', solver.NumVariables())
 
     # coefficientsBase is a list in the equations format with all values 0
     coefficientsBase = create_coefficients_base(t, num_instances, num_markets)
@@ -94,21 +93,7 @@ def optimize_model(t, demand, input_data, input_sp, y_sp):
 
     status = solver.Solve()
 
-    if status == pywraplp.Solver.OPTIMAL:
-        values = []
-
-        print('Objective value =', solver.Objective().Value())
-        for j in range(num_vars):
-            print(x[j].name(), ' = ', x[j].solution_value())
-            values.append(x[j].solution_value())
-        print()
-        print('Problem solved in %f milliseconds' % solver.wall_time())
-        print('Problem solved in %d iterations' % solver.iterations())
-        print('Problem solved in %d branch-and-bound nodes' % solver.nodes())
-
-        return [solver.Objective().Value(), values]
-    else:
-        print('The problem does not have an optimal solution.')
+    return generate_log(status, solver, num_vars, x)
 
 # Demand <= 1*a
 def constraint1(solver, x, num_vars, demand, coefficientsBase):
@@ -204,3 +189,23 @@ def generate_array(list):
                 for value in market:
                     array.append(value)
     return array
+
+def generate_log(status, solver, num_vars, x):
+    log = open('execution_log.txt', 'w')
+    log.write('Number of variables = ' + str(solver.NumVariables()))
+
+    if status == pywraplp.Solver.OPTIMAL:
+        values = []
+
+        log.write('\nObjective value = ' + str(solver.Objective().Value()))
+        for j in range(num_vars):
+            log.write('\n' + x[j].name() + ' = ' + str(x[j].solution_value()))
+            values.append(x[j].solution_value())
+        log.write('\n\nProblem solved in %f milliseconds' % solver.wall_time())
+        log.write('\nProblem solved in %d iterations' % solver.iterations())
+        log.write('\nProblem solved in %d branch-and-bound nodes' % solver.nodes())
+        
+        return [solver.Objective().Value(), values]
+    else:
+        log.write('The problem does not have an optimal solution.')
+        raise Exception('The problem does not have an optimal solution.')
