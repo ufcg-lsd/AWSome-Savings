@@ -41,10 +41,6 @@ def main():
     validate_savings_plan_config(savings_plan_config, instances)
     validate_demand(raw_demand, instances)
 
-    resultCost = open('data/resultCost.csv', 'w')
-    writerCost = csv.writer(resultCost)
-    writerCost.writerow(['instance','total_cost'])
-
     markets_data = []
     savings_plan_data = []
     total_demand = []
@@ -75,10 +71,10 @@ def main():
     cost = result[0]
     values = generate_list(result[1], t, len(instances), len(market_names))
 
-    writerCost.writerow(['all', cost])
-
-    outputSavingsPlan(values, t, savings_plan_duration, writerCost)
-    outputInstances(values, t, instances, market_names, markets_data, writerCost)
+    #generates the output files
+    generate_result_cost(values, t, instances, market_names, markets_data, savings_plan_duration)
+    generate_total_purchases_savings_plan(values, t)
+    generate_total_purchases(values, t, instances, market_names)
 
 # the validations could be in another file?
 def validate_on_demand_config(on_demand_config):
@@ -148,53 +144,70 @@ def validate_demand_instances(raw_demand, instances):
     demand_col = list(raw_demand.columns)
     for instance in instances:
         if instance not in demand_col:
-            raise Exception('The instance ' + instance + ' is not on the demand file.') 
+            raise Exception('The instance ' + instance + ' is not on the demand file.')
 
-# Generates total_purchases for every instance and the instance values in resultCost
-def outputInstances(values, t, instance_names, market_names, markets_data, writerCost): #is it possible to calcule the savings plan cost of each instance?
+def generate_result_cost(values, t, instance_names, market_names, markets_data, savings_plan_duration):
+    result_cost = pd.DataFrame(columns=['instance','total_cost'])
+
+    total_cost = 0
+
+    #calculating savings plan total cost
+    savings_plan_cost = 0
+    for i_time in range(t):
+        savings_plan_cost += values[i_time][0][0][1] * savings_plan_duration #value of savings plan reserves made * savings plan duration 
+    
+    pd.concat([result_cost, ['savings_plan', savings_plan_cost]])
+    total_cost += savings_plan_cost
+
+    #calculating every instance total cost
+    #this cost does not considers savings plan cost for the instance
+    for i_instance in range(len(instance_names)):
+        instance_cost = 0
+        
+        for i_market in range(len(market_names)):
+            im_values = markets_data[i_instance][i_market]
+            reserve_cost_im = im_values[0] * im_values[2] + im_values[1]
+
+            for i_time in range(t):
+                reserves = values[i_time][i_instance + 1][i_market + 1][1]
+                instance_cost += reserves * reserve_cost_im
+        
+        pd.concat([result_cost, [instance_names[i_instance], instance_cost]])
+        total_cost += instance_cost
+
+    pd.concat([result_cost, ['all', total_cost]])
+
+    result_cost.to_csv('result_cost.csv', index=False)
+
+def generate_total_purchases_savings_plan(values, t):
+    total_purchases_savings_plan = pd.DataFrame(columns=['market', 'value_active', 'value_reserves'])
+
+    for i_time in range(t):
+        values_savings_plan = values[i_time][0][0]
+        pd.concat([total_purchases_savings_plan, ['savings_plan', values_savings_plan[0], values_savings_plan[1]]])
+    
+    total_purchases_savings_plan.to_csv('total_purchases_savings_plan.csv', index=False)
+
+# Generates total_purchases for every instance
+def generate_total_purchases(values, t, instance_names, market_names):
 
     for i_instance in range(len(instance_names)):
-        cost = 0
-
-        output = open('total_purchases_' + instance_names[i_instance] + '.csv', 'w')
-        writer = csv.writer(output)
-        writer.writerow(['instanceType', 'market', 'count_active', 'count_reserves'])
+        total_purchases = pd.DataFrame(columns=['instanceType', 'market', 'count_active', 'count_reserves'])
+        instance_name = instance_names[i_instance]
 
         #Savings plan
         for i_time in range(t):
             active = values[i_time][i_instance + 1][0][0]
-            writer.writerow([instance_names[i_instance], 'savings_plan', active, 0])
-
-            #the individual instance cost in the output does not considers savings plan cost
-                
+            pd.concat([total_purchases, [instance_name, 'savings_plan', active, 0]])
+                    
         #Other markets
         for i_market in range(len(market_names)):
-            im_values = markets_data[i_instance][i_market]
-            cr_im = im_values[0] * im_values[2] + im_values[1]
-
             for i_time in range(t):
                 active = values[i_time][i_instance + 1][i_market + 1][0]
                 reserves = values[i_time][i_instance + 1][i_market + 1][1]
-                writer.writerow([instance_names[i_instance], market_names[i_market], active, reserves])
-
-                cost += reserves * cr_im
-
-        writerCost.writerow([instance_names[i_instance], cost])        
-        output.close()
-
-# Generates total_purchases_savings_plan and the savings plan value in resultCost
-def outputSavingsPlan(values, t, savings_plan_duration, writerCost):
-    output = open('total_purchases_savings_plan.csv', 'w')
-    writer = csv.writer(output)
-    writer.writerow(['market', 'value_active', 'value_reserves'])
-    cost = 0
-
-    for i_time in range(t):
-        values_savings_plan = values[i_time][0][0]
-        cost += values_savings_plan[1] * savings_plan_duration
-        writer.writerow(['savings_plan', values_savings_plan[0], values_savings_plan[1]])
-
-    writerCost.writerow(['savings_plan', cost])
+                pd.concat([total_purchases, [instance_name, market_names[i_market], active, reserves]])
+        
+        total_purchases.to_csv('total_purchases_' + instance_name + '.csv', index=False)
 
 def generate_list(values, t, num_instances, num_markets):
     index = 0
