@@ -45,7 +45,7 @@ class TestAWSModel(unittest.TestCase):
 
     #     #only checks the total cost
     #     result_cost = pd.read_csv('../data/resultCost.csv')
-    #     actual_cost = result_cost.loc[1, 'total_cost']
+    #     actual_cost = result_cost.loc[0, 'total_cost']
     #     self.assertEqual(actual_cost, 0)
 
     def test_savings_plan(self):
@@ -82,5 +82,42 @@ class TestAWSModel(unittest.TestCase):
 
         #only checks the total cost
         result_cost = pd.read_csv('../data/resultCost.csv')
-        actual_cost = result_cost.loc[1, 'total_cost']
+        actual_cost = result_cost.loc[0, 'total_cost']
         self.assertEqual(actual_cost, 60)
+
+    def test_on_demand_reserved(self):
+        on_demand_config = {'instance': ['a', 'b'],
+                            'p_hr': [2, 2]}
+
+        on_demand_df = pd.DataFrame(on_demand_config)
+        on_demand_df.to_csv('on_demand_config.csv', index=False)
+
+        reserves_config = {'instance': ['a', 'b'],
+                            'market_name': ['reserved', 'reserved'],
+                            'p_hr': [1, 1],
+                            'p_up': [0, 0],
+                            'y': [5, 5]}
+
+        reserves_df = pd.DataFrame(reserves_config)
+        reserves_df.to_csv('reserves_config.csv', index=False)
+
+        savings_plan_config = {'instance': ['a', 'b'],
+                                'p_hr': [1.1, 1.1],
+                                'y': [5, 5]}
+
+        savings_plan_df = pd.DataFrame(savings_plan_config)
+        savings_plan_df.to_csv('savings_plan_config.csv', index=False)
+
+        demand = {'Hour': [1, 2, 3, 4, 5, 6],
+                  'a': [10, 20, 20, 20, 20, 30],
+                  'b': [10, 20, 20, 20, 20, 30]}
+
+        demand_df = pd.DataFrame(demand)
+        demand_df.to_csv('TOTAL_demand.csv', index=False)
+
+        os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
+
+        #only checks the total cost
+        result_cost = pd.read_csv('../data/resultCost.csv')
+        actual_cost = result_cost.loc[0, 'total_cost']
+        self.assertEqual(actual_cost, 280)
