@@ -156,7 +156,8 @@ def generate_result_cost(values, t, instance_names, market_names, markets_data, 
     for i_time in range(t):
         savings_plan_cost += values[i_time][0][0][1] * savings_plan_duration #value of savings plan reserves made * savings plan duration 
     
-    pd.concat([result_cost, ['savings_plan', savings_plan_cost]])
+    new_line = pd.DataFrame({'instance': ['savings_plan'], 'total_cost': [savings_plan_cost]})
+    result_cost = pd.concat([result_cost, new_line])
     total_cost += savings_plan_cost
 
     #calculating every instance total cost
@@ -172,10 +173,12 @@ def generate_result_cost(values, t, instance_names, market_names, markets_data, 
                 reserves = values[i_time][i_instance + 1][i_market + 1][1]
                 instance_cost += reserves * reserve_cost_im
         
-        pd.concat([result_cost, [instance_names[i_instance], instance_cost]])
+        new_line = pd.DataFrame({'instance': [instance_names[i_instance]], 'total_cost': [instance_cost]})
+        result_cost = pd.concat([result_cost, new_line])
         total_cost += instance_cost
 
-    pd.concat([result_cost, ['all', total_cost]])
+    new_line = pd.DataFrame({'instance': ['all'], 'total_cost': [total_cost]})
+    result_cost = pd.concat([result_cost, new_line])
 
     result_cost.to_csv('result_cost.csv', index=False)
 
@@ -184,7 +187,10 @@ def generate_total_purchases_savings_plan(values, t):
 
     for i_time in range(t):
         values_savings_plan = values[i_time][0][0]
-        pd.concat([total_purchases_savings_plan, ['savings_plan', values_savings_plan[0], values_savings_plan[1]]])
+        new_line = pd.DataFrame({'market': ['savings_plan'], 
+                                 'value_active': [values_savings_plan[0]], 
+                                 'value_reserves': [values_savings_plan[1]]})
+        total_purchases_savings_plan = pd.concat([total_purchases_savings_plan, new_line])
     
     total_purchases_savings_plan.to_csv('total_purchases_savings_plan.csv', index=False)
 
@@ -198,14 +204,18 @@ def generate_total_purchases(values, t, instance_names, market_names):
         #Savings plan
         for i_time in range(t):
             active = values[i_time][i_instance + 1][0][0]
-            pd.concat([total_purchases, [instance_name, 'savings_plan', active, 0]])
+            new_line = pd.DataFrame({'instanceType': [instance_name], 'market': ['savings_plan'],
+                                     'count_active': [active],'count_reserves': [0]})
+            total_purchases = pd.concat([total_purchases, new_line])
                     
         #Other markets
         for i_market in range(len(market_names)):
             for i_time in range(t):
                 active = values[i_time][i_instance + 1][i_market + 1][0]
                 reserves = values[i_time][i_instance + 1][i_market + 1][1]
-                pd.concat([total_purchases, [instance_name, market_names[i_market], active, reserves]])
+                new_line = pd.DataFrame({'instanceType': [instance_name], 'market': [market_names[i_market]],
+                                     'count_active': [active],'count_reserves': [reserves]})
+                total_purchases = pd.concat([total_purchases, new_line])
         
         total_purchases.to_csv('total_purchases_' + instance_name + '.csv', index=False)
 
