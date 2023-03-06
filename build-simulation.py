@@ -101,7 +101,7 @@ def validate_reserves_config(reserves_config, instances):
 
 def validate_instances_names(file_name, data_frame, instances):
     #Checks if the instance names in the data_frame are the same as in the other files
-    file_instances = list(data_frame.loc[:,'instance'])
+    file_instances = list(data_frame['instance'].value_counts().index)
     file_instances.sort()
 
     if instances != file_instances:
