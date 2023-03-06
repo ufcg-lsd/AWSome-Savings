@@ -12,6 +12,7 @@ class TestAWSModel(unittest.TestCase):
         os.remove('reserves_config.csv')
         os.remove('savings_plan_config.csv')
         os.remove('TOTAL_demand.csv')
+        os.remove('../data/resultCost.csv')
 
     # def test_ex(self):
     #     on_demand_config = {'instance': [],
@@ -43,10 +44,13 @@ class TestAWSModel(unittest.TestCase):
 
     #     os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
 
-    #     #only checks the total cost
-    #     result_cost = pd.read_csv('../data/resultCost.csv')
-    #     actual_cost = result_cost.loc[0, 'total_cost']
-    #     self.assertEqual(actual_cost, 0)
+    #     try:
+    #         #only checks the total cost
+    #         result_cost = pd.read_csv('../data/resultCost.csv')
+    #         actual_cost = result_cost.loc[0, 'total_cost']
+    #         self.assertEqual(actual_cost, 0)
+    #     except FileNotFoundError:
+    #         self.fail("The file resultCost.csv was not created.")
 
     #1
     def test_savings_plan(self):
@@ -81,10 +85,13 @@ class TestAWSModel(unittest.TestCase):
 
         os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
 
-        #only checks the total cost
-        result_cost = pd.read_csv('../data/resultCost.csv')
-        actual_cost = result_cost.loc[0, 'total_cost']
-        self.assertEqual(actual_cost, 60)
+        try:
+            #only checks the total cost
+            result_cost = pd.read_csv('../data/resultCost.csv')
+            actual_cost = result_cost.loc[0, 'total_cost']
+            self.assertEqual(actual_cost, 60)
+        except FileNotFoundError:
+            self.fail("The file resultCost.csv was not created.")
 
     #2
     def test_on_demand_reserved(self):
@@ -119,10 +126,13 @@ class TestAWSModel(unittest.TestCase):
 
         os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
 
-        #only checks the total cost
-        result_cost = pd.read_csv('../data/resultCost.csv')
-        actual_cost = result_cost.loc[0, 'total_cost']
-        self.assertEqual(actual_cost, 280)
+        try:
+            #only checks the total cost
+            result_cost = pd.read_csv('../data/resultCost.csv')
+            actual_cost = result_cost.loc[0, 'total_cost']
+            self.assertEqual(actual_cost, 280)
+        except FileNotFoundError:
+            self.fail("The file resultCost.csv was not created.")
 
     #3
     def test_savings_plan_on_demand(self):
@@ -158,10 +168,13 @@ class TestAWSModel(unittest.TestCase):
 
         os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
 
-        #only checks the total cost
-        result_cost = pd.read_csv('../data/resultCost.csv')
-        actual_cost = result_cost.loc[0, 'total_cost']
-        self.assertEqual(actual_cost, 280)
+        try:
+            #only checks the total cost
+            result_cost = pd.read_csv('../data/resultCost.csv')
+            actual_cost = result_cost.loc[0, 'total_cost']
+            self.assertEqual(actual_cost, 280)
+        except FileNotFoundError:
+            self.fail("The file resultCost.csv was not created.")
 
     #4
     def test_savings_plan_reserved(self):
@@ -198,10 +211,13 @@ class TestAWSModel(unittest.TestCase):
 
         os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
 
-        #only checks the total cost
-        result_cost = pd.read_csv('../data/resultCost.csv')
-        actual_cost = result_cost.loc[0, 'total_cost']
-        self.assertEqual(actual_cost, 280)
+        try:
+            #only checks the total cost
+            result_cost = pd.read_csv('../data/resultCost.csv')
+            actual_cost = result_cost.loc[0, 'total_cost']
+            self.assertEqual(actual_cost, 280)
+        except FileNotFoundError:
+            self.fail("The file resultCost.csv was not created.")
 
     #5
     def test_savings_plan_in_the_future(self):
@@ -237,10 +253,13 @@ class TestAWSModel(unittest.TestCase):
 
         os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
 
-        #only checks the total cost
-        result_cost = pd.read_csv('../data/resultCost.csv')
-        actual_cost = result_cost.loc[0, 'total_cost']
-        self.assertEqual(actual_cost, 75)
+        try:
+            #only checks the total cost
+            result_cost = pd.read_csv('../data/resultCost.csv')
+            actual_cost = result_cost.loc[0, 'total_cost']
+            self.assertEqual(actual_cost, 75)
+        except FileNotFoundError:
+            self.fail("The file resultCost.csv was not created.")
 
     #6
     def test_savings_plan_reserve_different_durations(self):
@@ -275,10 +294,13 @@ class TestAWSModel(unittest.TestCase):
 
         os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
 
-        #only checks the total cost
-        result_cost = pd.read_csv('../data/resultCost.csv')
-        actual_cost = result_cost.loc[0, 'total_cost']
-        self.assertEqual(actual_cost, 87)
+        try:
+            #only checks the total cost
+            result_cost = pd.read_csv('../data/resultCost.csv')
+            actual_cost = result_cost.loc[0, 'total_cost']
+            self.assertEqual(actual_cost, 87)
+        except FileNotFoundError:
+            self.fail("The file resultCost.csv was not created.")
 
     #7
     def test_savings_plan_reserve_different_durations_2(self):
@@ -314,10 +336,13 @@ class TestAWSModel(unittest.TestCase):
 
         os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
 
-        #only checks the total cost
-        result_cost = pd.read_csv('../data/resultCost.csv')
-        actual_cost = result_cost.loc[0, 'total_cost']
-        self.assertEqual(actual_cost, 96)
+        try:
+            #only checks the total cost
+            result_cost = pd.read_csv('../data/resultCost.csv')
+            actual_cost = result_cost.loc[0, 'total_cost']
+            self.assertEqual(actual_cost, 96)
+        except FileNotFoundError:
+            self.fail("The file resultCost.csv was not created.")
 
     #8
     def test_savings_plan_reserve_on_demand(self):
@@ -353,10 +378,13 @@ class TestAWSModel(unittest.TestCase):
 
         os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
 
-        #only checks the total cost
-        result_cost = pd.read_csv('../data/resultCost.csv')
-        actual_cost = result_cost.loc[0, 'total_cost']
-        self.assertEqual(actual_cost, 97)
+        try:
+            #only checks the total cost
+            result_cost = pd.read_csv('../data/resultCost.csv')
+            actual_cost = result_cost.loc[0, 'total_cost']
+            self.assertEqual(actual_cost, 97)
+        except FileNotFoundError:
+            self.fail("The file resultCost.csv was not created.")
 
     #9
     def test_savings_plan_different_prices(self):
@@ -392,10 +420,13 @@ class TestAWSModel(unittest.TestCase):
 
         os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
 
-        #only checks the total cost
-        result_cost = pd.read_csv('../data/resultCost.csv')
-        actual_cost = result_cost.loc[0, 'total_cost']
-        self.assertEqual(actual_cost, 120)
+        try:
+            #only checks the total cost
+            result_cost = pd.read_csv('../data/resultCost.csv')
+            actual_cost = result_cost.loc[0, 'total_cost']
+            self.assertEqual(actual_cost, 120)
+        except FileNotFoundError:
+            self.fail("The file resultCost.csv was not created.")
 
     #10
     def test_randon(self):
@@ -432,14 +463,130 @@ class TestAWSModel(unittest.TestCase):
 
         os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
 
-        #only checks the total cost
-        result_cost = pd.read_csv('../data/resultCost.csv')
-        actual_cost = result_cost.loc[0, 'total_cost']
-        self.assertEqual(round(actual_cost), 244)
+        try:
+            #only checks the total cost
+            result_cost = pd.read_csv('../data/resultCost.csv')
+            actual_cost = result_cost.loc[0, 'total_cost']
+            self.assertEqual(round(actual_cost), 244)
+        except FileNotFoundError:
+            self.fail("The file resultCost.csv was not created.")
 
+    #11
+    def test_one_instance_type(self):
+        on_demand_config = {'instance': ['a'],
+                            'p_hr': [2.2]}
 
-        #11 - test only one instance (3 markets)
+        on_demand_df = pd.DataFrame(on_demand_config)
+        on_demand_df.to_csv('on_demand_config.csv', index=False)
 
-        #12 - test more than one reserve market (all up, parcial up, no up, 1y, 3y)
+        reserves_config = {'instance': ['a'],
+                            'market_name': ['reserved'],
+                            'p_hr': [1],
+                            'p_up': [0],
+                            'y': [5]}
 
-        #tests invalid input
+        reserves_df = pd.DataFrame(reserves_config)
+        reserves_df.to_csv('reserves_config.csv', index=False)
+
+        savings_plan_config = {'instance': ['a'],
+                                'p_hr': [1.2],
+                                'y': [2]}
+
+        savings_plan_df = pd.DataFrame(savings_plan_config)
+        savings_plan_df.to_csv('savings_plan_config.csv', index=False)
+
+        demand = {'Hour': [1, 2, 3, 4, 5, 6],
+                  'a': [10, 15, 15, 10, 10, 10]} 
+
+        demand_df = pd.DataFrame(demand)
+        demand_df.to_csv('TOTAL_demand.csv', index=False)
+
+        os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
+
+        try:
+            #only checks the total cost
+            result_cost = pd.read_csv('../data/resultCost.csv')
+            actual_cost = result_cost.loc[0, 'total_cost']
+            self.assertEqual(actual_cost, 84)
+        except FileNotFoundError:
+            self.fail("The file resultCost.csv was not created.")
+    
+    #12
+    def test_multiple_reserve_markets(self):
+        on_demand_config = {'instance': ['a', 'b'],
+                            'p_hr': [4, 8]}
+
+        on_demand_df = pd.DataFrame(on_demand_config)
+        on_demand_df.to_csv('on_demand_config.csv', index=False)
+
+        #effective hourly rate: no_up = 1,2; partial_up = 1.5,3; no_up = 2,4
+        reserves_config = {'instance': ['a', 'b', 'a', 'b', 'a', 'b'],
+                            'market_name': ['all_up', 'all_up', 'partial_up', 'partial_up', 'no_up', 'no_up'],
+                            'p_hr': [0, 0, 0.75, 1.5, 2, 4],
+                            'p_up': [4, 8, 3, 6, 0, 0],
+                            'y': [4, 4, 4, 4, 4, 4]}
+
+        reserves_df = pd.DataFrame(reserves_config)
+        reserves_df.to_csv('reserves_config.csv', index=False)
+
+        savings_plan_config = {'instance': ['a', 'b'],
+                                'p_hr': [4, 8], #we don't want to reserve savings plan
+                                'y': [4, 4]}
+
+        savings_plan_df = pd.DataFrame(savings_plan_config)
+        savings_plan_df.to_csv('savings_plan_config.csv', index=False)
+
+        demand = {'Hour': [1, 2, 3, 4],
+                  'a': [3, 3, 3, 3], 
+                  'b': [2, 2, 2, 2]}
+
+        demand_df = pd.DataFrame(demand)
+        demand_df.to_csv('TOTAL_demand.csv', index=False)
+
+        os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
+
+        try:
+            #only checks the total cost
+            result_cost = pd.read_csv('../data/resultCost.csv')
+            actual_cost = result_cost.loc[0, 'total_cost']
+            self.assertEqual(actual_cost, 28)
+        except FileNotFoundError:
+            self.fail("The file resultCost.csv was not created.")
+
+    #tests invalid input
+
+    # def test_invalid_savings_plan_durations(self):
+    #     on_demand_config = {'instance': ['a', 'b', 'c'],
+    #                         'p_hr': [1, 1.3, 2]}
+
+    #     on_demand_df = pd.DataFrame(on_demand_config)
+    #     on_demand_df.to_csv('on_demand_config.csv', index=False)
+
+    #     reserves_config = {'instance': ['a', 'b', 'c'],
+    #                         'market_name': ['reserved', 'reserved', 'reserved'],
+    #                         'p_hr': [0, 0, 0],
+    #                         'p_up': [2, 2.6, 4],
+    #                         'y': [3, 3, 3]}
+
+    #     reserves_df = pd.DataFrame(reserves_config)
+    #     reserves_df.to_csv('reserves_config.csv', index=False)
+
+    #     savings_plan_config = {'instance': ['a', 'b', 'c'],
+    #                             'p_hr': [0.7, 0.9, 1.3],
+    #                             'y': [2, 3, 3]}
+
+    #     savings_plan_df = pd.DataFrame(savings_plan_config)
+    #     savings_plan_df.to_csv('savings_plan_config.csv', index=False)
+
+    #     demand = {'Hour': [1, 2, 3],
+    #               'a': [1, 2, 0],
+    #               'b': [4, 1, 2], 
+    #               'c': [0, 5, 7]}
+
+    #     demand_df = pd.DataFrame(demand)
+    #     demand_df.to_csv('TOTAL_demand.csv', index=False)
+        
+            #wrong column names
+            #savings plan different durations
+            #diffent instances in the files
+            #not all instances have the same reserve markets
