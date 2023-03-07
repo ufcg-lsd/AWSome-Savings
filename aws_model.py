@@ -49,6 +49,7 @@ def optimize_model(t, demand, markets_data, savings_plan_data, savings_plan_dura
         This list is composed by, for every hour, the number of active instances, number of reserves made,
         active value of savings plan and value of savings plan reserves made. It follows the equations
         format defined above.
+        If the solver does not find an optimal solution, returns an empty list.
     """
 
     solver = pywraplp.Solver.CreateSolver('SCIP')
@@ -64,7 +65,6 @@ def optimize_model(t, demand, markets_data, savings_plan_data, savings_plan_dura
     x = {}
     for j in range(num_vars):
         x[j] = solver.IntVar(0, infinity, 'x[%i]' % j)
-    print('Number of variables =', solver.NumVariables())
 
     # coefficientsBase is a list in the equations format with all values 0
     coefficientsBase = create_coefficients_base(t, num_instances, num_markets)
@@ -96,19 +96,11 @@ def optimize_model(t, demand, markets_data, savings_plan_data, savings_plan_dura
 
     if status == pywraplp.Solver.OPTIMAL:
         values = []
-
-        print('Objective value =', solver.Objective().Value())
         for j in range(num_vars):
-            print(x[j].name(), ' = ', x[j].solution_value())
             values.append(x[j].solution_value())
-        print()
-        print('Problem solved in %f milliseconds' % solver.wall_time())
-        print('Problem solved in %d iterations' % solver.iterations())
-        print('Problem solved in %d branch-and-bound nodes' % solver.nodes())
 
         return [solver.Objective().Value(), values]
-    else:
-        print('The problem does not have an optimal solution.')
+    else: return [] #the problem does not have an optimal solution
 
 # Demand <= 1*a
 def constraint1(solver, x, num_vars, demand, coefficientsBase):

@@ -21,7 +21,6 @@ It generates the following csv files:
     the number of reserves made.
 """
 
-import csv
 import sys
 import pandas as pd
 from aws_model import optimize_model
@@ -68,11 +67,14 @@ def main():
     savings_plan_duration = (savings_plan_config.iloc[0])['y']
 
     result = optimize_model(t, total_demand, markets_data, savings_plan_data, savings_plan_duration)
-    cost = result[0]
+    
+    if result == []: raise Exception('The problem does not have an optimal solution.')
+    
+    total_cost = result[0]
     values = generate_list(result[1], t, len(instances), len(market_names))
 
     #generates the output files
-    generate_result_cost(values, t, instances, market_names, markets_data, savings_plan_duration)
+    generate_result_cost(total_cost, values, t, instances, market_names, markets_data, savings_plan_duration)
     generate_total_purchases_savings_plan(values, t)
     generate_total_purchases(values, t, instances, market_names)
 
@@ -146,10 +148,8 @@ def validate_demand_instances(raw_demand, instances):
         if instance not in demand_col:
             raise Exception('The instance ' + instance + ' is not on the demand file.')
 
-def generate_result_cost(values, t, instance_names, market_names, markets_data, savings_plan_duration):
-    result_cost = pd.DataFrame(columns=['instance','total_cost'])
-
-    total_cost = 0
+def generate_result_cost(total_cost, values, t, instance_names, market_names, markets_data, savings_plan_duration):
+    result_cost = pd.DataFrame({'instance': ['all'], 'total_cost': [total_cost]})
 
     #calculating savings plan total cost
     savings_plan_cost = 0
@@ -158,7 +158,6 @@ def generate_result_cost(values, t, instance_names, market_names, markets_data, 
     
     new_line = pd.DataFrame({'instance': ['savings_plan'], 'total_cost': [savings_plan_cost]})
     result_cost = pd.concat([result_cost, new_line])
-    total_cost += savings_plan_cost
 
     #calculating every instance total cost
     #this cost does not considers savings plan cost for the instance
@@ -175,10 +174,6 @@ def generate_result_cost(values, t, instance_names, market_names, markets_data, 
         
         new_line = pd.DataFrame({'instance': [instance_names[i_instance]], 'total_cost': [instance_cost]})
         result_cost = pd.concat([result_cost, new_line])
-        total_cost += instance_cost
-
-    new_line = pd.DataFrame({'instance': ['all'], 'total_cost': [total_cost]})
-    result_cost = pd.concat([result_cost, new_line])
 
     result_cost.to_csv('result_cost.csv', index=False)
 
