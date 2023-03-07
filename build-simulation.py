@@ -27,7 +27,7 @@ import pandas as pd
 from aws_model import optimize_model
 
 def main():
-    logging.basicConfig(filename='aws_model.log', level=logging.INFO)
+    logging.basicConfig(filename='aws_model.log', format='%(asctime)s %(message)s', level=logging.INFO)
     logging.info('Getting input data')
     on_demand_config = pd.read_csv(sys.argv[1])
     reserves_config = pd.read_csv(sys.argv[2])
@@ -71,6 +71,7 @@ def main():
     t = len(total_demand[0])
     savings_plan_duration = (savings_plan_config.iloc[0])['y']
 
+    logging.info('Start building the model')
     result = optimize_model(t, total_demand, markets_data, savings_plan_data, savings_plan_duration)
     
     if result == []: raise Exception('The problem does not have an optimal solution.')
