@@ -4,6 +4,7 @@
 import unittest
 import pandas as pd
 import os
+import subprocess
 
 class TestAWSModel(unittest.TestCase):
 
@@ -12,7 +13,7 @@ class TestAWSModel(unittest.TestCase):
         os.remove('reserves_config.csv')
         os.remove('savings_plan_config.csv')
         os.remove('TOTAL_demand.csv')
-        os.remove('../data/resultCost.csv')
+        #os.remove('../data/resultCost.csv')
 
     # def test_ex(self):
     #     on_demand_config = {'instance': [],
@@ -83,7 +84,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
+        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
 
         try:
             #only checks the total cost
@@ -124,7 +125,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
+        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
 
         try:
             #only checks the total cost
@@ -166,7 +167,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
+        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
 
         try:
             #only checks the total cost
@@ -209,7 +210,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
+        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
 
         try:
             #only checks the total cost
@@ -251,7 +252,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
+        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
 
         try:
             #only checks the total cost
@@ -292,7 +293,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
+        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
 
         try:
             #only checks the total cost
@@ -334,7 +335,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
+        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
 
         try:
             #only checks the total cost
@@ -376,7 +377,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
+        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
 
         try:
             #only checks the total cost
@@ -418,7 +419,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
+        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
 
         try:
             #only checks the total cost
@@ -461,7 +462,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
+        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
 
         try:
             #only checks the total cost
@@ -501,7 +502,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
+        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
 
         try:
             #only checks the total cost
@@ -543,7 +544,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
+        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
 
         try:
             #only checks the total cost
@@ -553,40 +554,222 @@ class TestAWSModel(unittest.TestCase):
         except FileNotFoundError:
             self.fail("The file resultCost.csv was not created.")
 
-    #tests invalid input
+    #tests checking validations
 
-    # def test_invalid_savings_plan_durations(self):
-    #     on_demand_config = {'instance': ['a', 'b', 'c'],
-    #                         'p_hr': [1, 1.3, 2]}
+    #13
+    def test_more_instances_total_demand(self):
+        on_demand_config = {'instance': ['a', 'b', 'c'],
+                            'p_hr': [1, 1.3, 2]}
 
-    #     on_demand_df = pd.DataFrame(on_demand_config)
-    #     on_demand_df.to_csv('on_demand_config.csv', index=False)
+        on_demand_df = pd.DataFrame(on_demand_config)
+        on_demand_df.to_csv('on_demand_config.csv', index=False)
 
-    #     reserves_config = {'instance': ['a', 'b', 'c'],
-    #                         'market_name': ['reserved', 'reserved', 'reserved'],
-    #                         'p_hr': [0, 0, 0],
-    #                         'p_up': [2, 2.6, 4],
-    #                         'y': [3, 3, 3]}
+        reserves_config = {'instance': ['a', 'b', 'c'],
+                            'market_name': ['all_up', 'all_up', 'all_up'],
+                            'p_hr': [0, 0, 0],
+                            'p_up': [2, 2.6, 4],
+                            'y': [3, 3, 3]}
 
-    #     reserves_df = pd.DataFrame(reserves_config)
-    #     reserves_df.to_csv('reserves_config.csv', index=False)
+        reserves_df = pd.DataFrame(reserves_config)
+        reserves_df.to_csv('reserves_config.csv', index=False)
 
-    #     savings_plan_config = {'instance': ['a', 'b', 'c'],
-    #                             'p_hr': [0.7, 0.9, 1.3],
-    #                             'y': [2, 3, 3]}
+        savings_plan_config = {'instance': ['a', 'b', 'c'],
+                                'p_hr': [0.7, 0.9, 1.3],
+                                'y': [3, 3, 3]}
 
-    #     savings_plan_df = pd.DataFrame(savings_plan_config)
-    #     savings_plan_df.to_csv('savings_plan_config.csv', index=False)
+        savings_plan_df = pd.DataFrame(savings_plan_config)
+        savings_plan_df.to_csv('savings_plan_config.csv', index=False)
 
-    #     demand = {'Hour': [1, 2, 3],
-    #               'a': [1, 2, 0],
-    #               'b': [4, 1, 2], 
-    #               'c': [0, 5, 7]}
+        demand = {'Hour': [1, 2, 3],
+                  'a': [1, 2, 0],
+                  'b': [4, 1, 2], 
+                  'c': [0, 5, 7]}
 
-    #     demand_df = pd.DataFrame(demand)
-    #     demand_df.to_csv('TOTAL_demand.csv', index=False)
+        demand_df = pd.DataFrame(demand)
+        demand_df.to_csv('TOTAL_demand.csv', index=False)
         
-            #wrong column names
-            #savings plan different durations
-            #diffent instances in the files
-            #not all instances have the same reserve markets
+        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
+
+        try:
+            #only checks the total cost
+            result_cost = pd.read_csv('../data/resultCost.csv')
+            actual_cost = result_cost.loc[0, 'total_cost']
+            self.assertEqual(actual_cost, 29.9)
+        except FileNotFoundError:
+            self.fail("The file resultCost.csv was not created.")
+
+    #14
+    def test_invalid_savings_plan_durations(self):
+        on_demand_config = {'instance': ['a', 'b', 'c'],
+                            'p_hr': [1, 1.3, 2]}
+
+        on_demand_df = pd.DataFrame(on_demand_config)
+        on_demand_df.to_csv('on_demand_config.csv', index=False)
+
+        reserves_config = {'instance': ['a', 'b', 'c'],
+                            'market_name': ['reserved', 'reserved', 'reserved'],
+                            'p_hr': [0, 0, 0],
+                            'p_up': [2, 2.6, 4],
+                            'y': [3, 3, 3]}
+
+        reserves_df = pd.DataFrame(reserves_config)
+        reserves_df.to_csv('reserves_config.csv', index=False)
+
+        savings_plan_config = {'instance': ['a', 'b', 'c'],
+                                'p_hr': [0.7, 0.9, 1.3],
+                                'y': [2, 3, 3]}
+
+        savings_plan_df = pd.DataFrame(savings_plan_config)
+        savings_plan_df.to_csv('savings_plan_config.csv', index=False)
+
+        demand = {'Hour': [1, 2, 3],
+                  'a': [1, 2, 0],
+                  'b': [4, 1, 2], 
+                  'c': [0, 5, 7]}
+
+        demand_df = pd.DataFrame(demand)
+        demand_df.to_csv('TOTAL_demand.csv', index=False)
+
+        with self.assertRaises(Exception):
+            out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True, check=True)
+
+    #15
+    def test_different_reserve_markets(self):
+        on_demand_config = {'instance': ['a', 'b', 'c'],
+                            'p_hr': [1, 1.3, 2]}
+
+        on_demand_df = pd.DataFrame(on_demand_config)
+        on_demand_df.to_csv('on_demand_config.csv', index=False)
+
+        reserves_config = {'instance': ['a', 'b', 'c','c'],
+                            'market_name': ['all_up', 'all_up', 'all_up', 'no_up'],
+                            'p_hr': [0, 0, 0, 1.5],
+                            'p_up': [2, 2.6, 4, 0],
+                            'y': [3, 3, 3, 3]}
+
+        reserves_df = pd.DataFrame(reserves_config)
+        reserves_df.to_csv('reserves_config.csv', index=False)
+
+        savings_plan_config = {'instance': ['a', 'b', 'c'],
+                                'p_hr': [0.7, 0.9, 1.3],
+                                'y': [3, 3, 3]}
+
+        savings_plan_df = pd.DataFrame(savings_plan_config)
+        savings_plan_df.to_csv('savings_plan_config.csv', index=False)
+
+        demand = {'Hour': [1, 2, 3],
+                  'a': [1, 2, 0],
+                  'b': [4, 1, 2], 
+                  'c': [0, 5, 7]}
+
+        demand_df = pd.DataFrame(demand)
+        demand_df.to_csv('TOTAL_demand.csv', index=False)
+
+        with self.assertRaises(Exception):
+            out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True, check=True)
+
+    #16
+    def test_different_instances_reserves_config(self):
+        on_demand_config = {'instance': ['a', 'b', 'c'],
+                            'p_hr': [1, 1.3, 2]}
+
+        on_demand_df = pd.DataFrame(on_demand_config)
+        on_demand_df.to_csv('on_demand_config.csv', index=False)
+
+        reserves_config = {'instance': ['a', 'b', 'c', 'd'],
+                            'market_name': ['all_up', 'all_up', 'all_up', 'all_up'],
+                            'p_hr': [0, 0, 0, 0],
+                            'p_up': [2, 2.6, 4, 4],
+                            'y': [3, 3, 3, 3]}
+
+        reserves_df = pd.DataFrame(reserves_config)
+        reserves_df.to_csv('reserves_config.csv', index=False)
+
+        savings_plan_config = {'instance': ['a', 'b', 'c'],
+                                'p_hr': [0.7, 0.9, 1.3],
+                                'y': [3, 3, 3]}
+
+        savings_plan_df = pd.DataFrame(savings_plan_config)
+        savings_plan_df.to_csv('savings_plan_config.csv', index=False)
+
+        demand = {'Hour': [1, 2, 3],
+                  'a': [1, 2, 0],
+                  'b': [4, 1, 2], 
+                  'c': [0, 5, 7]}
+
+        demand_df = pd.DataFrame(demand)
+        demand_df.to_csv('TOTAL_demand.csv', index=False)
+
+        with self.assertRaises(Exception):
+            out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True, check=True)
+
+    #17
+    def test_different_instances_savings_plan_config(self):
+        on_demand_config = {'instance': ['a', 'b', 'c'],
+                            'p_hr': [1, 1.3, 2]}
+
+        on_demand_df = pd.DataFrame(on_demand_config)
+        on_demand_df.to_csv('on_demand_config.csv', index=False)
+
+        reserves_config = {'instance': ['a', 'b', 'c'],
+                            'market_name': ['all_up', 'all_up', 'all_up'],
+                            'p_hr': [0, 0, 0],
+                            'p_up': [2, 2.6, 4],
+                            'y': [3, 3, 3]}
+
+        reserves_df = pd.DataFrame(reserves_config)
+        reserves_df.to_csv('reserves_config.csv', index=False)
+
+        savings_plan_config = {'instance': ['a', 'c'],
+                                'p_hr': [0.7, 1.3],
+                                'y': [3, 3]}
+
+        savings_plan_df = pd.DataFrame(savings_plan_config)
+        savings_plan_df.to_csv('savings_plan_config.csv', index=False)
+
+        demand = {'Hour': [1, 2, 3],
+                  'a': [1, 2, 0],
+                  'b': [4, 1, 2], 
+                  'c': [0, 5, 7]}
+
+        demand_df = pd.DataFrame(demand)
+        demand_df.to_csv('TOTAL_demand.csv', index=False)
+
+        with self.assertRaises(Exception):
+            out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True, check=True)
+
+    #18
+    def test_different_instances_total_demand(self):
+        on_demand_config = {'instance': ['a', 'b', 'c'],
+                            'p_hr': [1, 1.3, 2]}
+
+        on_demand_df = pd.DataFrame(on_demand_config)
+        on_demand_df.to_csv('on_demand_config.csv', index=False)
+
+        reserves_config = {'instance': ['a', 'b', 'c'],
+                            'market_name': ['all_up', 'all_up', 'all_up'],
+                            'p_hr': [0, 0, 0],
+                            'p_up': [2, 2.6, 4],
+                            'y': [3, 3, 3]}
+
+        reserves_df = pd.DataFrame(reserves_config)
+        reserves_df.to_csv('reserves_config.csv', index=False)
+
+        savings_plan_config = {'instance': ['a', 'b', 'c'],
+                                'p_hr': [0.7, 0.9, 1.3],
+                                'y': [3, 3, 3]}
+
+        savings_plan_df = pd.DataFrame(savings_plan_config)
+        savings_plan_df.to_csv('savings_plan_config.csv', index=False)
+
+        demand = {'Hour': [1, 2, 3],
+                  'b': [4, 1, 2], 
+                  'c': [0, 5, 7]}
+
+        demand_df = pd.DataFrame(demand)
+        demand_df.to_csv('TOTAL_demand.csv', index=False)
+
+        with self.assertRaises(Exception):
+            out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True, check=True)  
+
+    #TO DO: wrong column names
