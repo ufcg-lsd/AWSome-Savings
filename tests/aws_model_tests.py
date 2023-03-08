@@ -13,7 +13,7 @@ class TestAWSModel(unittest.TestCase):
         os.remove('reserves_config.csv')
         os.remove('savings_plan_config.csv')
         os.remove('TOTAL_demand.csv')
-        #os.remove('../data/resultCost.csv')
+        os.remove('../data/resultCost.csv')
 
     # def test_ex(self):
     #     on_demand_config = {'instance': [],
