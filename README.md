@@ -27,5 +27,16 @@ To run with the example files:
 python3 build-simulation.py data/on_demand_config.csv data/reserves_config.csv data/savings_plan_config.csv data/TOTAL_demand.csv
 ```
 
+#### Output
+
+The simulation generates the following files as the output:
+- resultCost: the total cost of the simulation, the cost for every instance and the total 
+    savings plan cost;
+- total_purchases_savings_plan: for every hour, the active value and the value reserved 
+    for savings plan;
+- total_purchases_{instance_name}: one file for every instance. It has, for every hour 
+    and every market type (including savings plan), the number of active instances and 
+    the number of reserves made.
+
 
 
