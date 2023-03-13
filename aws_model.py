@@ -8,6 +8,7 @@ so it is only possible to optmize one instance group at a time.
 
 from ortools.linear_solver import pywraplp
 import copy
+import logging
 
 def optimize_model(t, demand, markets_data, savings_plan_data, savings_plan_duration):
     """Builds and runs the model.
@@ -49,6 +50,7 @@ def optimize_model(t, demand, markets_data, savings_plan_data, savings_plan_dura
         This list is composed by, for every hour, the number of active instances, number of reserves made,
         active value of savings plan and value of savings plan reserves made. It follows the equations
         format defined above.
+        If the solver does not find an optimal solution, returns an empty list.
     """
 
     solver = pywraplp.Solver.CreateSolver('SCIP')
@@ -64,18 +66,23 @@ def optimize_model(t, demand, markets_data, savings_plan_data, savings_plan_dura
     x = {}
     for j in range(num_vars):
         x[j] = solver.IntVar(0, infinity, 'x[%i]' % j)
-    print('Number of variables =', solver.NumVariables())
+    logging.info('Number of variables = %d', solver.NumVariables())
 
     # coefficientsBase is a list in the equations format with all values 0
     coefficientsBase = create_coefficients_base(t, num_instances, num_markets)
 
     # Adding constraints
+    logging.info('Generating constraint 1')
     constraint1(solver, x, num_vars, demand, coefficientsBase)
+    logging.info('Generating constraint 2')
     constraint2(solver, x, num_vars, coefficientsBase, markets_data)
+    logging.info('Generating constraint 3')
     constraint3(solver, x, num_vars, coefficientsBase, savings_plan_data)
+    logging.info('Generating constraint 4')
     constraint4(solver, x, num_vars, coefficientsBase, savings_plan_duration)
 
     # Creating the objetive function
+    logging.info('Generating objective function')
     obj_func = [0, 1 * savings_plan_duration] #savings plan coefficients (0 * s_t + 1 * rs_t * y_sp) - considers in the begining the total reserve cost
 
     for instance in markets_data:
@@ -92,23 +99,24 @@ def optimize_model(t, demand, markets_data, savings_plan_data, savings_plan_dura
         objective.SetCoefficient(x[j], float(obj_func[j]))
     objective.SetMinimization()
 
+    logging.info('Starting optimization')
     status = solver.Solve()
+    logging.info('End of optimization')
 
     if status == pywraplp.Solver.OPTIMAL:
+        logging.info('Objective value = %f', solver.Objective().Value())
+        logging.info('Problem solved in %f milliseconds', solver.wall_time())
+        logging.info('Problem solved in %d iterations', solver.iterations())
+        logging.info('Problem solved in %d branch-and-bound nodes', solver.nodes())
+        
         values = []
-
-        print('Objective value =', solver.Objective().Value())
         for j in range(num_vars):
-            print(x[j].name(), ' = ', x[j].solution_value())
             values.append(x[j].solution_value())
-        print()
-        print('Problem solved in %f milliseconds' % solver.wall_time())
-        print('Problem solved in %d iterations' % solver.iterations())
-        print('Problem solved in %d branch-and-bound nodes' % solver.nodes())
-
+        
         return [solver.Objective().Value(), values]
-    else:
-        print('The problem does not have an optimal solution.')
+    else: 
+        logging.error('The problem does not have an optimal solution')
+        return [] #the problem does not have an optimal solution
 
 # Demand <= 1*a
 def constraint1(solver, x, num_vars, demand, coefficientsBase):
