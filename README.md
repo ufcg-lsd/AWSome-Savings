@@ -21,4 +21,4 @@ python -m unittest aws_model_tests.TestAWSModel.{name of the test case}
 
 ### Debugging
 
-
+The code generates logging when it runs. It is usefull for understanding, when one simulation cannot be completed (e.g. the amount of data was too much), where the code stopped working and how long took do run each step.
