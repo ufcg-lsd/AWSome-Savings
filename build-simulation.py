@@ -22,15 +22,19 @@ It generates the following csv files:
 """
 
 import sys
+import logging
 import pandas as pd
 from aws_model import optimize_model
 
 def main():
+    logging.basicConfig(filename='aws_model.log', format='%(asctime)s %(message)s', level=logging.INFO)
+    logging.info('Getting input data')
     on_demand_config = pd.read_csv(sys.argv[1])
     reserves_config = pd.read_csv(sys.argv[2])
     savings_plan_config = pd.read_csv(sys.argv[3])
     raw_demand = pd.read_csv(sys.argv[4])
 
+    logging.info('Validating input data')
     validate_on_demand_config(on_demand_config)
 
     instances = list(on_demand_config['instance'].value_counts().index)
@@ -39,7 +43,8 @@ def main():
     validate_reserves_config(reserves_config, instances)
     validate_savings_plan_config(savings_plan_config, instances)
     validate_demand(raw_demand, instances)
-
+    
+    logging.info('Transforming input data')
     markets_data = []
     savings_plan_data = []
     total_demand = []
@@ -66,6 +71,7 @@ def main():
     t = len(total_demand[0])
     savings_plan_duration = (savings_plan_config.iloc[0])['y']
 
+    logging.info('Start building the model')
     result = optimize_model(t, total_demand, markets_data, savings_plan_data, savings_plan_duration)
     
     if result == []: raise Exception('The problem does not have an optimal solution.')
@@ -73,10 +79,12 @@ def main():
     total_cost = result[0]
     values = generate_list(result[1], t, len(instances), len(market_names))
 
+    logging.info('Generating output')
     #generates the output files
     generate_result_cost(total_cost, values, t, instances, market_names, markets_data, savings_plan_duration)
     generate_total_purchases_savings_plan(values, t)
     generate_total_purchases(values, t, instances, market_names)
+    logging.info('Finished')
 
 # the validations could be in another file?
 def validate_on_demand_config(on_demand_config):
