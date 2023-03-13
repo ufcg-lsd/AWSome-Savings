@@ -8,12 +8,19 @@ import subprocess
 
 class TestAWSModel(unittest.TestCase):
 
+    def safe_remove(self, path):
+        try:
+            os.remove(path)
+        except FileNotFoundError:
+            pass
+
     def tearDown(self):
-        os.remove('on_demand_config.csv')
-        os.remove('reserves_config.csv')
-        os.remove('savings_plan_config.csv')
-        os.remove('TOTAL_demand.csv')
-        os.remove('../data/resultCost.csv')
+
+        self.safe_remove('on_demand_config.csv')
+        self.safe_remove('reserves_config.csv')
+        self.safe_remove('savings_plan_config.csv')
+        self.safe_remove('TOTAL_demand.csv')
+        self.safe_remove('result_cost.csv')
 
     # def test_ex(self):
     #     on_demand_config = {'instance': [],
@@ -43,11 +50,11 @@ class TestAWSModel(unittest.TestCase):
     #     demand_df = pd.DataFrame(demand)
     #     demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-    #     os.system('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv')
+    #     os.system(' python3 build-simulation.py on_demand_config.csv reserves_config.csv savings_plan_config.csv TOTAL_demand.csv')
 
     #     try:
     #         #only checks the total cost
-    #         result_cost = pd.read_csv('../data/resultCost.csv')
+    #         result_cost = pd.read_csv('result_cost.csv')
     #         actual_cost = result_cost.loc[0, 'total_cost']
     #         self.assertEqual(actual_cost, 0)
     #     except FileNotFoundError:
@@ -84,11 +91,12 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
+        out = subprocess.run('python3 build-simulation.py on_demand_config.csv reserves_config.csv savings_plan_config.csv TOTAL_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT)
 
         try:
             #only checks the total cost
-            result_cost = pd.read_csv('../data/resultCost.csv')
+            result_cost = pd.read_csv('result_cost.csv')
             actual_cost = result_cost.loc[0, 'total_cost']
             self.assertEqual(actual_cost, 60)
         except FileNotFoundError:
@@ -125,11 +133,12 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
+        out = subprocess.run(' python3 build-simulation.py on_demand_config.csv reserves_config.csv savings_plan_config.csv TOTAL_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT)
 
         try:
             #only checks the total cost
-            result_cost = pd.read_csv('../data/resultCost.csv')
+            result_cost = pd.read_csv('result_cost.csv')
             actual_cost = result_cost.loc[0, 'total_cost']
             self.assertEqual(actual_cost, 280)
         except FileNotFoundError:
@@ -167,11 +176,12 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
+        out = subprocess.run(' python3 build-simulation.py on_demand_config.csv reserves_config.csv savings_plan_config.csv TOTAL_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT)
 
         try:
             #only checks the total cost
-            result_cost = pd.read_csv('../data/resultCost.csv')
+            result_cost = pd.read_csv('result_cost.csv')
             actual_cost = result_cost.loc[0, 'total_cost']
             self.assertEqual(actual_cost, 280)
         except FileNotFoundError:
@@ -210,11 +220,12 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
+        out = subprocess.run(' python3 build-simulation.py on_demand_config.csv reserves_config.csv savings_plan_config.csv TOTAL_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT)
 
         try:
             #only checks the total cost
-            result_cost = pd.read_csv('../data/resultCost.csv')
+            result_cost = pd.read_csv('result_cost.csv')
             actual_cost = result_cost.loc[0, 'total_cost']
             self.assertEqual(actual_cost, 280)
         except FileNotFoundError:
@@ -252,11 +263,12 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
+        out = subprocess.run(' python3 build-simulation.py on_demand_config.csv reserves_config.csv savings_plan_config.csv TOTAL_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT)
 
         try:
             #only checks the total cost
-            result_cost = pd.read_csv('../data/resultCost.csv')
+            result_cost = pd.read_csv('result_cost.csv')
             actual_cost = result_cost.loc[0, 'total_cost']
             self.assertEqual(actual_cost, 75)
         except FileNotFoundError:
@@ -293,11 +305,12 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
+        out = subprocess.run(' python3 build-simulation.py on_demand_config.csv reserves_config.csv savings_plan_config.csv TOTAL_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT)
 
         try:
             #only checks the total cost
-            result_cost = pd.read_csv('../data/resultCost.csv')
+            result_cost = pd.read_csv('result_cost.csv')
             actual_cost = result_cost.loc[0, 'total_cost']
             self.assertEqual(actual_cost, 87)
         except FileNotFoundError:
@@ -335,11 +348,12 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
+        out = subprocess.run(' python3 build-simulation.py on_demand_config.csv reserves_config.csv savings_plan_config.csv TOTAL_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT)
 
         try:
             #only checks the total cost
-            result_cost = pd.read_csv('../data/resultCost.csv')
+            result_cost = pd.read_csv('result_cost.csv')
             actual_cost = result_cost.loc[0, 'total_cost']
             self.assertEqual(actual_cost, 96)
         except FileNotFoundError:
@@ -377,11 +391,12 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
+        out = subprocess.run(' python3 build-simulation.py on_demand_config.csv reserves_config.csv savings_plan_config.csv TOTAL_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT)
 
         try:
             #only checks the total cost
-            result_cost = pd.read_csv('../data/resultCost.csv')
+            result_cost = pd.read_csv('result_cost.csv')
             actual_cost = result_cost.loc[0, 'total_cost']
             self.assertEqual(actual_cost, 97)
         except FileNotFoundError:
@@ -419,11 +434,12 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
+        out = subprocess.run(' python3 build-simulation.py on_demand_config.csv reserves_config.csv savings_plan_config.csv TOTAL_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT)
 
         try:
             #only checks the total cost
-            result_cost = pd.read_csv('../data/resultCost.csv')
+            result_cost = pd.read_csv('result_cost.csv')
             actual_cost = result_cost.loc[0, 'total_cost']
             self.assertEqual(actual_cost, 120)
         except FileNotFoundError:
@@ -462,11 +478,12 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
+        out = subprocess.run(' python3 build-simulation.py on_demand_config.csv reserves_config.csv savings_plan_config.csv TOTAL_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT)
 
         try:
             #only checks the total cost
-            result_cost = pd.read_csv('../data/resultCost.csv')
+            result_cost = pd.read_csv('result_cost.csv')
             actual_cost = result_cost.loc[0, 'total_cost']
             self.assertEqual(round(actual_cost), 244)
         except FileNotFoundError:
@@ -502,11 +519,12 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
+        out = subprocess.run(' python3 build-simulation.py on_demand_config.csv reserves_config.csv savings_plan_config.csv TOTAL_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT)
 
         try:
             #only checks the total cost
-            result_cost = pd.read_csv('../data/resultCost.csv')
+            result_cost = pd.read_csv('result_cost.csv')
             actual_cost = result_cost.loc[0, 'total_cost']
             self.assertEqual(actual_cost, 84)
         except FileNotFoundError:
@@ -544,11 +562,12 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
-        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
+        out = subprocess.run(' python3 build-simulation.py on_demand_config.csv reserves_config.csv savings_plan_config.csv TOTAL_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT)
 
         try:
             #only checks the total cost
-            result_cost = pd.read_csv('../data/resultCost.csv')
+            result_cost = pd.read_csv('result_cost.csv')
             actual_cost = result_cost.loc[0, 'total_cost']
             self.assertEqual(round(actual_cost), 28)
         except FileNotFoundError:
@@ -588,11 +607,12 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('TOTAL_demand.csv', index=False)
         
-        out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True)
+        out = subprocess.run(' python3 build-simulation.py on_demand_config.csv reserves_config.csv savings_plan_config.csv TOTAL_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT)
 
         try:
             #only checks the total cost
-            result_cost = pd.read_csv('../data/resultCost.csv')
+            result_cost = pd.read_csv('result_cost.csv')
             actual_cost = result_cost.loc[0, 'total_cost']
             self.assertEqual(actual_cost, 29.9)
         except FileNotFoundError:
@@ -631,7 +651,8 @@ class TestAWSModel(unittest.TestCase):
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
         with self.assertRaises(Exception):
-            out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True, check=True)
+            out = subprocess.run(' python3 build-simulation.py on_demand_config.csv reserves_config.csv savings_plan_config.csv TOTAL_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT, check=True)
 
     #15
     def test_different_reserve_markets(self):
@@ -666,7 +687,8 @@ class TestAWSModel(unittest.TestCase):
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
         with self.assertRaises(Exception):
-            out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True, check=True)
+            out = subprocess.run(' python3 build-simulation.py on_demand_config.csv reserves_config.csv savings_plan_config.csv TOTAL_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT, check=True)
 
     #16
     def test_different_instances_reserves_config(self):
@@ -701,7 +723,8 @@ class TestAWSModel(unittest.TestCase):
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
         with self.assertRaises(Exception):
-            out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True, check=True)
+            out = subprocess.run(' python3 build-simulation.py on_demand_config.csv reserves_config.csv savings_plan_config.csv TOTAL_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT, check=True)
 
     #17
     def test_different_instances_savings_plan_config(self):
@@ -736,7 +759,8 @@ class TestAWSModel(unittest.TestCase):
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
         with self.assertRaises(Exception):
-            out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True, check=True)
+            out = subprocess.run(' python3 build-simulation.py on_demand_config.csv reserves_config.csv savings_plan_config.csv TOTAL_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT, check=True)
 
     #18
     def test_different_instances_total_demand(self):
@@ -770,6 +794,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df.to_csv('TOTAL_demand.csv', index=False)
 
         with self.assertRaises(Exception):
-            out = subprocess.run('cd .. && python3 build-simulation.py tests/on_demand_config.csv tests/reserves_config.csv tests/savings_plan_config.csv tests/TOTAL_demand.csv', shell=True, check=True)  
+            out = subprocess.run(' python3 build-simulation.py on_demand_config.csv reserves_config.csv savings_plan_config.csv TOTAL_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT, check=True)  
 
     #TO DO: wrong column names
