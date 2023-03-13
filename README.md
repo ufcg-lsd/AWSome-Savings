@@ -18,3 +18,7 @@ To run a single test:
 ```
 python -m unittest aws_model_tests.TestAWSModel.{name of the test case}
 ```
+
+### Debugging
+
+
