@@ -119,11 +119,11 @@ def optimize_model(t, demand, markets_data, savings_plan_data, savings_plan_dura
         return [] #the problem does not have an optimal solution
 
 # Demand <= 1*a
-def constraint1(solver, x, num_vars, demand, coefficientsBase):
-    for i_time in range(len(coefficientsBase)):
-        time = coefficientsBase[i_time]
+def constraint1(solver, x, num_vars, demand, coefficients_base):
+    for i_time in range(len(coefficients_base)):
+        time = coefficients_base[i_time]
         for i_instance in range(1, len(time)): #jumps savings plan coefficients
-            coefficients = copy.deepcopy(coefficientsBase) #making a copy before altering the coefficients
+            coefficients = copy.deepcopy(coefficients_base) #making a copy before altering the coefficients
             
             coefficients[i_time][i_instance][0] = [1] # 1 * a_t,i,SP
             for i_market in range(1, len(coefficients[i_time][i_instance])): #jumps savings plan market
@@ -133,13 +133,13 @@ def constraint1(solver, x, num_vars, demand, coefficientsBase):
             solver.Add(sum(constraint_expr) >= demand[i_instance - 1][i_time])
 
 # a_t = sum(r_t)
-def constraint2(solver, x, num_vars, coefficientsBase, markets_data):
-    for i_time in range(len(coefficientsBase)):
-        time = coefficientsBase[i_time]
+def constraint2(solver, x, num_vars, coefficients_base, markets_data):
+    for i_time in range(len(coefficients_base)):
+        time = coefficients_base[i_time]
         for i_instance in range(1, len(time)): #jumps savings plan coefficients
             instance = time[i_instance]
             for i_market in range(1, len(instance)): #jumps savings plan market
-                coefficients = copy.deepcopy(coefficientsBase) #making a copy before altering the coefficients
+                coefficients = copy.deepcopy(coefficients_base) #making a copy before altering the coefficients
 
                 coefficients[i_time][i_instance][i_market] = [1, -1]
                 
@@ -155,9 +155,9 @@ def constraint2(solver, x, num_vars, coefficientsBase, markets_data):
                 constraint_expr = change_coefficients_format(generate_array(coefficients), x, num_vars)
                 solver.Add(sum(constraint_expr) == 0)
 
-def constraint3(solver, x, num_vars, coefficientsBase, savings_plan_data):
-    for i_time in range(len(coefficientsBase)):
-        coefficients = copy.deepcopy(coefficientsBase) #making a copy before altering the coefficients
+def constraint3(solver, x, num_vars, coefficients_base, savings_plan_data):
+    for i_time in range(len(coefficients_base)):
+        coefficients = copy.deepcopy(coefficients_base) #making a copy before altering the coefficients
 
         coefficients[i_time][0][0] = [-1, 0] #total sp active value in t
 
@@ -168,9 +168,9 @@ def constraint3(solver, x, num_vars, coefficientsBase, savings_plan_data):
         solver.Add(sum(constraint_expr) <= 0)
 
 
-def constraint4(solver, x, num_vars, coefficientsBase, savings_plan_duration):
-    for i_time in range(len(coefficientsBase)):
-        coefficients = copy.deepcopy(coefficientsBase) #making a copy before altering the coefficients
+def constraint4(solver, x, num_vars, coefficients_base, savings_plan_duration):
+    for i_time in range(len(coefficients_base)):
+        coefficients = copy.deepcopy(coefficients_base) #making a copy before altering the coefficients
 
         coefficients[i_time][0][0] = [1, -1]
 

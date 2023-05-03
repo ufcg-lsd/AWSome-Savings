@@ -24,13 +24,13 @@ python3 build-simulation.py {path of on_demand_config} {path of reserves_config}
 ```
 To run with the example files:
 ```
-python3 build-simulation.py data/on_demand_config.csv data/reserves_config.csv data/savings_plan_config.csv data/TOTAL_demand.csv
+python3 build-simulation.py data/on_demand_config.csv data/reserves_config.csv data/savings_plan_config.csv data/total_demand.csv
 ```
 
 #### Output
 
 The simulation generates the following files as the output:
-- resultCost: the total cost of the simulation, the cost for every instance and the total 
+- result_cost: the total cost of the simulation, the cost for every instance and the total 
     savings plan cost;
 - total_purchases_savings_plan: for every hour, the active value and the value reserved 
     for savings plan;

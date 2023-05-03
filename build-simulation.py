@@ -8,11 +8,11 @@ It receives 4 csv files:
 - on_demand_config: values for the on demand market for every instance used in the simulation;
 - reserves_config: values for the reserve markets for every instance used in the simulation;
 - savings_plan_config: values for savings plan for every instance used in the simulation;
-- TOTAL_demand: demand for all instances (including instances not used in the simulation).
+- total_demand: demand for all instances (including instances not used in the simulation).
 There are examples of thoses files in the data folder.
 
 It generates the following csv files:
-- resultCost: the total cost of the simulation, the cost for every instance and the total 
+- result_cost: the total cost of the simulation, the cost for every instance and the total 
     savings plan cost;
 - total_purchases_savings_plan: for every hour, the active value and the value reserved 
     for savings plan;
@@ -51,17 +51,17 @@ def main():
 
     for instance in instances:
         line_savings_plan = savings_plan_config[savings_plan_config['instance'] == instance]
-        savings_plan_data.append(line_savings_plan['p_hr'])
+        savings_plan_data.append(line_savings_plan['hourly_price'])
         instance_data = []
         market_names = ['on_demand']
 
         line_on_demand = on_demand_config[on_demand_config['instance'] == instance]
-        instance_data.append([float(line_on_demand['p_hr']), 0, 1])
+        instance_data.append([float(line_on_demand['hourly_price']), 0, 1])
 
         for i in range(len(reserves_config)):
             line = reserves_config.iloc[i]
             if line['instance'] == instance:
-                instance_data.append([line['p_hr'],line['p_up'], line['y']])
+                instance_data.append([line['hourly_price'],line['upfront_price'], line['duration']])
                 market_names.append(line['market_name'])
         markets_data.append(instance_data)
 
@@ -69,7 +69,7 @@ def main():
         total_demand.append(instance_demand)
 
     t = len(total_demand[0])
-    savings_plan_duration = (savings_plan_config.iloc[0])['y']
+    savings_plan_duration = (savings_plan_config.iloc[0])['duration']
 
     logging.info('Start building the model')
     result = optimize_model(t, total_demand, markets_data, savings_plan_data, savings_plan_duration)
@@ -88,7 +88,7 @@ def main():
 
 # the validations could be in another file?
 def validate_on_demand_config(on_demand_config):
-    validate_columns('on_demand_config', on_demand_config, ['instance', 'p_hr'])
+    validate_columns('on_demand_config', on_demand_config, ['instance', 'hourly_price'])
     validate_on_demand_instances(on_demand_config)
 
 def validate_columns(file_name, data_frame, names):
@@ -105,7 +105,7 @@ def validate_on_demand_instances(on_demand_config):
         raise Exception('The instances names in on_demand_config should be unique')
 
 def validate_reserves_config(reserves_config, instances):
-    validate_columns('reserves_config', reserves_config, ['instance', 'market_name', 'p_hr', 'p_up', 'y'])
+    validate_columns('reserves_config', reserves_config, ['instance', 'market_name', 'hourly_price', 'upfront_price', 'duration'])
     validate_instances_names('reserves_config', reserves_config, instances)
     validate_reserves_markets(reserves_config, instances)
 
@@ -133,18 +133,18 @@ def validate_reserves_markets(reserves_config, instances):
         previous_markets = markets
 
 def validate_savings_plan_config(savings_plan_config, instances):
-    validate_columns('savings_plan_config', savings_plan_config, ['instance', 'p_hr', 'y'])
+    validate_columns('savings_plan_config', savings_plan_config, ['instance', 'hourly_price', 'duration'])
     validate_instances_names('savings_plan_config', savings_plan_config, instances)
     validate_savings_plan_durations(savings_plan_config)
 
 def validate_savings_plan_durations(savings_plan_config):
     #All savings plan durations should be the same
-    savings_plan_durations = list(savings_plan_config['y'].value_counts().index)
+    savings_plan_durations = list(savings_plan_config['duration'].value_counts().index)
     if len(savings_plan_durations) != 1:
         raise Exception('All instances must have the same savings plan duration.')
 
 def validate_demand(raw_demand, instances):
-    if raw_demand.columns[0] != 'Hour': #could i just correct in the code?
+    if raw_demand.columns[0] != 'hour': #could i just correct in the code?
         raise Exception('The first column name in the demand file is incorrect.')
     
     validate_demand_instances(raw_demand, instances)
@@ -201,13 +201,13 @@ def generate_total_purchases_savings_plan(values, t):
 def generate_total_purchases(values, t, instance_names, market_names):
 
     for i_instance in range(len(instance_names)):
-        total_purchases = pd.DataFrame(columns=['instanceType', 'market', 'count_active', 'count_reserves'])
+        total_purchases = pd.DataFrame(columns=['instance_type', 'market', 'count_active', 'count_reserves'])
         instance_name = instance_names[i_instance]
 
         #Savings plan
         for i_time in range(t):
             active = values[i_time][i_instance + 1][0][0]
-            new_line = pd.DataFrame({'instanceType': [instance_name], 'market': ['savings_plan'],
+            new_line = pd.DataFrame({'instance_type': [instance_name], 'market': ['savings_plan'],
                                      'count_active': [active],'count_reserves': [0]})
             total_purchases = pd.concat([total_purchases, new_line])
                     
@@ -216,7 +216,7 @@ def generate_total_purchases(values, t, instance_names, market_names):
             for i_time in range(t):
                 active = values[i_time][i_instance + 1][i_market + 1][0]
                 reserves = values[i_time][i_instance + 1][i_market + 1][1]
-                new_line = pd.DataFrame({'instanceType': [instance_name], 'market': [market_names[i_market]],
+                new_line = pd.DataFrame({'instance_type': [instance_name], 'market': [market_names[i_market]],
                                      'count_active': [active],'count_reserves': [reserves]})
                 total_purchases = pd.concat([total_purchases, new_line])
         
