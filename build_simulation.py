@@ -82,8 +82,10 @@ def main():
     logging.info('Generating output')
     #generates the output files
     generate_result_cost(total_cost, values, t, instances, market_names, markets_data, savings_plan_duration)
-    generate_total_purchases_savings_plan(values, t)
-    generate_total_purchases(values, t, instances, market_names)
+    
+    hour_index = raw_demand['hour'].values.tolist()
+    generate_total_purchases_savings_plan(values, hour_index)
+    generate_total_purchases(values, hour_index, instances, market_names)
     logging.info('Finished')
 
 # the validations could be in another file?
@@ -185,12 +187,13 @@ def generate_result_cost(total_cost, values, t, instance_names, market_names, ma
 
     result_cost.to_csv('result_cost.csv', index=False)
 
-def generate_total_purchases_savings_plan(values, t):
-    total_purchases_savings_plan = pd.DataFrame(columns=['market', 'value_active', 'value_reserves'])
+def generate_total_purchases_savings_plan(values, hour_index):
+    total_purchases_savings_plan = pd.DataFrame(columns=['hour', 'market', 'value_active', 'value_reserves'])
 
-    for i_time in range(t):
+    for i_time in range(len(hour_index)):
         values_savings_plan = values[i_time][0][0]
-        new_line = pd.DataFrame({'market': ['savings_plan'], 
+        new_line = pd.DataFrame({'hour': [int(hour_index[i_time])],
+                                 'market': ['savings_plan'], 
                                  'value_active': [values_savings_plan[0]], 
                                  'value_reserves': [values_savings_plan[1]]})
         total_purchases_savings_plan = pd.concat([total_purchases_savings_plan, new_line])
@@ -198,26 +201,28 @@ def generate_total_purchases_savings_plan(values, t):
     total_purchases_savings_plan.to_csv('total_purchases_savings_plan.csv', index=False)
 
 # Generates total_purchases for every instance
-def generate_total_purchases(values, t, instance_names, market_names):
+def generate_total_purchases(values, hour_index, instance_names, market_names):
 
     for i_instance in range(len(instance_names)):
-        total_purchases = pd.DataFrame(columns=['instance_type', 'market', 'count_active', 'count_reserves'])
+        total_purchases = pd.DataFrame(columns=['hour','instance_type', 'market', 'count_active', 'count_reserves'])
         instance_name = instance_names[i_instance]
 
         #Savings plan
-        for i_time in range(t):
+        for i_time in range(len(hour_index)):
             active = values[i_time][i_instance + 1][0][0]
-            new_line = pd.DataFrame({'instance_type': [instance_name], 'market': ['savings_plan'],
+            new_line = pd.DataFrame({'hour': [int(hour_index[i_time])],
+                                     'instance_type': [instance_name], 'market': ['savings_plan'],
                                      'count_active': [active],'count_reserves': [0]})
             total_purchases = pd.concat([total_purchases, new_line])
                     
         #Other markets
         for i_market in range(len(market_names)):
-            for i_time in range(t):
+            for i_time in range(len(hour_index)):
                 active = values[i_time][i_instance + 1][i_market + 1][0]
                 reserves = values[i_time][i_instance + 1][i_market + 1][1]
-                new_line = pd.DataFrame({'instance_type': [instance_name], 'market': [market_names[i_market]],
-                                     'count_active': [active],'count_reserves': [reserves]})
+                new_line = pd.DataFrame({'hour': [int(hour_index[i_time])],
+                                         'instance_type': [instance_name], 'market': [market_names[i_market]],
+                                         'count_active': [active],'count_reserves': [reserves]})
                 total_purchases = pd.concat([total_purchases, new_line])
         
         total_purchases.to_csv('total_purchases_' + instance_name + '.csv', index=False)
