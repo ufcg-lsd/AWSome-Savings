@@ -204,7 +204,7 @@ def generate_total_purchases_savings_plan(values, hour_index):
 def generate_total_purchases(values, hour_index, instance_names, market_names):
 
     for i_instance in range(len(instance_names)):
-        total_purchases = pd.DataFrame(columns=['hour','instance_type', 'market', 'count_active', 'count_reserves'])
+        total_purchases = pd.DataFrame(columns=['hour', 'instance_type', 'market', 'count_active', 'count_reserves'])
         instance_name = instance_names[i_instance]
 
         #Savings plan
