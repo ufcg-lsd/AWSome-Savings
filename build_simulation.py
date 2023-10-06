@@ -4,9 +4,8 @@ Reads the files with the values for the simulation and converts the data to the 
 aws_model module receives. Calls aws_model to build and run the simulation and generates output 
 files with the results.
 
-It receives 4 csv files:
+It receives 3 csv files:
 - on_demand_config: values for the on demand market for every instance used in the simulation;
-- reserves_config: values for the reserve markets for every instance used in the simulation;
 - savings_plan_config: values for savings plan for every instance used in the simulation;
 - total_demand: demand for all instances (including instances not used in the simulation).
 There are examples of thoses files in the data folder.
@@ -31,9 +30,8 @@ def main():
     logging.basicConfig(filename='aws_model.log', format='%(asctime)s %(message)s', level=logging.INFO)
     logging.info('Getting input data')
     on_demand_config = pd.read_csv(sys.argv[1])
-    reserves_config = pd.read_csv(sys.argv[2])
-    savings_plan_config = pd.read_csv(sys.argv[3])
-    raw_demand = pd.read_csv(sys.argv[4])
+    savings_plan_config = pd.read_csv(sys.argv[2])
+    raw_demand = pd.read_csv(sys.argv[3])
 
     logging.info('Validating input data')
     validations.validate_on_demand_config(on_demand_config)
@@ -41,7 +39,6 @@ def main():
     instances = list(on_demand_config['instance'].value_counts().index)
     instances.sort()
     
-    validations.validate_reserves_config(reserves_config, instances)
     validations.validate_savings_plan_config(savings_plan_config, instances)
     validations.validate_demand(raw_demand, instances)
     
@@ -59,11 +56,6 @@ def main():
         line_on_demand = on_demand_config[on_demand_config['instance'] == instance]
         instance_data.append([float(line_on_demand['hourly_price']), 0, 1])
 
-        for i in range(len(reserves_config)):
-            line = reserves_config.iloc[i]
-            if line['instance'] == instance:
-                instance_data.append([line['hourly_price'],line['upfront_price'], line['duration']])
-                market_names.append(line['market_name'])
         markets_data.append(instance_data)
 
         instance_demand = raw_demand[instance].values.tolist()

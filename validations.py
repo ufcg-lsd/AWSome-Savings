@@ -1,6 +1,6 @@
 """Performs input validations.
 
-Validates on_demand_config.csv, reserves_config.csv, savings_plan_config.csv and total_demand.csv.
+Validates on_demand_config.csv, savings_plan_config.csv and total_demand.csv.
 Those files are imported by build_simulation.py, which calls the functions on this module.
 """
 
@@ -22,11 +22,6 @@ def validate_on_demand_instances(on_demand_config):
     if (instances != unique_instances):
         raise ValueError('The instances names in on_demand_config should be unique')
 
-def validate_reserves_config(reserves_config, instances):
-    validate_columns('reserves_config', reserves_config, ['instance', 'market_name', 'hourly_price', 'upfront_price', 'duration'])
-    validate_instances_names('reserves_config', reserves_config, instances)
-    validate_reserves_markets(reserves_config, instances)
-
 def validate_instances_names(file_name, data_frame, instances):
     #Checks if the instance names in the data_frame are the same as in the other files
     file_instances = list(data_frame['instance'].value_counts().index)
@@ -34,21 +29,6 @@ def validate_instances_names(file_name, data_frame, instances):
 
     if instances != file_instances:
         raise ValueError('The instances names in on_demand_config and ' + file_name + ' are not the same.')
-
-def validate_reserves_markets(reserves_config, instances):
-    #All instances should have the same reserve markets
-    instance_line = reserves_config[reserves_config['instance'] == instances[0]]
-    markets = list(instance_line.loc[:,'market_name'])
-    markets.sort()
-    previous_markets = markets
-    
-    for instance in instances:
-        instance_line = reserves_config[reserves_config['instance'] == instance]
-        markets = list(instance_line.loc[:,'market_name'])
-        markets.sort()
-        if markets != previous_markets:
-            raise ValueError('Not all instances have the same reserve market names.')
-        previous_markets = markets
 
 def validate_savings_plan_config(savings_plan_config, instances):
     validate_columns('savings_plan_config', savings_plan_config, ['instance', 'hourly_price', 'duration'])
