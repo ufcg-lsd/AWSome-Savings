@@ -43,8 +43,8 @@ def main():
     validations.validate_demand(raw_demand, instances)
     
     logging.info('Transforming input data')
-    markets_data = []
     savings_plan_data = []
+    on_demand_data = []
     total_demand = []
 
     for instance in instances:
@@ -54,9 +54,7 @@ def main():
         market_names = ['on_demand']
 
         line_on_demand = on_demand_config[on_demand_config['instance'] == instance]
-        instance_data.append([float(line_on_demand['hourly_price']), 0, 1])
-
-        markets_data.append(instance_data)
+        on_demand_data.append(float(line_on_demand['hourly_price']))
 
         instance_demand = raw_demand[instance].values.tolist()
         total_demand.append(instance_demand)
@@ -65,7 +63,7 @@ def main():
     savings_plan_duration = (savings_plan_config.iloc[0])['duration']
 
     logging.info('Start building the model')
-    result = optimize_model(t, total_demand, markets_data, savings_plan_data, savings_plan_duration)
+    result = optimize_model(t, total_demand, on_demand_data, savings_plan_data, savings_plan_duration)
     
     if result == []: raise Exception('The problem does not have an optimal solution.')
     
@@ -74,14 +72,14 @@ def main():
 
     logging.info('Generating output')
     #generates the output files
-    generate_result_cost(total_cost, values, t, instances, market_names, markets_data, savings_plan_duration)
+    generate_result_cost(total_cost, values, t, instances, market_names, on_demand_data, savings_plan_duration)
     
     hour_index = raw_demand['hour'].values.tolist()
     generate_total_purchases_savings_plan(values, hour_index)
     generate_total_purchases(values, hour_index, instances, market_names)
     logging.info('Finished')
 
-def generate_result_cost(total_cost, values, t, instance_names, market_names, markets_data, savings_plan_duration):
+def generate_result_cost(total_cost, values, t, instance_names, market_names, on_demand_data, savings_plan_duration):
     result_cost = pd.DataFrame({'instance': ['all'], 'total_cost': [total_cost]})
 
     #calculating savings plan total cost
@@ -98,8 +96,7 @@ def generate_result_cost(total_cost, values, t, instance_names, market_names, ma
         instance_cost = 0
         
         for i_market in range(len(market_names)):
-            im_values = markets_data[i_instance][i_market]
-            reserve_cost_im = im_values[0] * im_values[2] + im_values[1]
+            reserve_cost_im = on_demand_data[i_instance] #the only market is on demand
 
             for i_time in range(t):
                 reserves = values[i_time][i_instance + 1][i_market + 1][1]
