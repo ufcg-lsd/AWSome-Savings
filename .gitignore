@@ -1,3 +1,4 @@
 __pycache__/
 total_purchases*.csv
 aws_model.log
+.venv/
