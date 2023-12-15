@@ -75,7 +75,6 @@ def optimize_model(t, demand, on_demand_data, savings_plan_data, savings_plan_du
     
     infinity = solver.infinity()
    
-    num_markets = 1
     num_instances = len(on_demand_data)
     num_vars = (2 * num_instances + 2) * t
 
@@ -84,16 +83,13 @@ def optimize_model(t, demand, on_demand_data, savings_plan_data, savings_plan_du
         x[j] = solver.IntVar(0, infinity, 'x[%i]' % j)
     logging.info('Number of variables = %d', solver.NumVariables())
 
-    # coefficientsBase is a list in the equations format with all values 0
-    coefficientsBase = create_coefficients_base(t, num_instances, num_markets)
-
     # Adding constraints
     logging.info('Generating constraint 1')
-    constraint1(solver, x, num_vars, demand, coefficientsBase)
+    constraint1(solver, x, num_vars, demand, t, num_instances)
     logging.info('Generating constraint 3 (constraint 2 was removed)')
-    constraint3(solver, x, num_vars, coefficientsBase, savings_plan_data)
+    constraint3(solver, x, num_vars, t, num_instances, savings_plan_data)
     logging.info('Generating constraint 4')
-    constraint4(solver, x, num_vars, coefficientsBase, savings_plan_duration)
+    constraint4(solver, x, num_vars, t, num_instances, savings_plan_duration)
 
     # Creating the objetive function
     logging.info('Generating objective function')
@@ -131,20 +127,19 @@ def optimize_model(t, demand, on_demand_data, savings_plan_data, savings_plan_du
         return [] #the problem does not have an optimal solution
 
 # Demand <= 1*a
-def constraint1(solver, x, num_vars, demand, coefficients_base):
-    for i_time in range(len(coefficients_base)):
-        time = coefficients_base[i_time]
-        for i_instance in range(1, len(time)): #jumps savings plan coefficients
-            coefficients = copy.deepcopy(coefficients_base) #making a copy before altering the coefficients
+def constraint1(solver, x, num_vars, demand, t, num_instances):
+    for i_time in range(t):
+        for i_instance in range(1, num_instances + 1): #jumps savings plan coefficients
+            coefficients = create_coefficients_base(t, num_instances)
             
             coefficients[i_time][i_instance] = [1, 1] # 1 * a_t,i,SP e 1 * a_t,i,OD
 
             constraint_expr = change_coefficients_format(generate_array(coefficients), x, num_vars)
             solver.Add(sum(constraint_expr) >= demand[i_instance - 1][i_time])
 
-def constraint3(solver, x, num_vars, coefficients_base, savings_plan_data):
-    for i_time in range(len(coefficients_base)):
-        coefficients = copy.deepcopy(coefficients_base) #making a copy before altering the coefficients
+def constraint3(solver, x, num_vars, t, num_instances, savings_plan_data):
+    for i_time in range(t):
+        coefficients = create_coefficients_base(t, num_instances)
 
         coefficients[i_time][0] = [-1, 0] #total sp active value in t
 
@@ -155,9 +150,9 @@ def constraint3(solver, x, num_vars, coefficients_base, savings_plan_data):
         solver.Add(sum(constraint_expr) <= 0)
 
 
-def constraint4(solver, x, num_vars, coefficients_base, savings_plan_duration):
-    for i_time in range(len(coefficients_base)):
-        coefficients = copy.deepcopy(coefficients_base) #making a copy before altering the coefficients
+def constraint4(solver, x, num_vars, t, num_instances, savings_plan_duration):
+    for i_time in range(t):
+        coefficients = create_coefficients_base(t, num_instances)
 
         coefficients[i_time][0] = [1, -1]
 
@@ -172,7 +167,7 @@ def constraint4(solver, x, num_vars, coefficients_base, savings_plan_duration):
         solver.Add(sum(constraint_expr) == 0)
 
 
-def create_coefficients_base(t, num_instances, num_markets): #[[[[0,0], [0,0]], [[0,0], [0,0]]], [[[0,0], [0,0]], [[0,0], [0,0]]]] para t=2, i=2 e m=2
+def create_coefficients_base(t, num_instances): #[[[[0,0], [0,0]], [[0,0], [0,0]]], [[[0,0], [0,0]], [[0,0], [0,0]]]] para t=2, i=2 e m=2
     coefficients = []
     for i_time in range(t):
         time_coef = [[0, 0]] #savings plan coefficients (0 * s_t + 1 * rs_t)
