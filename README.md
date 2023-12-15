@@ -20,11 +20,11 @@ There are several files with the input data for the simulation. For more informa
 
 Run the follow command to perform an optimization:
 ```
-python3 build_simulation.py {path of on_demand_config} {path of reserves_config} {path of savings_plan_config} {path of demand}
+python3 build_simulation.py {path of on_demand_config} {path of savings_plan_config} {path of demand}
 ```
 To run with the example files:
 ```
-python3 build_simulation.py data/on_demand_config.csv data/reserves_config.csv data/savings_plan_config.csv data/total_demand.csv
+python3 build_simulation.py data/on_demand_config.csv data/savings_plan_config.csv data/total_demand.csv
 ```
 
 #### Output

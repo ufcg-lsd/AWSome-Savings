@@ -7,7 +7,6 @@ so it is only possible to optmize one instance group at a time.
 """
 
 from ortools.linear_solver import pywraplp
-import copy
 import logging
 
 def optimize_model(t, demand, on_demand_data, savings_plan_data, savings_plan_duration):
