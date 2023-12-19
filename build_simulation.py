@@ -43,8 +43,8 @@ def main():
     validations.validate_demand(raw_demand, instances)
     
     logging.info('Transforming input data')
-    markets_data = []
     savings_plan_data = []
+    on_demand_data = []
     total_demand = []
 
     for instance in instances:
@@ -54,9 +54,7 @@ def main():
         market_names = ['on_demand']
 
         line_on_demand = on_demand_config[on_demand_config['instance'] == instance]
-        instance_data.append([float(line_on_demand['hourly_price']), 0, 1])
-
-        markets_data.append(instance_data)
+        on_demand_data.append(float(line_on_demand['hourly_price']))
 
         instance_demand = raw_demand[instance].values.tolist()
         total_demand.append(instance_demand)
@@ -65,7 +63,7 @@ def main():
     savings_plan_duration = (savings_plan_config.iloc[0])['duration']
 
     logging.info('Start building the model')
-    result = optimize_model(t, total_demand, markets_data, savings_plan_data, savings_plan_duration)
+    result = optimize_model(t, total_demand, on_demand_data, savings_plan_data, savings_plan_duration)
     
     if result == []: raise Exception('The problem does not have an optimal solution.')
     
@@ -74,20 +72,20 @@ def main():
 
     logging.info('Generating output')
     #generates the output files
-    generate_result_cost(total_cost, values, t, instances, market_names, markets_data, savings_plan_duration)
+    generate_result_cost(total_cost, values, t, instances, market_names, on_demand_data, savings_plan_duration)
     
     hour_index = raw_demand['hour'].values.tolist()
     generate_total_purchases_savings_plan(values, hour_index)
     generate_total_purchases(values, hour_index, instances, market_names)
     logging.info('Finished')
 
-def generate_result_cost(total_cost, values, t, instance_names, market_names, markets_data, savings_plan_duration):
+def generate_result_cost(total_cost, values, t, instance_names, market_names, on_demand_data, savings_plan_duration):
     result_cost = pd.DataFrame({'instance': ['all'], 'total_cost': [total_cost]})
 
     #calculating savings plan total cost
     savings_plan_cost = 0
     for i_time in range(t):
-        savings_plan_cost += values[i_time][0][0][1] * savings_plan_duration #value of savings plan reserves made * savings plan duration 
+        savings_plan_cost += values[i_time][0][1] * savings_plan_duration #value of savings plan reserves made * savings plan duration 
     
     new_line = pd.DataFrame({'instance': ['savings_plan'], 'total_cost': [savings_plan_cost]})
     result_cost = pd.concat([result_cost, new_line])
@@ -98,12 +96,10 @@ def generate_result_cost(total_cost, values, t, instance_names, market_names, ma
         instance_cost = 0
         
         for i_market in range(len(market_names)):
-            im_values = markets_data[i_instance][i_market]
-            reserve_cost_im = im_values[0] * im_values[2] + im_values[1]
-
-            for i_time in range(t):
-                reserves = values[i_time][i_instance + 1][i_market + 1][1]
-                instance_cost += reserves * reserve_cost_im
+            for i_time in range(t):    
+                on_demand_price = on_demand_data[i_instance] #the only market is on demand
+                active = values[i_time][i_instance + 1][1]
+                instance_cost += active * on_demand_price
         
         new_line = pd.DataFrame({'instance': [instance_names[i_instance]], 'total_cost': [instance_cost]})
         result_cost = pd.concat([result_cost, new_line])
@@ -114,7 +110,7 @@ def generate_total_purchases_savings_plan(values, hour_index):
     total_purchases_savings_plan = pd.DataFrame(columns=['hour', 'market', 'value_active', 'value_reserves'])
 
     for i_time in range(len(hour_index)):
-        values_savings_plan = values[i_time][0][0]
+        values_savings_plan = values[i_time][0]
         new_line = pd.DataFrame({'hour': [int(hour_index[i_time])],
                                  'market': ['savings_plan'], 
                                  'value_active': [values_savings_plan[0]], 
@@ -132,21 +128,19 @@ def generate_total_purchases(values, hour_index, instance_names, market_names):
 
         #Savings plan
         for i_time in range(len(hour_index)):
-            active = values[i_time][i_instance + 1][0][0]
+            active = values[i_time][i_instance + 1][0]
             new_line = pd.DataFrame({'hour': [int(hour_index[i_time])],
                                      'instance_type': [instance_name], 'market': ['savings_plan'],
                                      'count_active': [active],'count_reserves': [0]})
             total_purchases = pd.concat([total_purchases, new_line])
                     
-        #Other markets
-        for i_market in range(len(market_names)):
-            for i_time in range(len(hour_index)):
-                active = values[i_time][i_instance + 1][i_market + 1][0]
-                reserves = values[i_time][i_instance + 1][i_market + 1][1]
-                new_line = pd.DataFrame({'hour': [int(hour_index[i_time])],
-                                         'instance_type': [instance_name], 'market': [market_names[i_market]],
-                                         'count_active': [active],'count_reserves': [reserves]})
-                total_purchases = pd.concat([total_purchases, new_line])
+        #On demand
+        for i_time in range(len(hour_index)):
+            active = values[i_time][i_instance + 1][1]
+            new_line = pd.DataFrame({'hour': [int(hour_index[i_time])],
+                                        'instance_type': [instance_name], 'market': ['on_demand'],
+                                        'count_active': [active],'count_reserves': [active]})
+            total_purchases = pd.concat([total_purchases, new_line])
         
         total_purchases.to_csv('total_purchases_' + instance_name + '.csv', index=False)
 
@@ -155,15 +149,12 @@ def generate_list(values, t, num_instances, num_markets):
     list = []
     for i_time in range(t):
         list_time = []
-        list_time.append([[values[index], values[index + 1]]])
+        list_time.append([values[index], values[index + 1]])
         index += 2
         for i_instance in range(num_instances):
-            list_instance = []
-            list_instance.append([values[index]])
-            index += 1
-            for i_market in range(num_markets):
-                list_instance.append([values[index], values[index + 1]])
-                index += 2
+            # number of active instances for savings plan and on-demand
+            list_instance = [values[index], values[index + 1]]
+            index += 2
             list_time.append(list_instance)
         list.append(list_time)
     return list
