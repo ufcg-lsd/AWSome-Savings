@@ -33,7 +33,7 @@ def main():
     on_demand_config = pd.read_csv(sys.argv[1])
     reserves_config = pd.read_csv(sys.argv[2])
     savings_plan_config = pd.read_csv(sys.argv[3])
-    raw_demand = pd.read_csv(sys.argv[4])
+    raw_demand = reduce_hour_to_day(pd.read_csv(sys.argv[4]))
 
     logging.info('Validating input data')
     validations.validate_on_demand_config(on_demand_config)
@@ -75,7 +75,7 @@ def main():
     logging.info('Start building the model')
     result = optimize_model(t, total_demand, markets_data, savings_plan_data, savings_plan_duration)
     
-    if result == []: raise Exception('The problem does not have an optimal solution.')
+    if not result: raise Exception('The problem does not have an optimal solution.')
     
     total_cost = result[0]
     values = generate_list(result[1], t, len(instances), len(market_names))
@@ -95,7 +95,7 @@ def generate_result_cost(total_cost, values, t, instance_names, market_names, ma
     #calculating savings plan total cost
     savings_plan_cost = 0
     for i_time in range(t):
-        savings_plan_cost += values[i_time][0][0][1] * savings_plan_duration #value of savings plan reserves made * savings plan duration 
+        savings_plan_cost += values[i_time][0][0][1] * savings_plan_duration #value of savings plan reserves made * savings plan duration
     
     new_line = pd.DataFrame({'instance': ['savings_plan'], 'total_cost': [savings_plan_cost]})
     result_cost = pd.concat([result_cost, new_line])
@@ -175,6 +175,15 @@ def generate_list(values, t, num_instances, num_markets):
             list_time.append(list_instance)
         list.append(list_time)
     return list
+
+
+def reduce_hour_to_day(df):
+    df['day'] = df['hour'] // 24
+    result = df.groupby('day').sum()
+    result.to_csv('./data/reduced_mock_data.csv', index=False)
+
+    return result
+
 
 if __name__ == "__main__":
     main()
