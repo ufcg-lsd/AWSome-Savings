@@ -78,7 +78,7 @@ void constraint3(MPSolver *solver, unordered_map<int, MPVariable *> x,
 
     coefficients[i_time][0] = {-1, 0};
 
-    for (int i_instance = 1; i_instance <= coefficients[i_time].size();
+    for (int i_instance = 1; i_instance < coefficients[i_time].size();
          ++i_instance) {
       coefficients[i_time][i_instance][0] = savings_plan_data[i_instance - 1];
     }
