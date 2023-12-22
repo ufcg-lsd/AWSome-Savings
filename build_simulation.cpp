@@ -165,7 +165,7 @@ void generate_total_purchases(vector<vector<vector<double>>> values,
     for (int i_time = 0; i_time < hour_index.size(); ++i_time) {
       double active = values[i_time][i_instance + 1][0];
       vector<string> line = {to_string(hour_index[i_time]), instance_name,
-                             "savings_plan", to_string(active), 0};
+                             "savings_plan", to_string(active), "0"};
       total_purchases.push_back(line);
     }
 
