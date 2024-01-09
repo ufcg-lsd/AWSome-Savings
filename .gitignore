@@ -3,3 +3,4 @@ total_purchases*.csv
 aws_model.log
 .venv/
 result_cost.csv
+build/
