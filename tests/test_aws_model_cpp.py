@@ -81,7 +81,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('./data/total_demand.csv', index=False)
 
-        subprocess.run('./build/opt', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        subprocess.run('./build/opt.elf', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
         try:
             #only checks the total cost
@@ -117,7 +117,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('./data/total_demand.csv', index=False)
 
-        out = subprocess.run('./build/opt', shell=True, stdout=subprocess.DEVNULL,
+        out = subprocess.run('./build/opt.elf', shell=True, stdout=subprocess.DEVNULL,
     stderr=subprocess.STDOUT)
 
         try:
@@ -154,7 +154,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('./data/total_demand.csv', index=False)
 
-        out = subprocess.run('./build/opt', shell=True, stdout=subprocess.DEVNULL,
+        out = subprocess.run('./build/opt.elf', shell=True, stdout=subprocess.DEVNULL,
     stderr=subprocess.STDOUT)
 
         try:
@@ -191,7 +191,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('./data/total_demand.csv', index=False)
 
-        out = subprocess.run('./build/opt', shell=True, stdout=subprocess.DEVNULL,
+        out = subprocess.run('./build/opt.elf', shell=True, stdout=subprocess.DEVNULL,
     stderr=subprocess.STDOUT)
 
         try:
@@ -228,7 +228,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('./data/total_demand.csv', index=False)
 
-        out = subprocess.run('./build/opt', shell=True, stdout=subprocess.DEVNULL,
+        out = subprocess.run('./build/opt.elf', shell=True, stdout=subprocess.DEVNULL,
     stderr=subprocess.STDOUT)
 
         try:
@@ -263,7 +263,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('./data/total_demand.csv', index=False)
 
-        out = subprocess.run('./build/opt', shell=True, stdout=subprocess.DEVNULL,
+        out = subprocess.run('./build/opt.elf', shell=True, stdout=subprocess.DEVNULL,
     stderr=subprocess.STDOUT)
 
         try:
@@ -302,7 +302,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('./data/total_demand.csv', index=False)
         
-        out = subprocess.run('./build/opt', shell=True, stdout=subprocess.DEVNULL,
+        out = subprocess.run('./build/opt.elf', shell=True, stdout=subprocess.DEVNULL,
     stderr=subprocess.STDOUT)
 
         try:
