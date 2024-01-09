@@ -10,13 +10,13 @@ clean:
 	rm build/*
 
 run:
-	./build/opt.elf
+	./build/opt.elf ./data/on_demand_config.csv ./data/savings_plan_config.csv ./data/total_demand.csv
 
 crun: compile
-	./build/opt.elf
+	./build/opt.elf ./data/on_demand_config.csv ./data/savings_plan_config.csv ./data/total_demand.csv
 
 debug:
-	gdb ./build/opt.elf
+	gdb ./build/opt.elf ./data/on_demand_config.csv ./data/savings_plan_config.csv ./data/total_demand.csv
 
 ptest:
 	python -m unittest ./tests/test_aws_model.py

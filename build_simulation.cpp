@@ -1,6 +1,7 @@
 #include "aws_model.h"
 #include "csv_parser.h"
 #include <algorithm>
+#include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -23,11 +24,18 @@ void generate_total_purchases(vector<vector<vector<double>>> values,
                               vector<int> hour_index,
                               vector<string> instance_names,
                               vector<string> market_names);
-int main() {
+int main(int argc, char *argv[]) {
+
+  if (argc < 4) {
+    cerr << "Usage: " << argv[0]
+         << "opt.elf <on_demand_config_path> <savings_plan_config_path> "
+            "<demand_path>\n";
+    return 1;
+  }
   // read CSVs
-  auto on_demand_config = read_csv("./data/on_demand_config.csv");
-  auto savings_plan_config = read_csv("./data/savings_plan_config.csv");
-  auto raw_demand = read_csv("./data/total_demand.csv");
+  auto on_demand_config = read_csv(argv[1]);
+  auto savings_plan_config = read_csv(argv[2]);
+  auto raw_demand = read_csv(argv[3]);
 
   // TODO: validate data
 
