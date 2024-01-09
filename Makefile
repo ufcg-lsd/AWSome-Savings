@@ -1,3 +1,5 @@
+export LD_LIBRARY_PATH := /usr/local/lib:$LD_LIBRARY_PATH
+
 compile:
 	g++ -g -c aws_model.cpp -o build/aws_model.o
 	g++ -g -c build_simulation.cpp -o build/build_simulation.o
@@ -10,5 +12,14 @@ clean:
 run:
 	./build/opt
 
+crun: compile
+	./build/opt
+
 debug:
 	gdb opt
+
+ptest:
+	python -m unittest ./tests/test_aws_model.py
+
+ctest:
+	python -m unittest ./tests/test_aws_model_cpp.py
