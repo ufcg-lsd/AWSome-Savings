@@ -116,7 +116,7 @@ vector<int> to_int(const vector<string> input_vector) {
 
 void matrix_to_csv(const vector<vector<string>> &matrix,
                    const string &filePath) {
-  ofstream outputFile(filePath);
+  ofstream outputFile(filePath, std::ios::out);
 
   if (!outputFile.is_open()) {
     cerr << "Error: Unable to open file " << filePath << " for writing."
