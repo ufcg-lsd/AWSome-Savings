@@ -336,10 +336,9 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('total_demand.csv', index=False)
 
-        # with self.assertRaises(Exception):
-        #     out = subprocess.run('./build/opt', shell=True, stdout=subprocess.DEVNULL,
-        #     stderr=subprocess.STDOUT, check=True)
-        assert True
+        with self.assertRaises(Exception):
+            out = subprocess.run('./build/opt', shell=True, stdout=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT, check=True)
 
     #17
     def test_different_instances_savings_plan_config(self):
@@ -364,10 +363,9 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('total_demand.csv', index=False)
 
-        # with self.assertRaises(Exception):
-        #     out = subprocess.run('./build/opt', shell=True, stdout=subprocess.DEVNULL,
-        #     stderr=subprocess.STDOUT, check=True)
-        assert True
+        with self.assertRaises(Exception):
+            out = subprocess.run('./build/opt', shell=True, stdout=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT, check=True)
 
     #18
     def test_different_instances_total_demand(self):
@@ -391,9 +389,8 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('total_demand.csv', index=False)
 
-        # with self.assertRaises(Exception):
-        #     out = subprocess.run('./build/opt', shell=True, stdout=subprocess.DEVNULL,
-        #     stderr=subprocess.STDOUT, check=True)  
-        assert True
+        with self.assertRaises(Exception):
+            out = subprocess.run('./build/opt', shell=True, stdout=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT, check=True)  
 
         #TO DO: wrong column names

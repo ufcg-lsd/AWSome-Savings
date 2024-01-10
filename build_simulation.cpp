@@ -1,5 +1,6 @@
 #include "aws_model.h"
 #include "csv_parser.h"
+#include "validations.h"
 #include <algorithm>
 #include <iostream>
 #include <string>
@@ -37,10 +38,12 @@ int main(int argc, char *argv[]) {
   auto savings_plan_config = read_csv(argv[2]);
   auto raw_demand = read_csv(argv[3]);
 
-  // TODO: validate data
-
+  // validating data
   vector<string> instances = get_column(on_demand_config, "instance");
-  sort(instances.begin(), instances.end());
+
+  validate_on_demand_config(on_demand_config);
+  validate_savings_plan_config(savings_plan_config, instances);
+  validate_demand(raw_demand, instances);
 
   // transforming input data
   vector<double> savings_plan_data;
