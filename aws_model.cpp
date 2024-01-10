@@ -149,14 +149,19 @@ pair<double, vector<double>> optimize_model(int t,
   for (int j = 0; j < num_vars; ++j) {
     x[j] = solver->MakeIntVar(0.0, infinity, "x[" + to_string(j) + "]");
   }
+  LOG(INFO) << "Number of variables = " << solver->NumVariables();
 
   // adding constraints
+  LOG(INFO) << "Generating constraint 1";
   constraint1(solver.get(), x, num_vars, demand, t, num_instances);
+  LOG(INFO) << "Generating constraint 3 (constraint 2 was removed)";
   constraint3(solver.get(), x, num_vars, t, num_instances, savings_plan_data);
+  LOG(INFO) << "Generating constraint 4";
   constraint4(solver.get(), x, num_vars, t, num_instances,
               savings_plan_duration);
 
   // creating objective function
+  LOG(INFO) << "Generating objective function";
   vector<double> obj_func = {0.0, 1.0 * savings_plan_duration};
 
   for (double instance : on_demand_data) {
@@ -178,18 +183,28 @@ pair<double, vector<double>> optimize_model(int t,
 
   objective->SetMinimization();
 
+  LOG(INFO) << "Starting optimization";
   const MPSolver::ResultStatus status = solver->Solve();
+  LOG(INFO) << "End of optimization";
 
   if (status == MPSolver::OPTIMAL) {
+    double total_value = objective->Value();
+
+    LOG(INFO) << "Objective value = " << total_value;
+    LOG(INFO) << "Problem solved in " << solver->wall_time()
+              << " millisseconds";
+    LOG(INFO) << "Problem solved in " << solver->iterations() << " iterations";
+    LOG(INFO) << "Problem solved in " << solver->nodes()
+              << " branch-and-bound nodes";
+
     vector<double> values = vector<double>();
 
     for (int j = 0; j < num_vars; ++j) {
       values.push_back(x[j]->solution_value());
     }
 
-    double total_value = objective->Value();
     return make_pair(total_value, values);
   }
 
-  throw runtime_error("The problem does not have an optimal solution");
+  LOG(FATAL) << "The problem does not have an optimal solution";
 }
