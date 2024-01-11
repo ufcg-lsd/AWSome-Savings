@@ -17,7 +17,7 @@ crun: compile
 	./build/opt.elf ./data/on_demand_config.csv ./data/savings_plan_config.csv ./data/total_demand.csv
 
 debug:
-	gdb ./build/opt.elf ./data/on_demand_config.csv ./data/savings_plan_config.csv ./data/total_demand.csv
+	gdb --args ./build/opt.elf ./data/on_demand_config.csv ./data/savings_plan_config.csv ./data/total_demand.csv
 
 ptest:
 	python -m unittest ./tests/test_aws_model.py

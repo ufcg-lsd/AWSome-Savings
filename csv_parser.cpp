@@ -51,6 +51,13 @@ string get_value_by_index(const vector<vector<string>> &data, const int index,
   return "";
 }
 
+void trim_carriage_return(string &str) {
+  size_t pos = str.find_last_not_of('\r');
+  if (pos != string::npos) {
+    str.erase(pos + 1);
+  }
+}
+
 vector<vector<string>> read_csv(const string &file_name) {
   vector<vector<string>> data;
 
@@ -67,6 +74,7 @@ vector<vector<string>> read_csv(const string &file_name) {
     string value;
 
     while (getline(iss, value, ',')) {
+      trim_carriage_return(value);
       row.push_back(value);
     }
 
