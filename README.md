@@ -1,6 +1,10 @@
-## AWSome Savings
+# AWSome Savings
 
 AWSome Savings is a tool for optimizing costs in AWS EC2. AWS provides various market types for its instances, which have different pricing policies. The objetive is to determine how many instances should be allocated to each market, in order to satisfy the demand for those instances and minimize the cost. This tool is the implementation of a linear programming model (detailed description [here](https://www.overleaf.com/read/fyfghmzfkmtq)). It considers 3 markets: on-demand, reserve and savings plan.
+
+## Python
+
+For running the optimizer model written in python, proceed with the following steps.
 
 ### Installing dependencies
 
@@ -44,11 +48,114 @@ The unit tests are in *tests/test_aws_model.py* and are written using *unittest*
 
 To run all tests, run the following command:
 ```
-python -m unittest
+python -m unittest tests.test_aws_model
 ```
 To run a single test:
 ```
 python -m unittest tests.test_aws_model.TestAWSModel.{name of the test case}
+```
+### Debugging
+
+The code generates logging when it runs. It is usefull for understanding, when one simulation cannot be completed (e.g. the amount of data was too much), where the code stopped working and how long took do run each step.
+
+## C++
+
+For running the optimizer model written in C++, proceed with the following steps.
+
+### Installing dependencies
+
+There are currently two possible ways to install the dependencies for the use of the model. It is possible to run and install everything locally and in a docker container with all dependencies an libraries installed.
+
+#### Installing locally
+
+For a local install, all the main tools for C++ developing are needed (`gcc`, `g++`), normally included in packages such as `build-essential` in apt. Additionally, `cmake` and the `or-tools` library are needed for the local build.
+
+After installing the C++ developing tools and `cmake`, seek to the [OR-Tools building manual](https://developers.google.com/optimization/install/cpp) for building the library locally or installing the binaries.
+
+> Important: the code will not run if `LD_LIBRARY_PATH` variable is not set correctly pointing to the path of the installation of OR-Tools.
+
+#### Getting the docker image
+
+Another other option is to use the container that wraps all of C++ environment and OR-Tools library, having to only download the image and start the container.
+
+- For downloading the image, use `docker pull` to retrieve it
+
+    ```
+    docker pull lsd/awsome-savings:latest
+    ```
+
+- For building the image, use `docker build` inside the cloned repository to build it locally
+
+    ```
+    docker build --network=host -t awsome-savings:latest .
+    ```
+
+### Compiling
+
+If using the code locally, compiling it is necessary. Assuming all the environment is setup correctly, compile the code with:
+
+```
+make compile
+```
+
+The binary will be located at `build/opt.elf`.
+
+### Using
+
+#### Binary
+
+With a compiled binary, it's possible to run the optimization with:
+
+```
+./build/opt.elf {path of on_demand_config} {path of savings_plan_config} {path of demand}
+```
+
+For example, with the example files:
+```
+./build/opt.elf data/on_demand_config.csv data/savings_plan_config.csv data/total_demand.csv
+```
+
+#### Container
+
+With the pulled image, run it interactively and add the path to the files as the volume that will be in `/optimizer-files` inside the container:
+
+```
+docker run -it -v {local path to files}:/optimizer-files awsome-savings:latest
+```
+
+Inside the container, it's possible to run the commands as running locally:
+
+```
+./build/opt.elf /optimizer-files/on_demand_config.csv /optimizer-files/savings_plan_config.csv /optimizer-files/total_demand.csv
+```
+
+You can detach the container and leave it running the optimization or even run with as a daemon without interacting:
+```
+docker run -v {local path to files}:/optimizer-files -d awsome-savings:latest /optimizer/build/opt.elf /optimizer-files/on_demand_config.csv /optimizer-files/savings_plan_config.csv /optimizer-files/total_demand.csv
+```
+
+#### Output
+
+The simulation generates the following files as the output:
+- result_cost: the total cost of the simulation, the cost for every instance and the total 
+    savings plan cost;
+- total_purchases_savings_plan: for every hour, the active value and the value reserved 
+    for savings plan;
+- total_purchases_{instance_name}: one file for every instance. It has, for every hour 
+    and every market type (including savings plan), the number of active instances and 
+    the number of reserves made.
+
+### Tests
+
+The unit tests are in *tests/test_aws_model.py* and are written using *unittest*. Currently, there are 12 tests of the model and 6 tests of the input validations. 
+
+To run all tests, run the following command:
+```
+python -m unittest tests.test_aws_model_cpp
+```
+To run a single test:
+```
+python -m unittest tests.test_aws_model_cpp.TestAWSModel.{name of the test case}
 ```
 ### Debugging
 
