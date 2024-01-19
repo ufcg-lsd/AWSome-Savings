@@ -17,21 +17,27 @@ void generate_result_cost(double total_cost,
                           vector<string> instance_names,
                           vector<string> market_names,
                           vector<double> on_demand_data,
-                          int savings_plan_duration);
+                          int savings_plan_duration, string out_directory);
 void generate_total_purchases_savings_plan(
-    vector<vector<vector<double>>> values, vector<int> hour_index);
+    vector<vector<vector<double>>> values, vector<int> hour_index,
+    string out_directory);
 
 void generate_total_purchases(vector<vector<vector<double>>> values,
                               vector<int> hour_index,
                               vector<string> instance_names,
-                              vector<string> market_names);
+                              vector<string> market_names,
+                              string out_directory);
 int main(int argc, char *argv[]) {
+
+  string out_directory = ".";
 
   if (argc < 4) {
     cerr << "Usage: " << argv[0]
          << "opt.elf <on_demand_config_path> <savings_plan_config_path> "
-            "<demand_path>\n";
+            "<demand_path> <out_directory>\n";
     return 1;
+  } else if (argc == 5) {
+    out_directory = argv[4];
   }
   // read CSVs
   auto on_demand_config = read_csv(argv[1]);
@@ -80,12 +86,13 @@ int main(int argc, char *argv[]) {
 
   // generating output files
   generate_result_cost(total_cost, values, t, instances, market_names,
-                       on_demand_data, savings_plan_duration);
+                       on_demand_data, savings_plan_duration, out_directory);
 
   vector<int> hour_index = to_int(get_column(raw_demand, "hour"));
 
-  generate_total_purchases_savings_plan(values, hour_index);
-  generate_total_purchases(values, hour_index, instances, market_names);
+  generate_total_purchases_savings_plan(values, hour_index, out_directory);
+  generate_total_purchases(values, hour_index, instances, market_names,
+                           out_directory);
 
   return 0;
 }
@@ -116,7 +123,7 @@ void generate_result_cost(double total_cost,
                           vector<string> instance_names,
                           vector<string> market_names,
                           vector<double> on_demand_data,
-                          int savings_plan_duration) {
+                          int savings_plan_duration, string out_directory) {
   vector<vector<string>> result_cost = {{"instance", "total_cost"},
                                         {"all", to_string(total_cost)}};
   double savings_plan_cost = 0.0;
@@ -143,11 +150,12 @@ void generate_result_cost(double total_cost,
         {instance_names[i_instance], to_string(instance_cost)});
   }
 
-  matrix_to_csv(result_cost, "result_cost.csv");
+  matrix_to_csv(result_cost, out_directory + "/result_cost.csv");
 }
 
 void generate_total_purchases_savings_plan(
-    vector<vector<vector<double>>> values, vector<int> hour_index) {
+    vector<vector<vector<double>>> values, vector<int> hour_index,
+    string out_directory) {
   vector<vector<string>> total_purchases_savings_plan = {
       {"hour", "market", "value_active", "value_reserves"}};
 
@@ -160,13 +168,14 @@ void generate_total_purchases_savings_plan(
   }
 
   matrix_to_csv(total_purchases_savings_plan,
-                "total_purchases_savings_plan.csv");
+                out_directory + "/total_purchases_savings_plan.csv");
 }
 
 void generate_total_purchases(vector<vector<vector<double>>> values,
                               vector<int> hour_index,
                               vector<string> instance_names,
-                              vector<string> market_names) {
+                              vector<string> market_names,
+                              string out_directory) {
   for (int i_instance = 0; i_instance < instance_names.size(); ++i_instance) {
     vector<vector<string>> total_purchases = {
         {"hour", "instance_type", "market", "count_active", "count_reserves"}};
@@ -188,6 +197,7 @@ void generate_total_purchases(vector<vector<vector<double>>> values,
       total_purchases.push_back(line);
     }
 
-    matrix_to_csv(total_purchases, "total_purchases_" + instance_name + ".csv");
+    matrix_to_csv(total_purchases,
+                  out_directory + "/total_purchases_" + instance_name + ".csv");
   }
 }
