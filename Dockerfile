@@ -19,7 +19,8 @@ WORKDIR /optimizer
 RUN make compile
 
 VOLUME ["/optimizer-files"]
+VOLUME ["/optimizer-logs"]
 
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
-ENTRYPOINT ["/bin/sh"]
+CMD ["/bin/sh", "-c", "echo AWSome-Savings!"]

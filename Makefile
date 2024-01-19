@@ -1,4 +1,5 @@
 export LD_LIBRARY_PATH := /usr/local/lib:$LD_LIBRARY_PATH
+DIR := $(shell pwd)
 
 compile:
 	g++ -g -c aws_model.cpp -o build/aws_model.o
@@ -24,3 +25,9 @@ ptest:
 
 ctest:
 	python -m unittest ./tests/test_aws_model_cpp.py
+
+dopt:
+	docker run -v $(DIR)/data:/optimizer-files -v $(DIR)/logs:/optimzer-logs optimizer:latest /bin/sh -c "/optimizer/build/opt.elf /optimizer-files/on_demand_config.csv /optimizer-files/savings_plan_config.csv /optimizer-files/total_demand.csv /optimizer-files/output > /optimizer-logs/output.log 2> /optimizer-logs/error.log"
+
+drun:
+	docker run -v $(DIR)/data:/optimizer-files -v $(DIR)/logs:/optimizer-logs -it optimizer:latest /bin/sh
