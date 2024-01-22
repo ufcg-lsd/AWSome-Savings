@@ -115,23 +115,25 @@ For example, with the example files:
 ./build/opt.elf data/on_demand_config.csv data/savings_plan_config.csv data/total_demand.csv
 ```
 
+> As a fourth optional parameter, is possible to add the path to the directory for saving the results. The current directory is the default (don't add the `/` to the end of the directory name)
+
 #### Container
 
-With the pulled image, run it interactively and add the path to the files as the volume that will be in `/optimizer-files` inside the container:
+With the pulled image, run it interactively and add the path to the files as the volume that will be in `/optimizer-files` and the log directory as `/optimizer-logs` inside the container:
 
 ```
-docker run -it -v {local path to files}:/optimizer-files awsome-savings:latest
+docker run -it -v {local path to files}:/optimizer-files -v {local path to logs}:/optimizer-logs awsome-savings:latest
 ```
 
 Inside the container, it's possible to run the commands as running locally:
 
 ```
-./build/opt.elf /optimizer-files/on_demand_config.csv /optimizer-files/savings_plan_config.csv /optimizer-files/total_demand.csv
+./build/opt.elf /optimizer-files/on_demand_config.csv /optimizer-files/savings_plan_config.csv /optimizer-files/total_demand.csv /optimizer-files > /optimizer-logs/output.log 2> /optimizer-logs/error.log
 ```
 
 You can detach the container and leave it running the optimization or even run with as a daemon without interacting:
 ```
-docker run -v {local path to files}:/optimizer-files -d awsome-savings:latest /optimizer/build/opt.elf /optimizer-files/on_demand_config.csv /optimizer-files/savings_plan_config.csv /optimizer-files/total_demand.csv
+docker run -v {local path to files}:/optimizer-files -v {local path to logs}:/optimizer-logs -d awsome-savings:latest /optimizer/build/opt.elf /optimizer-files/on_demand_config.csv /optimizer-files/savings_plan_config.csv /optimizer-files/total_demand.csv /optimizer-files > /optimizer-logs/output.log 2> /optimizer-logs/error.log
 ```
 
 #### Output
