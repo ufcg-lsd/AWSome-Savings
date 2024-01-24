@@ -122,7 +122,7 @@ For example, with the example files:
 With the pulled image, run it interactively and add the path to the files as the volume that will be in `/optimizer-files` and the log directory as `/optimizer-logs` inside the container:
 
 ```
-docker run -it -v {local path to files}:/optimizer-files -v {local path to logs}:/optimizer-logs awsome-savings:latest
+docker run -v {local path to files}/data:/optimizer-files -v {local path to logs}/logs:/optimizer-logs -it optimizer:latest /bin/sh
 ```
 
 Inside the container, it's possible to run the commands as running locally:
@@ -133,7 +133,7 @@ Inside the container, it's possible to run the commands as running locally:
 
 You can detach the container and leave it running the optimization or even run with as a daemon without interacting:
 ```
-docker run -v {local path to files}:/optimizer-files -v {local path to logs}:/optimizer-logs -d awsome-savings:latest /optimizer/build/opt.elf /optimizer-files/on_demand_config.csv /optimizer-files/savings_plan_config.csv /optimizer-files/total_demand.csv /optimizer-files > /optimizer-logs/output.log 2> /optimizer-logs/error.log
+docker run -v {local path to files}/data:/optimizer-files -v {local path to logs}/logs:/optimzer-logs -d optimizer:latest /bin/sh -c "/optimizer/build/opt.elf /optimizer-files/on_demand_config.csv /optimizer-files/savings_plan_config.csv /optimizer-files/total_demand.csv /optimizer-files/output > /optimizer-logs/output.log 2> /optimizer-logs/error.log"
 ```
 
 #### Output
