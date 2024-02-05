@@ -16,7 +16,10 @@ COPY *.cpp *.h Makefile util/*.sh /optimizer/
 
 WORKDIR /optimizer
 
-RUN make compile
+RUN make compile && \
+    chmod +x ./run_optimization.sh && \
+    chmod +x ./collect-cpu-usage.sh && \
+    chmod +x ./collect-memory-usage.sh
 
 VOLUME ["/optimizer-files"]
 VOLUME ["/optimizer-logs"]

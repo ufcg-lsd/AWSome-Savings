@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 export LC_NUMERIC="C"
 TIME_BETWEEN_COMMANDS=1
