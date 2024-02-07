@@ -1,7 +1,9 @@
 #!/bin/sh
 
-./collect-cpu-usage.sh > cpu_output.csv &
-./collect-memory-usage.sh > memory_output.csv &
+output_directory="$1"
+
+./collect-cpu-usage.sh > "$output_directory/cpu_output.csv" &
+./collect-memory-usage.sh > "$output_directory/memory_output.csv" &
 
 nohup ./build/opt.elf /optimizer-files/on_demand_config.csv /optimizer-files/savings_plan_config.csv /optimizer-files/total_demand.csv /optimizer-files/output >/optimizer-logs/output.log 2>/optimizer-logs/error.log
 
