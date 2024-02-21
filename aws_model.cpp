@@ -135,10 +135,10 @@ pair<double, vector<double>> optimize_model(int t,
                                             vector<double> on_demand_data,
                                             vector<double> savings_plan_data,
                                             int savings_plan_duration) {
-  unique_ptr<MPSolver> solver(MPSolver::CreateSolver("SCIP"));
+  unique_ptr<MPSolver> solver(MPSolver::CreateSolver("GLOP"));
   if (!solver) {
-    LOG(WARNING) << "SCIP solver unavailable.";
-    throw runtime_error("SCIP solver unavaliable");
+    LOG(WARNING) << "GLOP solver unavailable.";
+    throw runtime_error("GLOP solver unavaliable");
   }
 
   const double infinity = solver->infinity();
