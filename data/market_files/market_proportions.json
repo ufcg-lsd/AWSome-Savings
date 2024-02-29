@@ -1,0 +1,942 @@
+{
+  "a1": {
+    "metal": 16,
+    "4xlarge": 16,
+    "2xlarge": 8,
+    "large": 2,
+    "xlarge": 4,
+    "medium": 1
+  },
+  "c1": {
+    "medium": 1,
+    "xlarge": 4
+  },
+  "c3": {
+    "large": 1,
+    "8xlarge": 16,
+    "xlarge": 2,
+    "2xlarge": 4,
+    "4xlarge": 8
+  },
+  "c4": {
+    "8xlarge": 16,
+    "2xlarge": 4,
+    "large": 1,
+    "xlarge": 2,
+    "4xlarge": 8
+  },
+  "c5": {
+    "large": 1,
+    "4xlarge": 8,
+    "9xlarge": 18,
+    "18xlarge": 36,
+    "12xlarge": 24,
+    "metal": 48,
+    "24xlarge": 48,
+    "2xlarge": 4,
+    "xlarge": 2
+  },
+  "c5a": {
+    "2xlarge": 4,
+    "4xlarge": 8,
+    "8xlarge": 16,
+    "xlarge": 2,
+    "16xlarge": 32,
+    "24xlarge": 48,
+    "12xlarge": 24,
+    "large": 1
+  },
+  "c5ad": {
+    "xlarge": 2,
+    "16xlarge": 32,
+    "8xlarge": 16,
+    "4xlarge": 8,
+    "24xlarge": 48,
+    "large": 1,
+    "2xlarge": 4,
+    "12xlarge": 24
+  },
+  "c5d": {
+    "xlarge": 2,
+    "18xlarge": 36,
+    "large": 1,
+    "24xlarge": 48,
+    "4xlarge": 8,
+    "metal": 48,
+    "2xlarge": 4,
+    "12xlarge": 24,
+    "9xlarge": 18
+  },
+  "c5n": {
+    "2xlarge": 4,
+    "large": 1,
+    "18xlarge": 36,
+    "xlarge": 2,
+    "9xlarge": 18,
+    "metal": 36,
+    "4xlarge": 8
+  },
+  "c6a": {
+    "16xlarge": 32,
+    "2xlarge": 4,
+    "4xlarge": 8,
+    "32xlarge": 64,
+    "12xlarge": 24,
+    "48xlarge": 96,
+    "large": 1,
+    "8xlarge": 16,
+    "24xlarge": 48,
+    "xlarge": 2,
+    "metal": 96
+  },
+  "c6g": {
+    "xlarge": 4,
+    "4xlarge": 16,
+    "metal": 64,
+    "8xlarge": 32,
+    "2xlarge": 8,
+    "16xlarge": 64,
+    "medium": 1,
+    "12xlarge": 48,
+    "large": 2
+  },
+  "c6gd": {
+    "4xlarge": 16,
+    "medium": 1,
+    "metal": 64,
+    "2xlarge": 8,
+    "16xlarge": 64,
+    "large": 2,
+    "8xlarge": 32,
+    "12xlarge": 48,
+    "xlarge": 4
+  },
+  "c6gn": {
+    "12xlarge": 48,
+    "medium": 1,
+    "8xlarge": 32,
+    "xlarge": 4,
+    "2xlarge": 8,
+    "16xlarge": 64,
+    "large": 2,
+    "4xlarge": 16
+  },
+  "c6i": {
+    "xlarge": 2,
+    "4xlarge": 8,
+    "8xlarge": 16,
+    "12xlarge": 24,
+    "2xlarge": 4,
+    "24xlarge": 48,
+    "large": 1,
+    "16xlarge": 32,
+    "32xlarge": 64,
+    "metal": 64
+  },
+  "c6id": {
+    "8xlarge": 16,
+    "32xlarge": 64,
+    "12xlarge": 24,
+    "4xlarge": 8,
+    "metal": 64,
+    "2xlarge": 4,
+    "xlarge": 2,
+    "16xlarge": 32,
+    "large": 1,
+    "24xlarge": 48
+  },
+  "c6in": {
+    "xlarge": 2,
+    "12xlarge": 24,
+    "2xlarge": 4,
+    "8xlarge": 16,
+    "16xlarge": 32,
+    "4xlarge": 8,
+    "24xlarge": 48,
+    "large": 1,
+    "32xlarge": 64
+  },
+  "c7g": {
+    "4xlarge": 16,
+    "medium": 1,
+    "16xlarge": 64,
+    "12xlarge": 48,
+    "xlarge": 4,
+    "2xlarge": 8,
+    "large": 2,
+    "8xlarge": 32
+  },
+  "c7gd": {
+    "4xlarge": 16,
+    "large": 2,
+    "2xlarge": 8,
+    "16xlarge": 64,
+    "8xlarge": 32,
+    "xlarge": 4,
+    "12xlarge": 48,
+    "medium": 1
+  },
+  "c7gn": {
+    "2xlarge": 8,
+    "xlarge": 4,
+    "large": 2,
+    "4xlarge": 16,
+    "16xlarge": 64,
+    "medium": 1,
+    "12xlarge": 48,
+    "8xlarge": 32
+  },
+  "c7i": {
+    "large": 1,
+    "8xlarge": 16,
+    "48xlarge": 96,
+    "24xlarge": 48,
+    "2xlarge": 4,
+    "xlarge": 2,
+    "16xlarge": 32,
+    "4xlarge": 8,
+    "12xlarge": 24
+  },
+  "cr1": {},
+  "d2": {
+    "8xlarge": 8,
+    "xlarge": 1,
+    "2xlarge": 2,
+    "4xlarge": 4
+  },
+  "d3": {
+    "4xlarge": 4,
+    "8xlarge": 8,
+    "2xlarge": 2,
+    "xlarge": 1
+  },
+  "d3en": {
+    "8xlarge": 8,
+    "xlarge": 1,
+    "6xlarge": 6,
+    "12xlarge": 12,
+    "4xlarge": 4,
+    "2xlarge": 2
+  },
+  "dl1": {
+    "24xlarge": 1
+  },
+  "f1": {
+    "4xlarge": 2,
+    "16xlarge": 8,
+    "2xlarge": 1
+  },
+  "g2": {},
+  "g3": {
+    "4xlarge": 1,
+    "16xlarge": 4,
+    "8xlarge": 2
+  },
+  "g3s": {
+    "xlarge": 1
+  },
+  "g4ad": {
+    "xlarge": 1,
+    "2xlarge": 1,
+    "16xlarge": 9,
+    "8xlarge": 5,
+    "4xlarge": 2
+  },
+  "g4dn": {
+    "8xlarge": 4,
+    "16xlarge": 8,
+    "metal": 15,
+    "12xlarge": 7,
+    "xlarge": 1,
+    "4xlarge": 2,
+    "2xlarge": 1
+  },
+  "g5": {
+    "12xlarge": 6,
+    "8xlarge": 2,
+    "xlarge": 1,
+    "24xlarge": 8,
+    "2xlarge": 1,
+    "16xlarge": 4,
+    "4xlarge": 2,
+    "48xlarge": 16
+  },
+  "g5g": {
+    "4xlarge": 2,
+    "xlarge": 1,
+    "metal": 7,
+    "16xlarge": 7,
+    "8xlarge": 3,
+    "2xlarge": 1
+  },
+  "h1": {
+    "16xlarge": 8,
+    "8xlarge": 4,
+    "4xlarge": 2,
+    "2xlarge": 1
+  },
+  "hpc7g": {
+    "4xlarge": 1,
+    "8xlarge": 1,
+    "16xlarge": 1
+  },
+  "i2": {
+    "xlarge": 1,
+    "8xlarge": 8,
+    "2xlarge": 2,
+    "4xlarge": 4
+  },
+  "i3": {
+    "large": 1,
+    "xlarge": 2,
+    "metal": 32,
+    "16xlarge": 32,
+    "2xlarge": 4,
+    "4xlarge": 8,
+    "8xlarge": 16
+  },
+  "i3en": {
+    "xlarge": 2,
+    "12xlarge": 24,
+    "metal": 48,
+    "3xlarge": 6,
+    "2xlarge": 4,
+    "6xlarge": 12,
+    "24xlarge": 48,
+    "large": 1
+  },
+  "i4g": {
+    "xlarge": 2,
+    "8xlarge": 16,
+    "2xlarge": 4,
+    "16xlarge": 32,
+    "4xlarge": 8,
+    "large": 1
+  },
+  "i4i": {
+    "xlarge": 2,
+    "large": 1,
+    "8xlarge": 16,
+    "16xlarge": 32,
+    "2xlarge": 4,
+    "4xlarge": 8,
+    "32xlarge": 64,
+    "metal": 64
+  },
+  "im4gn": {
+    "8xlarge": 16,
+    "large": 1,
+    "xlarge": 2,
+    "4xlarge": 8,
+    "2xlarge": 4,
+    "16xlarge": 32
+  },
+  "inf1": {
+    "xlarge": 1,
+    "24xlarge": 21,
+    "6xlarge": 5,
+    "2xlarge": 2
+  },
+  "inf2": {
+    "48xlarge": 17,
+    "xlarge": 1,
+    "8xlarge": 3,
+    "24xlarge": 9
+  },
+  "is4gen": {
+    "xlarge": 4,
+    "8xlarge": 32,
+    "2xlarge": 8,
+    "large": 2,
+    "4xlarge": 16,
+    "medium": 1
+  },
+  "m1": {
+    "xlarge": 4,
+    "medium": 1,
+    "large": 2
+  },
+  "m2": {
+    "2xlarge": 2,
+    "4xlarge": 4,
+    "xlarge": 1
+  },
+  "m3": {
+    "2xlarge": 8,
+    "large": 2,
+    "medium": 1,
+    "xlarge": 4
+  },
+  "m4": {
+    "large": 1,
+    "10xlarge": 20,
+    "xlarge": 2,
+    "16xlarge": 32,
+    "4xlarge": 8,
+    "2xlarge": 4
+  },
+  "m5": {
+    "12xlarge": 24,
+    "4xlarge": 8,
+    "large": 1,
+    "24xlarge": 48,
+    "2xlarge": 4,
+    "metal": 48,
+    "xlarge": 2,
+    "16xlarge": 32,
+    "8xlarge": 16
+  },
+  "m5a": {
+    "24xlarge": 48,
+    "xlarge": 2,
+    "12xlarge": 24,
+    "4xlarge": 8,
+    "8xlarge": 16,
+    "2xlarge": 4,
+    "16xlarge": 32,
+    "large": 1
+  },
+  "m5ad": {
+    "xlarge": 2,
+    "large": 1,
+    "2xlarge": 4,
+    "4xlarge": 8,
+    "24xlarge": 48,
+    "8xlarge": 16,
+    "12xlarge": 24,
+    "16xlarge": 32
+  },
+  "m5d": {
+    "12xlarge": 24,
+    "24xlarge": 48,
+    "large": 1,
+    "2xlarge": 4,
+    "xlarge": 2,
+    "16xlarge": 32,
+    "4xlarge": 8,
+    "metal": 48,
+    "8xlarge": 16
+  },
+  "m5dn": {
+    "metal": 48,
+    "xlarge": 2,
+    "large": 1,
+    "12xlarge": 24,
+    "16xlarge": 32,
+    "24xlarge": 48,
+    "4xlarge": 8,
+    "8xlarge": 16,
+    "2xlarge": 4
+  },
+  "m5n": {
+    "16xlarge": 32,
+    "xlarge": 2,
+    "large": 1,
+    "2xlarge": 4,
+    "24xlarge": 48,
+    "12xlarge": 24,
+    "metal": 48,
+    "4xlarge": 8,
+    "8xlarge": 16
+  },
+  "m5zn": {
+    "6xlarge": 12,
+    "12xlarge": 24,
+    "2xlarge": 4,
+    "xlarge": 2,
+    "3xlarge": 6,
+    "metal": 24,
+    "large": 1
+  },
+  "m6a": {
+    "xlarge": 2,
+    "32xlarge": 64,
+    "16xlarge": 32,
+    "8xlarge": 16,
+    "large": 1,
+    "2xlarge": 4,
+    "24xlarge": 48,
+    "4xlarge": 8,
+    "12xlarge": 24,
+    "48xlarge": 96,
+    "metal": 96
+  },
+  "m6g": {
+    "large": 2,
+    "2xlarge": 8,
+    "4xlarge": 16,
+    "16xlarge": 64,
+    "medium": 1,
+    "metal": 64,
+    "8xlarge": 32,
+    "xlarge": 4,
+    "12xlarge": 48
+  },
+  "m6gd": {
+    "12xlarge": 48,
+    "large": 2,
+    "16xlarge": 64,
+    "medium": 1,
+    "4xlarge": 16,
+    "xlarge": 4,
+    "metal": 64,
+    "8xlarge": 32,
+    "2xlarge": 8
+  },
+  "m6i": {
+    "xlarge": 2,
+    "4xlarge": 8,
+    "12xlarge": 24,
+    "32xlarge": 64,
+    "24xlarge": 48,
+    "2xlarge": 4,
+    "large": 1,
+    "8xlarge": 16,
+    "16xlarge": 32,
+    "metal": 64
+  },
+  "m6id": {
+    "32xlarge": 64,
+    "4xlarge": 8,
+    "large": 1,
+    "metal": 64,
+    "12xlarge": 24,
+    "16xlarge": 32,
+    "2xlarge": 4,
+    "8xlarge": 16,
+    "24xlarge": 48,
+    "xlarge": 2
+  },
+  "m6idn": {
+    "12xlarge": 24,
+    "large": 1,
+    "32xlarge": 64,
+    "16xlarge": 32,
+    "24xlarge": 48,
+    "xlarge": 2,
+    "2xlarge": 4,
+    "4xlarge": 8,
+    "8xlarge": 16
+  },
+  "m6in": {
+    "xlarge": 2,
+    "12xlarge": 24,
+    "8xlarge": 16,
+    "24xlarge": 48,
+    "4xlarge": 8,
+    "large": 1,
+    "2xlarge": 4,
+    "32xlarge": 64,
+    "16xlarge": 32
+  },
+  "m7a": {
+    "8xlarge": 32,
+    "16xlarge": 64,
+    "12xlarge": 48,
+    "2xlarge": 8,
+    "24xlarge": 96,
+    "xlarge": 4,
+    "medium": 1,
+    "48xlarge": 192,
+    "32xlarge": 128,
+    "4xlarge": 16,
+    "large": 2
+  },
+  "m7g": {
+    "16xlarge": 64,
+    "12xlarge": 48,
+    "2xlarge": 8,
+    "4xlarge": 16,
+    "8xlarge": 32,
+    "medium": 1,
+    "large": 2,
+    "xlarge": 4
+  },
+  "m7gd": {
+    "8xlarge": 32,
+    "xlarge": 4,
+    "medium": 1,
+    "16xlarge": 64,
+    "2xlarge": 8,
+    "12xlarge": 48,
+    "4xlarge": 16,
+    "large": 2
+  },
+  "m7i": {
+    "12xlarge": 24,
+    "2xlarge": 4,
+    "48xlarge": 96,
+    "8xlarge": 16,
+    "large": 1,
+    "16xlarge": 32,
+    "4xlarge": 8,
+    "xlarge": 2,
+    "24xlarge": 48
+  },
+  "m7i-flex": {
+    "4xlarge": 8,
+    "xlarge": 2,
+    "8xlarge": 16,
+    "large": 1,
+    "2xlarge": 4
+  },
+  "p2": {
+    "16xlarge": 16,
+    "8xlarge": 8,
+    "xlarge": 1
+  },
+  "p3": {
+    "8xlarge": 4,
+    "2xlarge": 1,
+    "16xlarge": 8
+  },
+  "p3dn": {
+    "24xlarge": 1
+  },
+  "p4d": {
+    "24xlarge": 1
+  },
+  "p4de": {
+    "24xlarge": 1
+  },
+  "p5": {},
+  "r3": {
+    "4xlarge": 8,
+    "large": 1,
+    "xlarge": 2,
+    "2xlarge": 4,
+    "8xlarge": 16
+  },
+  "r4": {
+    "xlarge": 2,
+    "8xlarge": 16,
+    "large": 1,
+    "16xlarge": 32,
+    "2xlarge": 4,
+    "4xlarge": 8
+  },
+  "r5": {
+    "metal": 48,
+    "24xlarge": 48,
+    "large": 1,
+    "2xlarge": 4,
+    "16xlarge": 32,
+    "12xlarge": 24,
+    "xlarge": 2,
+    "8xlarge": 16,
+    "4xlarge": 8
+  },
+  "r5a": {
+    "2xlarge": 4,
+    "8xlarge": 16,
+    "large": 1,
+    "24xlarge": 48,
+    "4xlarge": 8,
+    "16xlarge": 32,
+    "xlarge": 2,
+    "12xlarge": 24
+  },
+  "r5ad": {
+    "16xlarge": 32,
+    "xlarge": 2,
+    "2xlarge": 4,
+    "24xlarge": 48,
+    "large": 1,
+    "8xlarge": 16,
+    "4xlarge": 8,
+    "12xlarge": 24
+  },
+  "r5b": {
+    "large": 1,
+    "12xlarge": 24,
+    "16xlarge": 32,
+    "8xlarge": 16,
+    "4xlarge": 8,
+    "xlarge": 2,
+    "24xlarge": 48,
+    "metal": 48,
+    "2xlarge": 4
+  },
+  "r5d": {
+    "24xlarge": 48,
+    "xlarge": 2,
+    "metal": 48,
+    "4xlarge": 8,
+    "8xlarge": 16,
+    "2xlarge": 4,
+    "large": 1,
+    "12xlarge": 24,
+    "16xlarge": 32
+  },
+  "r5dn": {
+    "24xlarge": 48,
+    "xlarge": 2,
+    "8xlarge": 16,
+    "16xlarge": 32,
+    "metal": 48,
+    "large": 1,
+    "12xlarge": 24,
+    "4xlarge": 8,
+    "2xlarge": 4
+  },
+  "r5n": {
+    "16xlarge": 32,
+    "12xlarge": 24,
+    "xlarge": 2,
+    "24xlarge": 48,
+    "large": 1,
+    "2xlarge": 4,
+    "8xlarge": 16,
+    "metal": 48,
+    "4xlarge": 8
+  },
+  "r6a": {
+    "8xlarge": 16,
+    "4xlarge": 8,
+    "16xlarge": 32,
+    "32xlarge": 64,
+    "12xlarge": 24,
+    "24xlarge": 48,
+    "xlarge": 2,
+    "48xlarge": 96,
+    "large": 1,
+    "2xlarge": 4
+  },
+  "r6g": {
+    "8xlarge": 32,
+    "xlarge": 4,
+    "medium": 1,
+    "12xlarge": 48,
+    "2xlarge": 8,
+    "metal": 64,
+    "16xlarge": 64,
+    "4xlarge": 16,
+    "large": 2
+  },
+  "r6gd": {
+    "4xlarge": 16,
+    "16xlarge": 64,
+    "12xlarge": 48,
+    "2xlarge": 8,
+    "8xlarge": 32,
+    "xlarge": 4,
+    "metal": 64,
+    "large": 2,
+    "medium": 1
+  },
+  "r6i": {
+    "32xlarge": 64,
+    "4xlarge": 8,
+    "8xlarge": 16,
+    "24xlarge": 48,
+    "metal": 64,
+    "2xlarge": 4,
+    "12xlarge": 24,
+    "xlarge": 2,
+    "16xlarge": 32,
+    "large": 1
+  },
+  "r6id": {
+    "xlarge": 2,
+    "large": 1,
+    "12xlarge": 24,
+    "metal": 64,
+    "4xlarge": 8,
+    "2xlarge": 4,
+    "16xlarge": 32,
+    "24xlarge": 48,
+    "8xlarge": 16,
+    "32xlarge": 64
+  },
+  "r6idn": {
+    "24xlarge": 48,
+    "2xlarge": 4,
+    "large": 1,
+    "12xlarge": 24,
+    "8xlarge": 16,
+    "4xlarge": 8,
+    "32xlarge": 64,
+    "xlarge": 2,
+    "16xlarge": 32
+  },
+  "r6in": {
+    "16xlarge": 32,
+    "32xlarge": 64,
+    "12xlarge": 24,
+    "24xlarge": 48,
+    "xlarge": 2,
+    "8xlarge": 16,
+    "4xlarge": 8,
+    "large": 1,
+    "2xlarge": 4
+  },
+  "r7a": {
+    "32xlarge": 128,
+    "8xlarge": 32,
+    "16xlarge": 64,
+    "24xlarge": 96,
+    "large": 2,
+    "xlarge": 4,
+    "2xlarge": 8,
+    "12xlarge": 48,
+    "medium": 1,
+    "48xlarge": 192,
+    "4xlarge": 16
+  },
+  "r7g": {
+    "xlarge": 4,
+    "2xlarge": 8,
+    "16xlarge": 64,
+    "4xlarge": 16,
+    "large": 2,
+    "8xlarge": 32,
+    "12xlarge": 48,
+    "medium": 1
+  },
+  "r7gd": {
+    "medium": 1,
+    "8xlarge": 32,
+    "large": 2,
+    "16xlarge": 64,
+    "12xlarge": 48,
+    "4xlarge": 16,
+    "xlarge": 4,
+    "2xlarge": 8
+  },
+  "r7iz": {
+    "xlarge": 2,
+    "large": 1,
+    "8xlarge": 16,
+    "12xlarge": 24,
+    "16xlarge": 32,
+    "4xlarge": 8,
+    "32xlarge": 64,
+    "2xlarge": 4
+  },
+  "t1": {
+    "micro": 1
+  },
+  "t2": {
+    "xlarge": 32,
+    "micro": 2,
+    "2xlarge": 64,
+    "large": 16,
+    "small": 4,
+    "medium": 8,
+    "nano": 1
+  },
+  "t3": {
+    "xlarge": 32,
+    "medium": 8,
+    "micro": 2,
+    "2xlarge": 64,
+    "nano": 1,
+    "small": 4,
+    "large": 16
+  },
+  "t3a": {
+    "medium": 8,
+    "nano": 1,
+    "2xlarge": 64,
+    "micro": 2,
+    "small": 4,
+    "xlarge": 32,
+    "large": 16
+  },
+  "t4g": {
+    "large": 16,
+    "nano": 1,
+    "micro": 2,
+    "small": 4,
+    "2xlarge": 64,
+    "xlarge": 32,
+    "medium": 8
+  },
+  "trn1": {
+    "2xlarge": 1,
+    "32xlarge": 16
+  },
+  "trn1n": {
+    "32xlarge": 1
+  },
+  "u-12tb1": {
+    "112xlarge": 1
+  },
+  "u-18tb1": {
+    "112xlarge": 1
+  },
+  "u-24tb1": {
+    "112xlarge": 1
+  },
+  "u-3tb1": {
+    "56xlarge": 1
+  },
+  "u-6tb1": {
+    "112xlarge": 1,
+    "56xlarge": 1
+  },
+  "u-9tb1": {
+    "112xlarge": 1
+  },
+  "vt1": {
+    "24xlarge": 8,
+    "3xlarge": 1,
+    "6xlarge": 2
+  },
+  "x1": {
+    "16xlarge": 1,
+    "32xlarge": 2
+  },
+  "x1e": {
+    "16xlarge": 16,
+    "4xlarge": 4,
+    "xlarge": 1,
+    "32xlarge": 32,
+    "2xlarge": 2,
+    "8xlarge": 8
+  },
+  "x2gd": {
+    "2xlarge": 8,
+    "xlarge": 4,
+    "metal": 64,
+    "medium": 1,
+    "8xlarge": 32,
+    "large": 2,
+    "12xlarge": 48,
+    "16xlarge": 64,
+    "4xlarge": 16
+  },
+  "x2idn": {
+    "32xlarge": 2,
+    "16xlarge": 1,
+    "24xlarge": 2,
+    "metal": 2
+  },
+  "x2iedn": {
+    "xlarge": 1,
+    "4xlarge": 4,
+    "32xlarge": 32,
+    "8xlarge": 8,
+    "16xlarge": 16,
+    "24xlarge": 24,
+    "2xlarge": 2,
+    "metal": 32
+  },
+  "x2iezn": {
+    "2xlarge": 1,
+    "8xlarge": 4,
+    "12xlarge": 6,
+    "4xlarge": 2,
+    "6xlarge": 3,
+    "metal": 6
+  },
+  "z1d": {
+    "3xlarge": 6,
+    "2xlarge": 4,
+    "12xlarge": 24,
+    "6xlarge": 12,
+    "xlarge": 2,
+    "metal": 24,
+    "large": 1
+  }
+}

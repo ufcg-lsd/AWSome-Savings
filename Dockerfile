@@ -1,26 +1,34 @@
-FROM alpine:latest
+FROM python:3.10
 
-RUN apk update && \
-    apk add --no-cache git alpine-sdk linux-headers cmake lsb-release-minimal
+WORKDIR /
+
+COPY ./requirements.txt .
+
+RUN pip3 install -r requirements.txt
+
+RUN apt update && apt install -y vim build-essential cmake lsb-release
 
 RUN git clone https://github.com/google/or-tools /or-tools
 
 WORKDIR /or-tools
 
-COPY *.cpp *.h Makefile util/*.sh /optimizer/
-
 RUN cmake -S . -B build -DBUILD_DEPS=ON && \
     cmake --build build --config Release --target all -j6 -v && \
     cmake --build build --config Release --target install -v && \
-    mkdir -p /optimizer/build
+    mkdir -p /calculation/optimizer/build
 
-WORKDIR /optimizer
+COPY costplanner_cli.py /calculation/
+COPY services/ /calculation/services/
+COPY example_input/ /calculation/example_input/
+COPY data/ /calculation/data/
+COPY *.cpp *.h Makefile /util/*.sh /calculation/optimizer/
+
+WORKDIR /calculation/optimizer
 
 RUN make compile
 
-VOLUME ["/optimizer-files"]
-VOLUME ["/optimizer-logs"]
-
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+
+WORKDIR /calculation
 
 CMD ["/bin/sh", "-c", "echo AWSome-Savings!"]

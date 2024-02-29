@@ -11,6 +11,12 @@ compile:
 clean:
 	rm build/*
 
+run-optimizer:
+	docker run -v $(input_dir):/calculation/calculation-file.csv -v $(output_dir):/calculation/final-result -v $(logs_dir):/calculation/optimizer-logs -d awsome-savings:latest bash -c "python3 costplanner_cli.py calculation-file.csv final-result --m optimal > /calculation/optimizer-logs/output.log 2> /calculation/optimizer-logs/error.log"
+
+run-classic:
+	docker run -v $(input_dir):/calculation/calculation-file.csv -v $(output_dir):/calculation/final-result -v $(logs_dir):/calculation/optimizer-logs -d awsome-savings:latest bash -c "python3 costplanner_cli.py calculation-file.csv final-result --m classic --p proportion $(ond_proportion) $(noup_proportion) $(partialup_proportion) $(allup_proportion) --summarize > /calculation/optimizer-logs/output.log 2> /calculation/optimizer-logs/error.log"
+
 run:
 	./build/opt.elf ./data/on_demand_config.csv ./data/savings_plan_config.csv ./data/total_demand.csv
 
@@ -30,4 +36,8 @@ dopt:
 	docker run -v $(DIR)/data:/optimizer-files -v $(DIR)/logs:/optimzer-logs optimizer:latest /bin/sh -c "/optimizer/build/opt.elf /optimizer-files/on_demand_config.csv /optimizer-files/savings_plan_config.csv /optimizer-files/total_demand.csv /optimizer-files/output > /optimizer-logs/output.log 2> /optimizer-logs/error.log"
 
 drun:
-	docker run -v $(DIR)/data:/optimizer-files -v $(DIR)/logs:/optimizer-logs -it optimizer:latest /bin/sh
+	docker run -v $(DIR)/data:/optimizer-files -v $(DIR)/logs:/optimizer-logs -it awsome-savings:latest /bin/sh
+
+pull-awsome-savings:
+	docker pull registry-git.lsd.ufcg.edu.br/pedro.serey/awsome-savings
+	docker image tag registry-git.lsd.ufcg.edu.br/pedro.serey/awsome-savings awsome-savings:latest
