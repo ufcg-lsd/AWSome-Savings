@@ -1,6 +1,9 @@
 export LD_LIBRARY_PATH := /usr/local/lib:$LD_LIBRARY_PATH
 DIR := $(shell pwd)
 
+build:
+	docker build --network=host -t awsome-savings:latest .
+
 compile:
 	g++ -g -O3 -c aws_model.cpp -o build/aws_model.o
 	g++ -g -O3 -c build_simulation.cpp -o build/build_simulation.o
