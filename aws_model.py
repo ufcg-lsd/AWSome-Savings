@@ -71,7 +71,7 @@ def optimize_model(t, demand, on_demand_data, savings_plan_data, savings_plan_du
     solver = pywraplp.Solver.CreateSolver('SCIP')
     if not solver:
         return
-    
+        
     infinity = solver.infinity()
    
     num_instances = len(on_demand_data)
@@ -129,40 +129,56 @@ def optimize_model(t, demand, on_demand_data, savings_plan_data, savings_plan_du
 def constraint1(solver, x, num_vars, demand, t, num_instances):
     for i_time in range(t):
         for i_instance in range(1, num_instances + 1): #jumps savings plan coefficients
-            coefficients = create_coefficients_base(t, num_instances)
-            
-            coefficients[i_time][i_instance] = [1, 1] # 1 * a_t,i,SP e 1 * a_t,i,OD
+            #coefficients = create_coefficients_base(t, num_instances)
+            coefficients = [0 for _ in range(num_vars)]
 
-            constraint_expr = change_coefficients_format(generate_array(coefficients), x, num_vars)
+            #coefficients[i_time][i_instance] = [1, 1] # 1 * a_t,i,SP e 1 * a_t,i,OD
+            coefficients[get_index(num_vars, t, i_time, i_instance, 0)] = 1
+            coefficients[get_index(num_vars, t, i_time, i_instance, 1)] = 1
+
+            #constraint_expr = change_coefficients_format(generate_array(coefficients), x, num_vars)
+            constraint_expr = change_coefficients_format(coefficients, x, num_vars)
             solver.Add(sum(constraint_expr) >= demand[i_instance - 1][i_time])
 
 def constraint3(solver, x, num_vars, t, num_instances, savings_plan_data):
     for i_time in range(t):
-        coefficients = create_coefficients_base(t, num_instances)
+        #coefficients = create_coefficients_base(t, num_instances)
+        coefficients = [0 for _ in range(num_vars)]
 
-        coefficients[i_time][0] = [-1, 0] #total sp active value in t
+        #coefficients[i_time][0] = [-1, 0] #total sp active value in t
+        coefficients[get_index(num_vars, t, i_time, 0, 0)] = -1
+        coefficients[get_index(num_vars, t, i_time, 0, 1)] = 0
 
-        for i_instance in range(1, len(coefficients[i_time])): #pula os coef do SP
-            coefficients[i_time][i_instance][0] = float([savings_plan_data[i_instance - 1]][0])
+        #for i_instance in range(1, len(coefficients[i_time])): #pula os coef do SP
+        for i_instance in range(1, num_instances + 1): #pula os coef do SP
+            #coefficients[i_time][i_instance][0] = float([savings_plan_data[i_instance - 1]][0])
+            coefficients[get_index(num_vars, t, i_time, i_instance, 0)] = float([savings_plan_data[i_instance - 1]][0])
         
-        constraint_expr = change_coefficients_format(generate_array(coefficients), x, num_vars)
+        #constraint_expr = change_coefficients_format(generate_array(coefficients), x, num_vars)
+        constraint_expr = change_coefficients_format(coefficients, x, num_vars)        
         solver.Add(sum(constraint_expr) <= 0)
 
 
 def constraint4(solver, x, num_vars, t, num_instances, savings_plan_duration):
     for i_time in range(t):
-        coefficients = create_coefficients_base(t, num_instances)
+        #coefficients = create_coefficients_base(t, num_instances)
+        coefficients = [0 for _ in range(num_vars)]
 
-        coefficients[i_time][0] = [1, -1]
+        #coefficients[i_time][0] = [1, -1]
+        coefficients[get_index(num_vars, t, i_time, 0, 0)] = 1
+        coefficients[get_index(num_vars, t, i_time, 0, 1)] = -1
 
         reserve_duration = savings_plan_duration - 1
         for i in range(i_time - 1, -1, -1):
             if reserve_duration > 0:
-                coefficients[i][0] = [0, -1]
+                #coefficients[i][0] = [0, -1]
+                coefficients[get_index(num_vars, t, i, 0, 0)] = 0
+                coefficients[get_index(num_vars, t, i, 0, 1)] = -1
                 reserve_duration -= 1
             else: break
 
-        constraint_expr = change_coefficients_format(generate_array(coefficients), x, num_vars)
+        #constraint_expr = change_coefficients_format(generate_array(coefficients), x, num_vars)
+        constraint_expr = change_coefficients_format(coefficients, x, num_vars)        
         solver.Add(sum(constraint_expr) == 0)
 
 
@@ -177,6 +193,9 @@ def create_coefficients_base(t, num_instances): #[[[[0,0], [0,0]], [[0,0], [0,0]
         coefficients.append(time_coef)
     
     return coefficients
+
+def get_index(num_vars, t, i_time, i_instance, i_value):
+    return int(i_time * (num_vars / t) + i_instance * 2 + i_value)
 
 def change_coefficients_format(coefficientes, x, num_vars):
     constraint_expr = \

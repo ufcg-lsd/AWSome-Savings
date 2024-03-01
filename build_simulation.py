@@ -31,7 +31,8 @@ def main():
     logging.info('Getting input data')
     on_demand_config = pd.read_csv(sys.argv[1])
     savings_plan_config = pd.read_csv(sys.argv[2])
-    raw_demand = reduce_hour_to_day(pd.read_csv(sys.argv[3]))
+    #raw_demand = reduce_hour_to_day(pd.read_csv(sys.argv[3]))
+    raw_demand = pd.read_csv(sys.argv[3])
 
     logging.info('Validating input data')
     validations.validate_on_demand_config(on_demand_config)
@@ -160,12 +161,12 @@ def generate_list(values, t, num_instances, num_markets):
     return list
 
 
-def reduce_hour_to_day(df):
-    df['day'] = df['hour'] // 24
-    result = df.groupby('day').sum()
-    result.to_csv('./data/reduced_mock_data.csv', index=False)
-
-    return result
+#def reduce_hour_to_day(df):
+#    df['day'] = df['hour'] // 24
+#    result = df.groupby('day').sum()
+#    result.to_csv('./data/reduced_mock_data.csv', index=False)
+#
+#    return result
 
 if __name__ == "__main__":
     main()
