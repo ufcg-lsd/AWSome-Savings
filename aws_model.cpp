@@ -48,17 +48,27 @@ vector<double> generate_array(vector<vector<vector<double>>> coefficients) {
   return result;
 }
 
+int get_index(int num_vars, int t, int i_time, int i_instance, int i_value) {
+  int result = (i_time * (num_vars / t) + i_instance * 2 + i_value);
+  return result;
+}
+
 void constraint1(MPSolver *solver, unordered_map<int, MPVariable *> x,
                  int num_vars, vector<vector<double>> demand, int t,
                  int num_instances) {
   for (int i_time = 0; i_time < t; ++i_time) {
     for (int i_instance = 1; i_instance <= num_instances; ++i_instance) {
-      auto coefficients = create_coefficients_base(t, num_instances);
+      // auto coefficients = create_coefficients_base(t, num_instances);
+      vector<double> coefficients;
+      coefficients.resize(num_vars, 0.0);
 
-      coefficients[i_time][i_instance] = {1, 1}; // 1 * a_t,i,SP e 1 * a_t,i,OD
+      // coefficients[i_time][i_instance] = {1, 1}; // 1 * a_t,i,SP e 1 *
+      // a_t,i,OD
+      coefficients[get_index(num_vars, t, i_time, i_instance, 0)] = 1;
+      coefficients[get_index(num_vars, t, i_time, i_instance, 1)] = 1;
 
       // generate vector<int> from the coefficients
-      vector<double> constraint_expr = generate_array(coefficients);
+      // vector<double> constraint_expr = generate_array(coefficients);
 
       // set the interval for the constraint
       MPConstraint *c1 = solver->MakeRowConstraint(
@@ -66,7 +76,8 @@ void constraint1(MPSolver *solver, unordered_map<int, MPVariable *> x,
 
       // add the sum of the linear expressions in constraint_expr
       for (int i = 0; i < num_vars; ++i) {
-        c1->SetCoefficient(x[i], constraint_expr[i]);
+        // c1->SetCoefficient(x[i], constraint_expr[i]);
+        c1->SetCoefficient(x[i], coefficients[i]);
       }
     }
   }
@@ -76,24 +87,33 @@ void constraint3(MPSolver *solver, unordered_map<int, MPVariable *> x,
                  int num_vars, int t, int num_instances,
                  vector<double> savings_plan_data) {
   for (int i_time = 0; i_time < t; ++i_time) {
-    auto coefficients = create_coefficients_base(t, num_instances);
+    // auto coefficients = create_coefficients_base(t, num_instances);
+    vector<double> coefficients;
+    coefficients.resize(num_vars, 0.0);
 
-    coefficients[i_time][0] = {-1, 0};
+    // coefficients[i_time][0] = {-1, 0};
+    coefficients[get_index(num_vars, t, i_time, 0, 0)] = -1;
+    coefficients[get_index(num_vars, t, i_time, 0, 1)] = 0;
 
-    for (int i_instance = 1; i_instance < coefficients[i_time].size();
-         ++i_instance) {
-      coefficients[i_time][i_instance][0] = savings_plan_data[i_instance - 1];
+    // for (int i_instance = 1; i_instance < coefficients[i_time].size();
+    // ++i_instance) {
+    for (int i_instance = 1; i_instance <= num_instances; ++i_instance) {
+      // coefficients[i_time][i_instance][0] = savings_plan_data[i_instance -
+      // 1];
+      coefficients[get_index(num_vars, t, i_time, i_instance, 0)] =
+          savings_plan_data[i_instance - 1];
     }
 
     // generate vector<int> from the coefficients
-    vector<double> constraint_expr = generate_array(coefficients);
+    // vector<double> constraint_expr = generate_array(coefficients);
 
     // set the interval for the constraint
     MPConstraint *c3 = solver->MakeRowConstraint(-solver->infinity(), 0.0);
 
     // add the sum of the linear expressions in constraint_expr
     for (int i = 0; i < num_vars; ++i) {
-      c3->SetCoefficient(x[i], constraint_expr[i]);
+      // c3->SetCoefficient(x[i], constraint_expr[i]);
+      c3->SetCoefficient(x[i], coefficients[i]);
     }
   }
 }
@@ -102,15 +122,21 @@ void constraint4(MPSolver *solver, unordered_map<int, MPVariable *> x,
                  int num_vars, int t, int num_instances,
                  int savings_plan_duration) {
   for (int i_time = 0; i_time < t; ++i_time) {
-    auto coefficients = create_coefficients_base(t, num_instances);
+    // auto coefficients = create_coefficients_base(t, num_instances);
+    vector<double> coefficients;
+    coefficients.resize(num_vars, 0.0);
 
-    coefficients[i_time][0] = {1, -1};
+    // coefficients[i_time][0] = {1, -1};
+    coefficients[get_index(num_vars, t, i_time, 0, 0)] = 1;
+    coefficients[get_index(num_vars, t, i_time, 0, 1)] = -1;
 
     int reserve_duration = savings_plan_duration - 1;
 
     for (int i = i_time - 1; i >= 0; --i) {
       if (reserve_duration > 0) {
-        coefficients[i][0] = {0, -1};
+        // coefficients[i][0] = {0, -1};
+        coefficients[get_index(num_vars, t, i, 0, 0)] = 0;
+        coefficients[get_index(num_vars, t, i, 0, 1)] = -1;
         reserve_duration--;
       } else {
         break;
@@ -118,14 +144,14 @@ void constraint4(MPSolver *solver, unordered_map<int, MPVariable *> x,
     }
 
     // generate vector<int> from the coefficients
-    vector<double> constraint_expr = generate_array(coefficients);
+    // vector<double> constraint_expr = generate_array(coefficients);
 
     // set the interval for the constraint
     MPConstraint *c4 = solver->MakeRowConstraint(0.0, 0.0);
 
     // add the sum of the linear expressions in constraint_expr
     for (int i = 0; i < num_vars; ++i) {
-      c4->SetCoefficient(x[i], constraint_expr[i]);
+      c4->SetCoefficient(x[i], coefficients[i]);
     }
   }
 }
