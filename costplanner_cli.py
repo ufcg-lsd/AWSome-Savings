@@ -56,12 +56,12 @@ def classic_calc(prices_path, input_path, output_path, no_savings_plans, summari
     exec_name = split_path[len(split_path) - 1]
     
     datam = DataManagement()
-    # The proportion will be an string if this function be called by the bash
+    # The proportion will be an string if this function be called by an script (use only ondemand and partialup)
     if type(proportions) == str:
         no_savings_plans = bool(int(no_savings_plans))
         summarize = bool(int(summarize))
         proportions = proportions.strip('()').split(', ')
-        proportions = (proportions[0], eval(proportions[1])/100.0, eval(proportions[2]), 1 - eval(proportions[3])/100.0, eval(proportions[4]))
+        proportions = (proportions[0], eval(proportions[1]), eval(proportions[2]), eval(proportions[3]), eval(proportions[4]))
 
     prices = datam.read_prices(prices_path)
     demand = datam.read_demand(input_path)
