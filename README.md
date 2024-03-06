@@ -121,31 +121,38 @@ For example, with the example files:
 
 With the pulled image, run it interactively and add the path to the files as the volume that will be in `/optimizer-files` and the log directory as `/optimizer-logs` inside the container:
 
+If you want to run your calcs and optimizations inside the container, you may need to set the volumes:
 ```
-docker run -v {local path to files}/data:/optimizer-files -v {local path to logs}/logs:/optimizer-logs -it optimizer:latest /bin/sh
+docker run -v {input-file.csv}:/calculation/calculation-file.csv -v {output_dir}:/calculation/final-result -v {logs_dir}:/calculation/logs -it awsome-savings:latest bash
 ```
+
+##### Optimization
 
 Inside the container, it's possible to run the commands as running locally:
-
 ```
-./build/opt.elf /optimizer-files/on_demand_config.csv /optimizer-files/savings_plan_config.csv /optimizer-files/total_demand.csv /optimizer-files > /optimizer-logs/output.log 2> /optimizer-logs/error.log
+python3 costplanner_cli.py calculation-file.csv final-result --m optimal > logs/output.log 2> logs/error.log
 ```
 
 You can detach the container and leave it running the optimization or even run with as a daemon without interacting:
 ```
-docker run -v {local path to files}/data:/optimizer-files -v {local path to logs}/logs:/optimzer-logs -d optimizer:latest /bin/sh -c "/optimizer/build/opt.elf /optimizer-files/on_demand_config.csv /optimizer-files/savings_plan_config.csv /optimizer-files/total_demand.csv /optimizer-files/output > /optimizer-logs/output.log 2> /optimizer-logs/error.log"
+docker run -v {input_dir}:/calculation/calculation-file.csv -v {output_dir}:/calculation/final-result -v {logs_dir}:/calculation/optimizer-logs -d awsome-savings:latest bash -c "python3 costplanner_cli.py calculation-file.csv final-result --m optimal > /calculation/optimizer-logs/output.log 2> /calculation/optimizer-logs/error.log"
+```
+
+##### Calculation
+
+Inside the container, it's possible to run the commands as running locally:
+```
+python3 costplanner_cli.py calculation-file.csv final-result --m classic --p proportion {ond_proportion} {noup_proportion} {partialup_proportion} {allup_proportion} --summarize > logs/output.log 2> logs/error.log
+```
+
+You can detach the container and leave it running the optimization or even run with as a daemon without interacting:
+```
+docker run -v {input_dir.csv}:/calculation/calculation-file.csv -v {output_dir}:/calculation/final-result -v {logs_dir}:/calculation/calculation-logs -d awsome-savings:latest bash -c "python3 costplanner_cli.py calculation-file.csv final-result --m classic --p proportion {ond_proportion} {noup_proportion} {partialup_proportion} {allup_proportion} --summarize > /calculation/calculation-logs/output.log 2> /calculation/calculation-logs/error.log"
 ```
 
 #### Output
 
-The simulation generates the following files as the output:
-- result_cost: the total cost of the simulation, the cost for every instance and the total 
-    savings plan cost;
-- total_purchases_savings_plan: for every hour, the active value and the value reserved 
-    for savings plan;
-- total_purchases_{instance_name}: one file for every instance. It has, for every hour 
-    and every market type (including savings plan), the number of active instances and 
-    the number of reserves made.
+The simulation generates a file with the total cost for calculation, and the allocation recomended to the optimization as the output on the output volume.
 
 ### Tests
 

@@ -1,9 +1,6 @@
 export LD_LIBRARY_PATH := /usr/local/lib:$LD_LIBRARY_PATH
 DIR := $(shell pwd)
 
-build:
-	docker build --network=host -t awsome-savings:latest .
-
 compile:
 	g++ -g -O3 -c aws_model.cpp -o build/aws_model.o
 	g++ -g -O3 -c build_simulation.cpp -o build/build_simulation.o
@@ -13,12 +10,6 @@ compile:
 
 clean:
 	rm build/*
-
-run-optimizer:
-	docker run -v $(input_dir):/calculation/calculation-file.csv -v $(output_dir):/calculation/final-result -v $(logs_dir):/calculation/optimizer-logs -d awsome-savings:latest bash -c "python3 costplanner_cli.py calculation-file.csv final-result --m optimal > /calculation/optimizer-logs/output.log 2> /calculation/optimizer-logs/error.log"
-
-run-classic:
-	docker run -v $(input_dir):/calculation/calculation-file.csv -v $(output_dir):/calculation/final-result -v $(logs_dir):/calculation/optimizer-logs -d awsome-savings:latest bash -c "python3 costplanner_cli.py calculation-file.csv final-result --m classic --p proportion $(ond_proportion) $(noup_proportion) $(partialup_proportion) $(allup_proportion) --summarize > /calculation/optimizer-logs/output.log 2> /calculation/optimizer-logs/error.log"
 
 run:
 	./build/opt.elf ./data/on_demand_config.csv ./data/savings_plan_config.csv ./data/total_demand.csv
