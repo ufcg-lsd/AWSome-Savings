@@ -84,6 +84,12 @@ Another other option is to use the container that wraps all of C++ environment a
     docker pull lsd/awsome-savings:latest
     ```
 
+    - OBS: If you're using the awsome-savings with cli version, is recommended to pull the image below:
+        ```
+        docker pull registry-git.lsd.ufcg.edu.br/pedro.serey/awsome-savings:calculator
+        docker tag registry-git.lsd.ufcg.edu.br/pedro.serey/awsome-savings:calculator awsome-savings:latest
+        ```
+
 - For building the image, use `docker build` inside the cloned repository to build it locally
 
     ```
@@ -116,6 +122,27 @@ For example, with the example files:
 ```
 
 > As a fourth optional parameter, is possible to add the path to the directory for saving the results. The current directory is the default (don't add the `/` to the end of the directory name)
+
+##### Output
+
+The simulation generates a file with the total cost for calculation, and the allocation recomended to the optimization as the output on the output volume.
+
+#### Cli
+
+The cli version is used to calculate your costs or optimizations from a demand, and not from 3 files like on optimization. To run by thi mode, you must need to compile the optimizer binary, like informed above.
+After this, you are able to run:
+
+##### Optimization
+
+```
+COMO RODAR A CLI
+```
+
+##### Calculation
+
+```
+COMO RODAR A CLI
+```
 
 #### Container
 
@@ -150,9 +177,35 @@ You can detach the container and leave it running the optimization or even run w
 docker run -v {input_dir.csv}:/calculation/calculation-file.csv -v {output_dir}:/calculation/final-result -v {logs_dir}:/calculation/calculation-logs -d awsome-savings:latest bash -c "python3 costplanner_cli.py calculation-file.csv final-result --m classic --p proportion {ond_proportion} {noup_proportion} {partialup_proportion} {allup_proportion} --summarize > /calculation/calculation-logs/output.log 2> /calculation/calculation-logs/error.log"
 ```
 
-#### Output
+#### Output of cli and container executions
+The optimization and calculation generates a file with the alocation recommended to the optimization, and total cost for calculation, respectively.
 
-The simulation generates a file with the total cost for calculation, and the allocation recomended to the optimization as the output on the output volume.
+##### For optimizations:
+| timestamp |   flavor   |    market    | number |
+|-----------|------------|--------------|--------|
+|     0     | c5.4xlarge | savings_plan |    0   |
+|    3600   | c5.4xlarge | savings_plan |    0   |
+|    7200   | c5.4xlarge | savings_plan |    0   |
+|     0     | c5.4xlarge |  on_demand   |   10   |
+|    3600   | c5.4xlarge |  on_demand   |   10   |
+|    7200   | c5.4xlarge |  on_demand   |   10   |
+
+* Timestamp: current time on your allocation
+* Flavor: instance type (note that in savings_plan, you can change your instance without paying)
+* Market: this column represents a specific market type at each timestamp
+* Number: the number of instances allocated for some market at a timestamp
+
+##### For calculations:
+| timestamp | OnDemand  | RAll | RPartial | RNo | AllMarkets |
+|-----------|-----------|------|----------|-----|------------|
+|     0     |    0.0    | 0.0  | 17872.04 |  0  |  17872.04  |
+|   3200    |    0.0    | 0.0  |   504.04 |  0  |    504.04  |
+
+* Timestamp: current time on your allocation
+* OnDemand: On-demand cost at this timestamp
+* RAll: Reserve All Upfront cost at this timestamp
+* RPartial: Reserve Partial Upfront cost at this timestamp
+* AllMarkets: The cost of all markets at this timestamp
 
 ### Tests
 
