@@ -127,23 +127,6 @@ For example, with the example files:
 
 The simulation generates a file with the total cost for calculation, and the allocation recomended to the optimization as the output on the output volume.
 
-#### Cli
-
-The cli version is used to calculate your costs or optimizations from a demand, and not from 3 files like on optimization. To run by thi mode, you must need to compile the optimizer binary, like informed above.
-After this, you are able to run:
-
-##### Optimization
-
-```
-COMO RODAR A CLI
-```
-
-##### Calculation
-
-```
-COMO RODAR A CLI
-```
-
 #### Container
 
 With the pulled image, run it interactively and add the path to the files as the volume that will be in `/optimizer-files` and the log directory as `/optimizer-logs` inside the container:
