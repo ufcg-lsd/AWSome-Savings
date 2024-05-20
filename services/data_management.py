@@ -1,6 +1,6 @@
 import math
 import csv
-from .calculator import InstancePrices
+from services.calculator import InstancePrices
 
 class DataManagement:
 

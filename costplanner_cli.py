@@ -3,7 +3,7 @@ import subprocess
 import sys
 
 from services.calculator import calculate_no_savings_plan, calculate_no_reserves
-from services.optimizer_util import generate_optimizer_input
+import services.optimizer_util as optimizer_util
 from services.data_management import DataManagement
 
 # Hours in a year
@@ -84,19 +84,15 @@ def classic_calc(prices_path, input_path, output_path, no_savings_plans, summari
     
 
 def optimal_calc(prices_path, input_path, output_path):
-    split_path = output_path.split("/")
-    exec_name = split_path[len(split_path) - 1]
+    datam = DataManagement()
+    prices = datam.read_prices(prices_path)
+    playpen = output_path.rsplit("/", 1)[0]
     
-    generate_optimizer_input(input_path, prices_path, exec_name)
-        
-    optimization_args = ['python3', 
-                        f'/calculation/services/run_optimizations.py', 
-                        exec_name,
-                        f'{output_path}/{exec_name}.csv']
+    optimizer_util.generate_optimizer_input(input_path, prices_path, playpen)
+    optimizer_util.run_optimizations(playpen)
+    result = optimizer_util.prepare_output_dict(playpen, prices)
     
-    with open('log.txt', "w") as file:
-        proc = subprocess.Popen(optimization_args, stderr=file)
-        proc.wait()
+    datam.write_output_summarize(result, f"{output_path}/output.csv")
 
 
 def join_markets(costs):

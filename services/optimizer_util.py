@@ -3,11 +3,14 @@
 
 import csv
 import os
+import time
+import subprocess
 
 RES_DURATION = 8760
+TIME_WAITING_RESULTS = 30
 #INSTANCE_TYPES = ['m5.12xlarge','m5.16xlarge','m5.2xlarge','m5.4xlarge','m5.8xlarge','m5.large','m5.xlarge'] #change here the group you want
 
-def generate_optimizer_input(demand_path, prices_path, exec_id):
+def generate_optimizer_input(demand_path, prices_path, playpen):
 
     # read demand to dictionary
     demand = read_demand(demand_path)
@@ -17,7 +20,7 @@ def generate_optimizer_input(demand_path, prices_path, exec_id):
 
     for family in families:
         # create family directory in /tmp/costplanner_playpen/optimizer/exec/families/family
-        family_directory = f'/tmp/costplanner_playpen/optimizer/{exec_id}/input/{family}'
+        family_directory = f'{playpen}/input/{family}'
         os.makedirs(family_directory, exist_ok=True)
 
         # get instance types for current family and create header
@@ -116,3 +119,66 @@ def get_families(demand):
         else:
             families[family] = [instance_type]
     return families
+
+def filter_optimization_ondemand(path_to_filter, prices, current_result):
+    with open(path_to_filter, 'r') as demand_file:
+        demand_reader = csv.reader(demand_file)
+        num_rows = sum(1 for _ in demand_reader)
+        for market in current_result.keys():
+            if len(current_result[market]) == 0:
+                hours = int((num_rows - 1)/2)
+                current_result[market] = [0 for _ in range(hours)]
+        print("Opa, passei aqui")
+        demand_reader = csv.reader(demand_file)
+        # Ignore the first line(header)
+        next(demand_reader, None)
+        # The list comprehension below remove the 4th column (count_active)
+        for row in demand_reader:
+            print(row)
+            index = int(row[0])
+            if row[2] == 'on_demand':
+                print(row[4] * prices[row[1]].on_demand_hour)
+                current_result['OnDemand'][index] += row[4] * prices[row[1]].on_demand_hour
+
+# def filter_optimization_savings_plan(path_to_filter, current_result):
+#     with open(path_to_filter, 'r') as demand_file:
+#         demand_reader = csv.reader(demand_file)
+#         # Ignore the first line(header)
+#         next(demand_reader, None)
+#         # The list comprehension below remove the 4th column (count_active)
+#         for row in demand_reader:
+#             index = int(row[0])
+#             if row[2] == 'savings_plan':
+#                 current_result['RNoUpfront'][index] += float(row[3])
+
+def run_optimizations(playpen):
+    # Function to run optimization for a family
+    for family in os.listdir(f'{playpen}/input'):
+        if not family.endswith(".csv"):
+            os.makedirs(f'{playpen}/raw/{family}', exist_ok=True)
+            optimization_args = [f'/calculation/optimizer/build/opt.elf', 
+                            f'{playpen}/input/{family}/on_demand_config.csv',
+                            f'{playpen}/input/{family}/savings_plan_config.csv',
+                            f'{playpen}/input/{family}/demand.csv',
+                            f'{playpen}/raw/{family}']
+            
+            optimization = subprocess.Popen(optimization_args)
+            optimization.wait()
+
+            while not os.path.isfile(f'{playpen}/raw/{family}/result_cost.csv'):
+                time.sleep(TIME_WAITING_RESULTS)
+
+def prepare_output_dict(playpen, prices):
+    result = {'OnDemand': [], 'RAllUpfront': [], 'RPartialUpfront': [], 'RNoUpfront': []}
+
+    # Iterates over the families directory
+    for family in os.listdir(f"{playpen}/raw"):
+        demand_directory = os.listdir(f"{playpen}/raw/{family}/")
+        # Iterates over the demand output of a family and filter the columns
+        for demand_file in demand_directory:
+            file_type = demand_file.split('.')[0]
+            if file_type == f"total_purchases_{family}":
+                filter_optimization_ondemand(f"{playpen}/raw/{family}/{demand_file}", prices, result)
+                
+        # filter_optimization_savings_plan(f"{playpen}/raw/{family}/total_purchases_savings_plan.csv", result)
+    return result
