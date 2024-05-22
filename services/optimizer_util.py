@@ -122,19 +122,19 @@ def get_families(demand):
 
 def filter_optimization_ondemand(path_to_filter, prices, current_result):
     with open(path_to_filter, 'r') as demand_file:
-        demand_reader = csv.reader(demand_file)
-        num_rows = sum(1 for _ in demand_reader)
+        # fill the dictionary of prices if it doesn't exists
+        all_rows = len(demand_file.readlines())
+        rows_ondemand = int((all_rows - 1)/2)
         for market in current_result.keys():
             if len(current_result[market]) == 0:
-                hours = int((num_rows - 1)/2)
-                current_result[market] = [0 for _ in range(hours)]
-        print("Opa, passei aqui")
-        demand_reader = csv.reader(demand_file)
+                current_result[market] = [0 for _ in range(rows_ondemand)]
+        
+        # read the allocation and put in a variable
+        demand_reader = csv.reader(all_rows)
         # Ignore the first line(header)
         next(demand_reader, None)
-        # The list comprehension below remove the 4th column (count_active)
         for row in demand_reader:
-            print(row)
+            print("Opa, passei aqui")
             index = int(row[0])
             if row[2] == 'on_demand':
                 print(row[4] * prices[row[1]].on_demand_hour)
