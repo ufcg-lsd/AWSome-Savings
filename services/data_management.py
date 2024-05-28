@@ -88,17 +88,36 @@ class DataManagement:
         method = proportions[0].lower()
         types = [{}, {}, {}, {}]
         if method == 'proportion':
-            for instace_type, instance_demand in demand.items():
+            for instance_type, instance_demand in demand.items():
                 for quantity in instance_demand:
                     value = quantity
                     for index in range(len(types)):
                         percent = math.ceil(value * proportions[index + 1])
-                        if instace_type in types[index]:
-                            types[index][instace_type].append(percent)
+                        if instance_type in types[index]:
+                            types[index][instance_type].append(percent)
                             value -= percent
                         else:
-                            types[index][instace_type] = [percent]
+                            types[index][instance_type] = [percent]
                             value -= percent
         elif method == 'absolute':
-            print("To-do")
+            for instance_type, instance_demand in demand.items():
+                for quantity in instance_demand:
+                    value = quantity
+                    for index in range(1, len(types)):
+                        number = 0
+                        if value - int(proportions[index + 1]) < 0:
+                            number = value
+                            value = 0
+                        else:
+                            number = int(proportions[index + 1])
+                            value -= int(proportions[index + 1])
+                        
+                        if instance_type in types[index]:
+                            types[index][instance_type].append(number)
+                        else:
+                            types[index][instance_type] = [number]
+                    if instance_type in types[0]:
+                        types[0][instance_type].append(value)
+                    else:
+                        types[0][instance_type] = [value]
         return types
