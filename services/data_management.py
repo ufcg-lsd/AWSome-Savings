@@ -34,7 +34,7 @@ class DataManagement:
                 header = file.readline().split(',')
 
                 # coloca os tipos de instância em um dicionário
-                for i in range(1, len(header)):
+                for i in range(0, len(header)):
                     instance_type = header[i].strip('\n').strip('"')
                     demand[instance_type] = []
                 
@@ -45,12 +45,12 @@ class DataManagement:
                         break
                     line = line.split(',')
 
-                    for i in range(1, len(line)):
+                    for i in range(0, len(line)):
                         instance_type = header[i].strip('\n').strip('"')
                         demand[instance_type].append(int(line[i]))
         return demand
     
-    def write_output(self, output, output_path):
+    def write_output(self, output, timestamp, output_path):
         output_file = open(output_path, 'w')
         writer = csv.writer(output_file)
         families = list(output['OnDemand'].keys())
@@ -64,7 +64,7 @@ class DataManagement:
         for market in output:
             market_costs = output[market]
             for t in range(len(market_costs[families[0]])):
-                l = [t * 3600]
+                l = [timestamp['timestamp'][t]]
                 for family in families:
                     l.append(market_costs[family][t])
                 l.append(market)
@@ -72,13 +72,13 @@ class DataManagement:
 
         output_file.close()
         
-    def write_output_summarize(self, output, output_path):
+    def write_output_summarize(self, output, timestamp, output_path):
         output_file = open(output_path, 'w')
         writer = csv.writer(output_file)
 
         writer.writerow(['timestamp', 'OnDemand', 'RAllUpfront', 'RPartialUpfront', 'RNoUpfront', 'AllMarkets'])
         for t in range(len(output['OnDemand'])):
-            l = [t * 3600, output['OnDemand'][t], output['RAllUpfront'][t], output['RPartialUpfront'][t], output['RNoUpfront'][t]]
+            l = [timestamp['timestamp'][t], output['OnDemand'][t], output['RAllUpfront'][t], output['RPartialUpfront'][t], output['RNoUpfront'][t]]
             l.append(sum(l[1:]))
             writer.writerow(l)
 
@@ -86,6 +86,8 @@ class DataManagement:
 
     def slice_classic_data(self, demand, proportions):
         method = proportions[0].lower()
+        timestamp = {'timestamp': demand['timestamp']}
+        demand.pop('timestamp')
         types = [{}, {}, {}, {}]
         if method == 'proportion':
             for instace_type, instance_demand in demand.items():
@@ -101,4 +103,5 @@ class DataManagement:
                             value -= percent
         elif method == 'absolute':
             print("To-do")
+        types.append(timestamp)
         return types

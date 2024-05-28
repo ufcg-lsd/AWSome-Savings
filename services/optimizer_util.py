@@ -14,6 +14,8 @@ def generate_optimizer_input(demand_path, prices_path, playpen):
 
     # read demand to dictionary
     demand = read_demand(demand_path)
+    timestamp = {'timestamp': demand['timestamp']}
+    demand.pop('timestamp')
 
     # get demand dictionaries
     families = get_families(demand)
@@ -45,7 +47,7 @@ def generate_optimizer_input(demand_path, prices_path, playpen):
 
         convert_prices(prices_path, family, instance_types, family_directory)
 
-    return families
+    return timestamp
 
 def convert_prices(price_path, family, instance_types, family_directory):
     sp_file = open(f'{family_directory}/savings_plan_config.csv', 'w')
@@ -97,7 +99,7 @@ def read_demand(demand_path):
 
             line_elements = line.split(',')
 
-            for i in range(1, len(header)):
+            for i in range(len(header)):
                 flavor = header[i].rstrip()
 
                 if flavor not in list(demand.keys()):
@@ -123,8 +125,8 @@ def get_families(demand):
 def filter_optimization_ondemand(path_to_filter, prices, current_result):
     with open(path_to_filter, 'r') as demand_file:
         # fill the dictionary of prices if it doesn't exists
-        all_rows = len(demand_file.readlines())
-        rows_ondemand = int((all_rows - 1)/2)
+        all_rows = demand_file.readlines()
+        rows_ondemand = int((len(all_rows) - 1)/2)
         for market in current_result.keys():
             if len(current_result[market]) == 0:
                 current_result[market] = [0 for _ in range(rows_ondemand)]
@@ -133,23 +135,20 @@ def filter_optimization_ondemand(path_to_filter, prices, current_result):
         demand_reader = csv.reader(all_rows)
         # Ignore the first line(header)
         next(demand_reader, None)
+        index = 0
         for row in demand_reader:
-            print("Opa, passei aqui")
-            index = int(row[0])
             if row[2] == 'on_demand':
-                print(row[4] * prices[row[1]].on_demand_hour)
-                current_result['OnDemand'][index] += row[4] * prices[row[1]].on_demand_hour
+                current_result['OnDemand'][index] += float(row[4]) * prices[row[1]].on_demand
+                index += 1
 
-# def filter_optimization_savings_plan(path_to_filter, current_result):
-#     with open(path_to_filter, 'r') as demand_file:
-#         demand_reader = csv.reader(demand_file)
-#         # Ignore the first line(header)
-#         next(demand_reader, None)
-#         # The list comprehension below remove the 4th column (count_active)
-#         for row in demand_reader:
-#             index = int(row[0])
-#             if row[2] == 'savings_plan':
-#                 current_result['RNoUpfront'][index] += float(row[3])
+def filter_optimization_savings_plan(path_to_filter, current_result):
+    with open(path_to_filter, 'r') as demand_file:
+        demand_reader = csv.reader(demand_file)
+        # Ignore the first line(header)
+        next(demand_reader, None)
+        # The list comprehension below remove the 4th column (count_active)
+        for index, row in enumerate(demand_reader):
+            current_result['RNoUpfront'][index] += float(row[3])
 
 def run_optimizations(playpen):
     # Function to run optimization for a family
@@ -180,5 +179,5 @@ def prepare_output_dict(playpen, prices):
             if file_type == f"total_purchases_{family}":
                 filter_optimization_ondemand(f"{playpen}/raw/{family}/{demand_file}", prices, result)
                 
-        # filter_optimization_savings_plan(f"{playpen}/raw/{family}/total_purchases_savings_plan.csv", result)
+        filter_optimization_savings_plan(f"{playpen}/raw/{family}/total_purchases_savings_plan.csv", result)
     return result

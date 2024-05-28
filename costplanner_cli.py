@@ -54,7 +54,7 @@ def main(input_path, output_path, prices_path, m, p, no_savings_plans, configure
 def classic_calc(prices_path, input_path, output_path, no_savings_plans, summarize, proportions):
     split_path = output_path.split("/")
     exec_name = split_path[len(split_path) - 1]
-    
+
     datam = DataManagement()
     # The proportion will be an string if this function be called by an script (use only ondemand and partialup)
     if type(proportions) == str:
@@ -65,7 +65,7 @@ def classic_calc(prices_path, input_path, output_path, no_savings_plans, summari
 
     prices = datam.read_prices(prices_path)
     demand = datam.read_demand(input_path)
-    ond_data, nop_data, pup_data, allup_data = datam.slice_classic_data(demand, proportions)
+    ond_data, nop_data, pup_data, allup_data, timestamp = datam.slice_classic_data(demand, proportions)
     if no_savings_plans:
         output = calculate_no_savings_plan(ond_data, allup_data, pup_data, nop_data, prices, DURATION)
     else:
@@ -78,9 +78,9 @@ def classic_calc(prices_path, input_path, output_path, no_savings_plans, summari
 
     if summarize:
         output = join_markets(output)
-        datam.write_output_summarize(output, f"{output_path}/{exec_name}.csv")
+        datam.write_output_summarize(output, timestamp, f"{output_path}/{exec_name}.csv")
     else:
-        datam.write_output(output, f"{output_path}/{exec_name}.csv")
+        datam.write_output(output, timestamp, f"{output_path}/{exec_name}.csv")
     
 
 def optimal_calc(prices_path, input_path, output_path):
@@ -88,11 +88,11 @@ def optimal_calc(prices_path, input_path, output_path):
     prices = datam.read_prices(prices_path)
     playpen = output_path.rsplit("/", 1)[0]
     
-    optimizer_util.generate_optimizer_input(input_path, prices_path, playpen)
+    timestamp = optimizer_util.generate_optimizer_input(input_path, prices_path, playpen)
     optimizer_util.run_optimizations(playpen)
     result = optimizer_util.prepare_output_dict(playpen, prices)
     
-    datam.write_output_summarize(result, f"{output_path}/output.csv")
+    datam.write_output_summarize(result, timestamp, f"{output_path}/output.csv")
 
 
 def join_markets(costs):
