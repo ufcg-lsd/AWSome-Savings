@@ -65,7 +65,7 @@ def classic_calc(prices_path, input_path, output_path, no_savings_plans, summari
 
     prices = datam.read_prices(prices_path)
     demand = datam.read_demand(input_path)
-    ond_data, nop_data, pup_data, allup_data, timestamp = datam.slice_classic_data(demand, proportions)
+    ond_data, nop_data, pup_data, allup_data, timestamp = datam.allocate_demand(demand, proportions)
     if no_savings_plans:
         output = calculate_no_savings_plan(ond_data, allup_data, pup_data, nop_data, prices, DURATION)
     else:
