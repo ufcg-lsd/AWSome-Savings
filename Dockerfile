@@ -1,5 +1,9 @@
 FROM registry-git.lsd.ufcg.edu.br/pedro.serey/awsome-savings:latest
 
+COPY ./requirements.txt .
+
+RUN pip3 install -r requirements.txt
+
 RUN mkdir -p /calculation/optimizer; cp -r /optimizer/* /calculation/optimizer
 
 COPY costplanner_cli.py /calculation/
