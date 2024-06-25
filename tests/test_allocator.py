@@ -71,7 +71,7 @@ def test_10_ond_20_noup_30_partialup_40_allup():
     
     proportions = ['proportion', 0.1, 0.2, 0.3, 0.4]
     
-    mock_file = "./mock_data/mocked_demand_1.csv"
+    mock_file = "./mock_data/mock_4.csv"
     
     aux_allocator_test(mock_file, proportions, expected_allocation)
 
@@ -86,7 +86,7 @@ def test_40_ond_30_noup_20_partialup_10_allup():
     
     proportions = ['proportion', 0.4, 0.3, 0.2, 0.1]
     
-    mock_file = "./mock_data/mocked_demand_1.csv"
+    mock_file = "./mock_data/mock_4.csv"
     
     aux_allocator_test(mock_file, proportions, expected_allocation)
 
@@ -101,7 +101,7 @@ def test_25_ond_25_noup_25_partialup_25_allup():
     
     proportions = ['proportion', 0.25, 0.25, 0.25, 0.25]
     
-    mock_file = "./mock_data/mocked_demand_1.csv"
+    mock_file = "./mock_data/mock_4.csv"
     
     aux_allocator_test(mock_file, proportions, expected_allocation)
 
@@ -116,7 +116,7 @@ def test_0_ond_40_noup_30_partialup_30_allup():
     
     proportions = ['proportion', 0, 0.4, 0.3, 0.3]
     
-    mock_file = "./mock_data/mocked_demand_1.csv"
+    mock_file = "./mock_data/mock_4.csv"
     
     aux_allocator_test(mock_file, proportions, expected_allocation)
 
@@ -131,7 +131,7 @@ def test_30_ond_0_noup_40_partialup_30_allup():
     
     proportions = ['proportion', 0.3, 0, 0.4, 0.3]
     
-    mock_file = "./mock_data/mocked_demand_1.csv"
+    mock_file = "./mock_data/mock_4.csv"
     
     aux_allocator_test(mock_file, proportions, expected_allocation)
 
@@ -146,7 +146,7 @@ def test_30_ond_40_noup_0_partialup_30_allup():
     
     proportions = ['proportion', 0.3, 0.4, 0, 0.3]
     
-    mock_file = "./mock_data/mocked_demand_1.csv"
+    mock_file = "./mock_data/mock_4.csv"
     
     aux_allocator_test(mock_file, proportions, expected_allocation)
 
@@ -161,7 +161,7 @@ def test_20_ond_50_noup_30_partialup_0_allup():
     
     proportions = ['proportion', 0.2, 0.5, 0.3, 0]
     
-    mock_file = "./mock_data/mocked_demand_1.csv"
+    mock_file = "./mock_data/mock_4.csv"
     
     aux_allocator_test(mock_file, proportions, expected_allocation)
 
