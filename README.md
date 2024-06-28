@@ -192,6 +192,8 @@ The optimization and calculation generates a file with the alocation recommended
 
 ### Tests
 
+#### Testing the aws_model files:
+
 The unit tests are in *tests/test_aws_model.py* and are written using *unittest*. Currently, there are 12 tests of the model and 6 tests of the input validations. 
 
 To run all tests, run the following command:
@@ -202,6 +204,37 @@ To run a single test:
 ```
 python -m unittest tests.test_aws_model_cpp.TestAWSModel.{name of the test case}
 ```
+
+#### Testing the calculation function allocator:
+
+The unit tests are in *tests/test_allocator.py* and are written using *pytest*. Currently, there are 11 tests to ensure that the allocator functions is working correctly.
+
+To run all tests, run the following command:
+```
+pytest tests/test_allocator.py
+```
+To run a single test:
+```
+pytest tests/test_allocator.py -k "{name of the test case}"
+```
+
+#### Testing the calculator:
+
+The unit tests are in *tests/test_calculator.py* and are written using *pytest*. Currently, there are 24 tests to ensure that the calculator tool is working correctly.
+
+To run all tests, without output of errors or status, run the following command:
+```
+pytest tests/test_calculator.py
+```
+To run all tests, **with** output of errors or status, run the following command:
+```
+pytest tests/test_calculator.py -s
+```
+To run a single test:
+```
+pytest tests/test_calculator.py -k "{name of the test case}"
+```
+
 ### Debugging
 
 The code generates logging when it runs. It is usefull for understanding, when one simulation cannot be completed (e.g. the amount of data was too much), where the code stopped working and how long took do run each step.
