@@ -84,23 +84,29 @@ class DataManagement:
 
         output_file.close()
 
-    def slice_classic_data(self, demand, proportions):
+    def allocate_demand(self, demand, proportions):
         method = proportions[0].lower()
         timestamp = {'timestamp': demand['timestamp']}
         demand.pop('timestamp')
         types = [{}, {}, {}, {}]
         if method == 'proportion':
             for instance_type, instance_demand in demand.items():
+                maximum = max(instance_demand)
+                allocated_no_up = math.floor(maximum * proportions[2])
+                allocated_partial_up = math.floor(maximum * proportions[3])
+                allocated_all_up = math.floor(maximum * proportions[4])
+                on_demand_margin = allocated_no_up + allocated_partial_up + allocated_all_up
                 for quantity in instance_demand:
-                    value = quantity
-                    for index in range(len(types)):
-                        percent = math.ceil(value * proportions[index + 1])
+                    total_instances = [0] * 4
+                    total_instances[0] = max(0, quantity - on_demand_margin)
+                    total_instances[1] = allocated_no_up
+                    total_instances[2] = allocated_partial_up
+                    total_instances[3] = allocated_all_up
+                    for index, instances in enumerate(total_instances):
                         if instance_type in types[index]:
-                            types[index][instance_type].append(percent)
-                            value -= percent
+                            types[index][instance_type].append(instances)
                         else:
-                            types[index][instance_type] = [percent]
-                            value -= percent
+                            types[index][instance_type] = [instances]
         elif method == 'absolute':
             for instance_type, instance_demand in demand.items():
                 for quantity in instance_demand:
