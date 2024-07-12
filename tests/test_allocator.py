@@ -1,4 +1,4 @@
-from services.data_management import DataManagement
+from calculator.data_management import DataManagement
 
 
 from pathlib import Path

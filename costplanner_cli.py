@@ -2,9 +2,9 @@ import click
 import subprocess
 import sys
 
-from services.calculator import calculate_no_savings_plan, calculate_no_reserves
-import services.optimizer_util as optimizer_util
-from services.data_management import DataManagement
+from calculator.calculator import calculate_no_savings_plan, calculate_no_reserves
+from calculator.data_management import DataManagement
+import util.optimizer_util as optimizer_util
 
 # Hours in a year
 DURATION = 8760
