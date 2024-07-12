@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 command -v mpstat >/dev/null 2>&1 || { echo >&2 "I require mpstat, but it's not installed.  Please install it using sudo apt-get install sysstat."; exit 1; }
 
