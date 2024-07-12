@@ -5,3 +5,4 @@ aws_model.log
 result_cost.csv
 build/*.o
 build/*.elf
+.pytest_cache
