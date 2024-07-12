@@ -9,5 +9,4 @@ WORKDIR /or-tools
 
 RUN cmake -S . -B build -DBUILD_DEPS=ON && \
     cmake --build build --config Release --target all -j6 -v && \
-    cmake --build build --config Release --target install -v && \
-    mkdir -p /optimizer/build
+    cmake --build build --config Release --target install -v
