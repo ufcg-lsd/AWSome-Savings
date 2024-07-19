@@ -1,3 +1,5 @@
+.PHONY: calculate
+	
 export LD_LIBRARY_PATH := /usr/local/lib:$LD_LIBRARY_PATH
 DIR := $(shell pwd)
 
@@ -42,3 +44,8 @@ drun:
 pull-awsome-savings:
 	docker pull registry-git.lsd.ufcg.edu.br/pedro.serey/awsome-savings
 	docker image tag registry-git.lsd.ufcg.edu.br/pedro.serey/awsome-savings awsome-savings:latest
+
+calculate:
+	@echo "Parameters:\n    Demand file: FILE\n    Output Directory: DIR\n    Proportions: PROP"
+	
+	python costplanner_cli.py $(FILE) $(DIR) --m classic --p proportion $(PROP) --summarize --prices_path ./data/prices.csv
