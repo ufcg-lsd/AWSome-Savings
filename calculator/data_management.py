@@ -11,13 +11,13 @@ class DataManagement:
         prices = {}
         with open(prices_path, mode='r') as file:
                 header = file.readline().split(',')
-                
+
                 while True:
                     line = file.readline()
                     if not line:
                         break
                     line = line.split(',')
-                    
+
                     instance_type = line[0]
                     on_demand_hour = float(line[1])
                     up_all_upfront = float(line[2])
@@ -33,12 +33,12 @@ class DataManagement:
         with open(demand_path, mode='r') as file:
                 header = file.readline().split(',')
 
-                # coloca os tipos de instância em um dicionário
+                # put the instacne types in a dictionary
                 for i in range(0, len(header)):
                     instance_type = header[i].strip('\n').strip('"')
                     demand[instance_type] = []
                 
-                # itera sobre o arquivo para formar as demandas de cada tipo
+                # iterates over the file to create the datasets of each type
                 while True:
                     line = file.readline()
                     if not line:
@@ -71,7 +71,7 @@ class DataManagement:
                 writer.writerow(l)
 
         output_file.close()
-        
+
     def write_output_summarize(self, output, timestamp, output_path):
         output_file = open(output_path, 'w')
         writer = csv.writer(output_file)
