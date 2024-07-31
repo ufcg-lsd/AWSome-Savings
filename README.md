@@ -160,33 +160,36 @@ You can detach the container and leave it running the optimization or even run w
 docker run -v {input_dir.csv}:/calculation/calculation-file.csv -v {output_dir}:/calculation/final-result -v {logs_dir}:/calculation/calculation-logs -d awsome-savings:latest bash -c "python3 costplanner_cli.py calculation-file.csv final-result --m classic --p proportion {ond_proportion} {noup_proportion} {partialup_proportion} {allup_proportion} --summarize > /calculation/calculation-logs/output.log 2> /calculation/calculation-logs/error.log"
 ```
 
-#### Output of cli and container executions
-The optimization and calculation generates a file with the alocation recommended to the optimization, and total cost for calculation, respectively.
+### Output
 
-##### For optimizations:
-| timestamp |   flavor   |    market    | number |
-|-----------|------------|--------------|--------|
-|     0     | c5.4xlarge | savings_plan |    0   |
-|    3600   | c5.4xlarge | savings_plan |    0   |
-|    7200   | c5.4xlarge | savings_plan |    0   |
-|     0     | c5.4xlarge |  on_demand   |   10   |
-|    3600   | c5.4xlarge |  on_demand   |   10   |
-|    7200   | c5.4xlarge |  on_demand   |   10   |
+The output of some calculation, advisor execution or optimization is composed by two files, one of `allocation`:
+
+| timestamp |       market      | c4.2xlarge | c5.large | ... | md5.large |
+|-----------|-------------------|------------|----------|-----|-----------|
+|     0     |     on_demand     |     10     |    15    | ... |    14     |
+|     0     |    sp_noupfront   |      0     |     0    | ... |     0     |
+|     0     | sp_partialupfront |     10     |     0    | ... |     1     |
+|     0     |   sp_allupfront   |      5     |     5    | ... |     0     |
+|   3600    |     on_demand     |     10     |    15    | ... |    14     |
+|   3600    |    sp_noupfront   |      0     |     0    | ... |     0     |
+|   3600    | sp_partialupfront |     10     |     0    | ... |     1     |
+|   3600    |   sp_allupfront   |      5     |     5    | ... |     0     |
 
 * Timestamp: current time on your allocation
-* Flavor: instance type (note that in savings_plan, you can change your instance without paying)
-* Market: this column represents a specific market type at each timestamp
-* Number: the number of instances allocated for some market at a timestamp
+* Market: this column represents a specific market type at this timestamp
+* c4.2xlarge, c5.large, ..., md5.large: the number of instances allocated for some instance type at a timestamp
 
-##### For calculations:
+And another of `cost`:
+
 | timestamp | OnDemand  | RAll | RPartial | RNo | AllMarkets |
 |-----------|-----------|------|----------|-----|------------|
 |     0     |    0.0    | 0.0  | 17872.04 |  0  |  17872.04  |
-|   3200    |    0.0    | 0.0  |   504.04 |  0  |    504.04  |
+|    3600   |    0.0    | 0.0  |   500.04 |  0  |    500.04  |
+|    7200   |    0.0    | 0.0  |   500.04 |  0  |    500.04  |
 
 * Timestamp: current time on your allocation
 * OnDemand: On-demand cost at this timestamp
-* RAll: Reserve All Upfront cost at this timestamp
+* RAll: Reserve All Upfront costs at this timestamp
 * RPartial: Reserve Partial Upfront cost at this timestamp
 * AllMarkets: The cost of all markets at this timestamp
 
