@@ -8,7 +8,6 @@ import subprocess
 
 RES_DURATION = 8760
 TIME_WAITING_RESULTS = 30
-#INSTANCE_TYPES = ['m5.12xlarge','m5.16xlarge','m5.2xlarge','m5.4xlarge','m5.8xlarge','m5.large','m5.xlarge'] #change here the group you want
 
 def generate_optimizer_input(demand_path, prices_path, playpen):
 
@@ -60,13 +59,13 @@ def convert_prices(price_path, family, instance_types, family_directory):
 
     with open(price_path, mode='r') as file:
             header = file.readline().split(',')
-            
+
             while True:
                 line = file.readline()
                 if not line:
                     break
                 line = line.split(',')
-                
+
                 instance_type = line[0]
                 on_demand_hour = float(line[1])
 
@@ -87,7 +86,7 @@ def convert_prices(price_path, family, instance_types, family_directory):
 
 def read_demand(demand_path):
     demand = {}
-    
+
     with open(demand_path, mode='r') as file:
         header = file.readline().split(',')
 
