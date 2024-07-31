@@ -48,8 +48,37 @@ class DataManagement:
                     for i in range(0, len(line)):
                         instance_type = header[i].strip('\n').strip('"')
                         demand[instance_type].append(int(line[i]))
-        return demand
-    
+
+        timestamp = {'timestamp': demand['timestamp']}
+        demand.pop('timestamp')
+
+        return demand, timestamp
+
+    def read_allocation(self, allocation_path):
+        allocation = [{}, {}, {}, {}]
+
+        with open(allocation_path, mode='r') as file:
+                instance_names = file.readline().split(',')
+                market = 0
+
+                # iterates over the file to create the datasets of each type
+                while True:
+                    line = file.readline()
+                    if not line:
+                        break
+                    line = line.split(',')
+
+                    for i in range(2, len(line)):
+                        instance_name = instance_names[i].strip("\n")
+                        if instance_name in allocation[market]:
+                            allocation[market][instance_name].append(int(line[i].strip("\n")))
+                        else:
+                            allocation[market][instance_name] = [int(line[i].strip("\n"))]
+
+                    market = (market + 1) % 4
+
+        return allocation
+
     def write_output(self, output, timestamp, output_path):
         output_file = open(output_path, 'w')
         writer = csv.writer(output_file)
