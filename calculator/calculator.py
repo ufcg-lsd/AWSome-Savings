@@ -1,8 +1,8 @@
 """
 Calculates the cost for the original market allocation of a demand, considering 
 the current prices. Currently, supports the on-demand, all upfront reserve, partial
-upfront reverve, no upfront reserve, all upfront savings plan, partial upfront savings
-plan and no upfront savings plan markets.
+upfront reserve, no upfront reserve, all upfront savings plan, partial upfront savings
+plan, and no upfront savings plan markets.
 
 Assumptions:
  - The cost of the reserves after the end time is not considered in the total cost
@@ -19,17 +19,17 @@ def calculate(demand_on_demand, demand_all_up_reserved, demand_partial_up_reserv
         demand_partial_up_reserved: a dict with instance types as keys and lists of the demand for the
             partial upfront reserve market as values.
         demand_no_up_reserved: a dict with instance types as keys and lists of the demand for the
-            partial upfront reserve market as values.
+            no upfront reserve market as values.
         demand_all_up_savings_plan: a dict with instance types as keys and lists of the demand for the
             all upfront savings plan market as values.
         demand_partial_up_savings_plan: a dict with instance types as keys and lists of the demand for the
             partial upfront savings plan market as values.
         demand_no_up_savings_plan: a dict with instance types as keys and lists of the demand for the
-            partial upfront savings plan market as values.
+            no upfront savings plan market as values.
         prices: a dict with instance types as keys and objects with the market prices as values.
         reserve_duration: an integer that represents the reserve duration in hours for the reserves markets. All
             reserve markets must have the same reserve duration.
-    Returns: a dictionary that contains, for each one of the 7 markets types, one dictionary with the families as keys
+    Returns: a dictionary that contains, for each one of the 7 market types, one dictionary with the instance families as keys
         and the list of hourly costs as values.
     """
 
@@ -45,7 +45,7 @@ def calculate(demand_on_demand, demand_all_up_reserved, demand_partial_up_reserv
     costs_partial_up_sp = get_partial_up_savings_plan_cost(demand_partial_up_savings_plan, prices, reserve_duration)
     costs_no_up_sp = get_no_up_savings_plan_cost(demand_no_up_savings_plan, prices, reserve_duration)
     
-    #grouping the on-demand and reserves costs by families
+    # grouping the on-demand and reserves costs by families
     costs_od = group_costs_by_family(costs_od, max_t)
     costs_all_up_re = group_costs_by_family(costs_all_up_re, max_t)
     costs_partial_up_re = group_costs_by_family(costs_partial_up_re, max_t)
@@ -86,7 +86,7 @@ def calculate_no_reserves(demand_on_demand, demand_all_up_savings_plan, demand_p
 
     max_t = len(demand_on_demand[list(demand_on_demand.keys())[0]])
 
-    # on-demand costs is grouped by instance type
+    # on-demand costs are grouped by instance type
     costs_od = get_on_demand_cost(demand_on_demand, prices)
 
     # savings plans costs are grouped by family
@@ -94,7 +94,7 @@ def calculate_no_reserves(demand_on_demand, demand_all_up_savings_plan, demand_p
     costs_partial_up_sp = get_partial_up_savings_plan_cost(demand_partial_up_savings_plan, prices, reserve_duration)
     costs_no_up_sp = get_no_up_savings_plan_cost(demand_no_up_savings_plan, prices, reserve_duration)
 
-    #grouping the on-demand costs by families
+    # grouping the on-demand costs by families
     costs_od = group_costs_by_family(costs_od, max_t)
 
     output = {'OnDemand': costs_od, 'RAllUpfront': costs_all_up_sp, 'RPartialUpfront': costs_partial_up_sp,
@@ -147,7 +147,7 @@ def get_partial_up_reserved_cost(demand, prices, reserve_duration):
                 num_res = d - active_reserves[t]
                 costs[instance_type][t] += num_res * upfront_price
 
-                # adiciona o custo por hora das reservas
+                # adds the hourly cost of the reserves
                 for i in range(t, min((t + reserve_duration), len(instance_demand))):
                     active_reserves[i] += num_res
                     costs[instance_type][i] += num_res * hourly_price
@@ -166,7 +166,7 @@ def get_no_up_reserved_cost(demand, prices, reserve_duration):
             if d > active_reserves[t]:
                 num_res = d - active_reserves[t]
 
-                # adiciona o custo por hora das reservas
+                # adds the hourly cost of the reserves
                 for i in range(t, min((t + reserve_duration), len(instance_demand))):
                     active_reserves[i] += num_res
                     costs[instance_type][i] += num_res * hourly_price
@@ -184,7 +184,7 @@ def get_all_up_savings_plan_cost(demand, prices, reserve_duration):
         for t in range(max_t):
             cost = 0.0
 
-            # soma o gasto de todas as instancias da família
+            # sums the spending of all instances in the family
             for instance_type in families[family]:
                 upfront = prices[instance_type].sp_up_all_upfront
                 effective_hourly = upfront / reserve_duration
@@ -210,7 +210,7 @@ def get_partial_up_savings_plan_cost(demand, prices, reserve_duration):
         for t in range(max_t):
             cost = 0.0
 
-            # soma o gasto de todas as instancias da família
+            # sums the spending of all instances in the family
             for instance_type in families[family]:
                 upfront = prices[instance_type].sp_up_partial_upfront
                 hourly = prices[instance_type].sp_hr_partial_upfront
@@ -220,7 +220,7 @@ def get_partial_up_savings_plan_cost(demand, prices, reserve_duration):
             if cost > active_savings_plan[t]:
                 diff = cost - active_savings_plan[t]
 
-                #considerando que, no partial upfront, 50% do total é pago upfront
+                # considering that, in partial upfront, 50% of the total is paid upfront
                 costs[family][t] += (diff * reserve_duration) / 2
                 for i in range(t, min(t + reserve_duration, max_t)):
                     active_savings_plan[i] += diff
@@ -239,7 +239,7 @@ def get_no_up_savings_plan_cost(demand, prices, reserve_duration):
         for t in range(max_t):
             cost = 0.0
 
-            # soma o gasto de todas as instancias da família
+            # sums the spending of all instances in the family
             for instance_type in families[family]:
                 hourly = prices[instance_type].sp_hr_no_upfront
                 effective_hourly = hourly
