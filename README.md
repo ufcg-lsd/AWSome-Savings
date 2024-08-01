@@ -238,6 +238,21 @@ To run a single test:
 pytest tests/test_calculator.py -k "{name of the test case}"
 ```
 
+#### Testing the optimizer output:
+The unit tests are in *tests/test_optimizer_output.py* and are written using *pytest*.
+Inside the container of the awsome savings, you need to run one of the follow commands in the `/calculation` directory:
+To run all tests, without output of errors or status, run the following command:
+
+```
+pytest tests/test_optimizer_output.py
+```
+To run all tests, **with** output of errors or status, run the following command:
+```
+pytest tests/test_optimizer_output.py -s
+```
+
+Note: you can change the mock file before run the test acessing the test file and changing the indicated line
+
 ### Debugging
 
 The code generates logging when it runs. It is usefull for understanding, when one simulation cannot be completed (e.g. the amount of data was too much), where the code stopped working and how long took do run each step.
