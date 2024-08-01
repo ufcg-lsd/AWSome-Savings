@@ -25,6 +25,7 @@ COPY costplanner_cli.py ./
 COPY calculator/ ./calculator/
 COPY util/optimizer_util.py ./util/
 COPY data/ ./data/
+COPY tests/ ./tests/
 
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
