@@ -31,23 +31,24 @@ class TestAWSModel(unittest.TestCase):
                             'hourly_price': [2, 2]}
 
         on_demand_df = pd.DataFrame(on_demand_config)
-        on_demand_df.to_csv('tests/test_data/on_demand_config.csv', index=False)
+        on_demand_df.to_csv('./tests/test_data/on_demand_config.csv', index=False)
 
         savings_plan_config = {'instance': ['a', 'b'],
                                 'hourly_price': [1, 1],
                                 'duration': [4, 4]}
 
         savings_plan_df = pd.DataFrame(savings_plan_config)
-        savings_plan_df.to_csv('tests/test_data/savings_plan_config.csv', index=False)
+        savings_plan_df.to_csv('./tests/test_data/savings_plan_config.csv', index=False)
 
         demand = {'hour': [1, 2, 3, 4],
                   'a': [10, 10, 5, 5],
                   'b': [5, 5, 10, 10]}
 
         demand_df = pd.DataFrame(demand)
-        demand_df.to_csv('tests/test_data/total_demand.csv', index=False)
+        demand_df.to_csv('./tests/test_data/total_demand.csv', index=False)
 
-        subprocess.run('./cpp/build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        out = subprocess.run('python3 ./implementations/py_sp_only/build_simulation.py ./tests/test_data/on_demand_config.csv ./tests/test_data/savings_plan_config.csv ./tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT)
 
         try:
             #only checks the total cost
@@ -83,7 +84,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('tests/test_data/total_demand.csv', index=False)
 
-        out = subprocess.run('./cpp/build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+        out = subprocess.run(' python3 ./implementations/py_sp_only/build_simulation.py tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
     stderr=subprocess.STDOUT)
 
         try:
@@ -120,7 +121,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('tests/test_data/total_demand.csv', index=False)
 
-        out = subprocess.run('./cpp/build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+        out = subprocess.run('python3 ./implementations/py_sp_only/build_simulation.py tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
     stderr=subprocess.STDOUT)
 
         try:
@@ -157,7 +158,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('tests/test_data/total_demand.csv', index=False)
 
-        out = subprocess.run('./cpp/build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+        out = subprocess.run(' python3 ./implementations/py_sp_only/build_simulation.py tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
     stderr=subprocess.STDOUT)
 
         try:
@@ -194,7 +195,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('tests/test_data/total_demand.csv', index=False)
 
-        out = subprocess.run('./cpp/build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+        out = subprocess.run(' python3 ./implementations/py_sp_only/build_simulation.py tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
     stderr=subprocess.STDOUT)
 
         try:
@@ -229,7 +230,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('tests/test_data/total_demand.csv', index=False)
 
-        out = subprocess.run('./cpp/build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+        out = subprocess.run(' python3 ./implementations/py_sp_only/build_simulation.py tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
     stderr=subprocess.STDOUT)
 
         try:
@@ -268,7 +269,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('tests/test_data/total_demand.csv', index=False)
         
-        out = subprocess.run('./cpp/build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+        out = subprocess.run(' python3 ./implementations/py_sp_only/build_simulation.py tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
     stderr=subprocess.STDOUT)
 
         try:
@@ -303,8 +304,8 @@ class TestAWSModel(unittest.TestCase):
         demand_df.to_csv('tests/test_data/total_demand.csv', index=False)
 
         with self.assertRaises(Exception):
-            out = subprocess.run('./cpp/build/opt', shell=True, stdout=subprocess.DEVNULL,
-            stderr=subprocess.STDOUT, check=True)
+            out = subprocess.run(' python3 ./implementations/py_sp_only/build_simulation.py tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT, check=True)
 
     #17
     def test_different_instances_savings_plan_config(self):
@@ -330,8 +331,8 @@ class TestAWSModel(unittest.TestCase):
         demand_df.to_csv('tests/test_data/total_demand.csv', index=False)
 
         with self.assertRaises(Exception):
-            out = subprocess.run('./cpp/build/opt', shell=True, stdout=subprocess.DEVNULL,
-            stderr=subprocess.STDOUT, check=True)
+            out = subprocess.run(' python3 ./implementations/py_sp_only/build_simulation.py tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT, check=True)
 
     #18
     def test_different_instances_total_demand(self):
@@ -356,7 +357,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df.to_csv('tests/test_data/total_demand.csv', index=False)
 
         with self.assertRaises(Exception):
-            out = subprocess.run('./cpp/build/opt', shell=True, stdout=subprocess.DEVNULL,
-            stderr=subprocess.STDOUT, check=True)  
+            out = subprocess.run('python3 ./implementations/py_sp_only/build_simulation.py tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+    stderr=subprocess.STDOUT, check=True)  
 
-        #TO DO: wrong column names
+    #TO DO: wrong column names

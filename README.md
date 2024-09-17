@@ -44,15 +44,15 @@ The simulation generates the following files as the output:
 
 ### Tests
 
-The unit tests are in *tests/test_aws_model.py* and are written using *unittest*. Currently, there are 12 tests of the model and 6 tests of the input validations. 
+The unit tests are in *tests/test_py.py* and are written using *unittest*. Currently, there are 12 tests of the model and 6 tests of the input validations. 
 
 To run all tests, run the following command:
 ```
-python -m unittest tests.test_aws_model
+python -m unittest tests.test_py
 ```
 To run a single test:
 ```
-python -m unittest tests.test_aws_model.TestAWSModel.{name of the test case}
+python -m unittest tests.test_py.TestAWSModel.{name of the test case}
 ```
 ### Debugging
 
@@ -149,15 +149,15 @@ The simulation generates the following files as the output:
 
 ### Tests
 
-The unit tests are in *tests/test_aws_model.py* and are written using *unittest*. Currently, there are 12 tests of the model and 6 tests of the input validations. 
+The unit tests are in *tests/test_cpp.py* and are written using *unittest*. Currently, there are 12 tests of the model and 6 tests of the input validations. 
 
 To run all tests, run the following command:
 ```
-python -m unittest tests.test_aws_model_cpp
+python -m unittest tests.test_cpp
 ```
 To run a single test:
 ```
-python -m unittest tests.test_aws_model_cpp.TestAWSModel.{name of the test case}
+python -m unittest tests.test_cpp.TestAWSModel.{name of the test case}
 ```
 ### Debugging
 
