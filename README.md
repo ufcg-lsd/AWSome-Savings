@@ -2,9 +2,24 @@
 
 AWSome Savings is a tool for optimizing costs in AWS EC2. AWS provides various market types for its instances, which have different pricing policies. The objetive is to determine how many instances should be allocated to each market, in order to satisfy the demand for those instances and minimize the cost. This tool is the implementation of a linear programming model (detailed description [here](https://www.overleaf.com/read/fyfghmzfkmtq)). It considers 3 markets: on-demand, reserve and savings plan.
 
+## Versions
+
+There are three diferent versions of the optimization tool:
+- py: implementation in Python, with the markets on-demand, reserves and savings plans;
+- py_no_sp: implementation in Python, with the markets on-demand and savings plans;
+- cpp_no_sp: implementation in C++, with the markets on-demand and savings plans.
+
+## Directory structure
+
+This repository contains the following directories:
+- implementations: contains the implementation files for the different versions;
+- data: contains sample data, as an example of the optimizer input;
+- tests: contains tests for all the versions;
+- util: contains auxiliary files, such as scripts for colleting memory and cpu usage.
+
 ## Python
 
-For running the optimizer model written in python, proceed with the following steps.
+There are two Python implementations, one that for the on-demand, reserves and savings plans markets and another for the on-demand and savings plans markets. The second one is faster if there is no need for using the reserve market. For running the optimizer model written in python, proceed with the following steps. 
 
 ### Installing dependencies
 
@@ -15,12 +30,25 @@ pip install pandas
 ```
 
 ```
-python -m pip install --upgrade --user ortools
+python3 -m pip install --upgrade --user ortools
 ```
 
 ### Using
 
 There are several files with the input data for the simulation. For more information about them, see the documentation of ***build_simulation.py***. There are also examples of those files in the data folder.
+
+#### Version with on-demand, reserves and savings plans
+
+Run the follow command to perform an optimization:
+```
+python3 build_simulation.py {path of on_demand_config} {path of reserves_config} {path of savings_plan_config} {path of demand}
+```
+To run with the example files:
+```
+python3 implementations/py/build_simulation.py data/on_demand_config.csv data/reserves_config.csv data/savings_plan_config.csv data/total_demand.csv
+```
+
+#### Version with on-demand and savings plans
 
 Run the follow command to perform an optimization:
 ```
@@ -28,7 +56,7 @@ python3 build_simulation.py {path of on_demand_config} {path of savings_plan_con
 ```
 To run with the example files:
 ```
-python3 build_simulation.py data/on_demand_config.csv data/savings_plan_config.csv data/total_demand.csv
+python3 implementations/py_sp_only/build_simulation.py data/on_demand_config.csv data/savings_plan_config.csv data/total_demand.csv
 ```
 
 #### Output
@@ -44,15 +72,30 @@ The simulation generates the following files as the output:
 
 ### Tests
 
-The unit tests are in *tests/test_py_sp_only.py* and are written using *unittest*. Currently, there are 12 tests of the model and 6 tests of the input validations. 
+#### Version with on-demand, reserves and savings plans
+
+The unit tests are in *tests/test_py.py* and are written using *unittest*. Currently, there are 12 tests of the model and 6 tests of the input validations. 
 
 To run all tests, run the following command:
 ```
-python -m unittest tests.test_py_sp_only
+python3 -m unittest tests.test_py
 ```
 To run a single test:
 ```
-python -m unittest tests.test_py_sp_only.TestAWSModel.{name of the test case}
+python3 -m unittest tests.test_py.TestAWSModel.{name of the test case}
+```
+
+#### Version with on-demand and savings plans
+
+The unit tests are in *tests/test_py_sp_only.py* and are written using *unittest*. Currently, there are 6 tests of the model and 6 tests of the input validations. 
+
+To run all tests, run the following command:
+```
+python3 -m unittest tests.test_py_sp_only
+```
+To run a single test:
+```
+python3 -m unittest tests.test_py_sp_only.TestAWSModel.{name of the test case}
 ```
 ### Debugging
 
@@ -60,7 +103,7 @@ The code generates logging when it runs. It is usefull for understanding, when o
 
 ## C++
 
-For running the optimizer model written in C++, proceed with the following steps.
+For running the optimizer model written in C++ proceed with the following steps. Currently, the version implemented in C++ has the on-demand and savings plans markets. 
 
 ### Installing dependencies
 
@@ -149,15 +192,15 @@ The simulation generates the following files as the output:
 
 ### Tests
 
-The unit tests are in *tests/test_cpp.py* and are written using *unittest*. Currently, there are 12 tests of the model and 6 tests of the input validations. 
+The unit tests are in *tests/test_cpp.py* and are written using *unittest*. Currently, there are 6 tests of the model and 6 tests of the input validations. 
 
 To run all tests, run the following command:
 ```
-python -m unittest tests.test_cpp_sp_only
+python3 -m unittest tests.test_cpp_sp_only
 ```
 To run a single test:
 ```
-python -m unittest tests.test_cpp_sp_only.TestAWSModel.{name of the test case}
+python3 -m unittest tests.test_cpp_sp_only.TestAWSModel.{name of the test case}
 ```
 ### Debugging
 
