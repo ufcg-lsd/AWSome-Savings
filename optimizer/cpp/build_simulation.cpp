@@ -176,28 +176,51 @@ void generate_total_purchases(vector<vector<vector<double>>> values,
                               vector<string> instance_names,
                               vector<string> market_names,
                               string out_directory) {
+  // this vector represents the allocations
+  vector<vector<string>> total_purchases = {
+        {"hour", "market"}};
+
+  // Collecting the instance names and putting on head
   for (int i_instance = 0; i_instance < instance_names.size(); ++i_instance) {
-    vector<vector<string>> total_purchases = {
-        {"hour", "instance_type", "market", "count_active", "count_reserves"}};
     string instance_name = instance_names[i_instance];
-
-    // savings plan
-    for (int i_time = 0; i_time < hour_index.size(); ++i_time) {
-      double active = values[i_time][i_instance + 1][0];
-      vector<string> line = {to_string(hour_index[i_time]), instance_name,
-                             "savings_plan", to_string(active), "0"};
-      total_purchases.push_back(line);
-    }
-
-    // on demand
-    for (int i_time = 0; i_time < hour_index.size(); ++i_time) {
-      double active = values[i_time][i_instance + 1][1];
-      vector<string> line = {to_string(hour_index[i_time]), instance_name,
-                             "on_demand", to_string(active), to_string(active)};
-      total_purchases.push_back(line);
-    }
-
-    matrix_to_csv(total_purchases,
-                  out_directory + "/total_purchases_" + instance_name + ".csv");
+    total_purchases[0].push_back(instance_name);
   }
+
+  // For each hour on our dataset
+  for (int i_time = 0; i_time < hour_index.size(); ++i_time) {
+    // Create four new lines that contains the allocation of each marke to each instance type
+    total_purchases.insert(total_purchases.end(), { { to_string(hour_index[i_time]), "on_demand" },
+                                                    { to_string(hour_index[i_time]), "sp_noupfront" }, 
+                                                    { to_string(hour_index[i_time]), "sp_partialupfront"}, 
+                                                    { to_string(hour_index[i_time]), "sp_allupfront"}});
+
+    // For each instance of all
+    for (int i_instance = 0; i_instance < instance_names.size(); ++i_instance) {
+      // Get the allocated value
+      double active_savings_plan = values[i_time][i_instance + 1][0];
+      double active_ond = values[i_time][i_instance + 1][1];
+
+      int active_savings_plan_int = values[i_time][i_instance + 1][0];
+      int active_ond_int = values[i_time][i_instance + 1][1];
+
+      // Get, if exists the rounding errors
+      double mod1 = active_savings_plan - static_cast<int>(active_savings_plan);
+      double mod2 = active_ond - static_cast<int>(active_ond);
+
+      // If exists, we compense this value increasing the ondemand allocation in 1
+      if ((mod1 + mod2) > 0) {
+        active_ond_int += 1;
+      }
+
+      // Add the line on the vector of allocations
+      total_purchases[i_time * 4 + 1].push_back(to_string(active_ond_int));
+      total_purchases[i_time * 4 + 2].push_back(to_string(active_savings_plan_int));
+      // The values below represents the partial upfront and all upfront allocation, respectively
+      total_purchases[i_time * 4 + 3].push_back("0");
+      total_purchases[i_time * 4 + 4].push_back("0");
+    }
+  }
+  
+  matrix_to_csv(total_purchases,
+                  out_directory + "/allocation" + ".csv");
 }

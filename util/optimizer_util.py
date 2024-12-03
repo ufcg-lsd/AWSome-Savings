@@ -8,7 +8,6 @@ import subprocess
 
 RES_DURATION = 8760
 TIME_WAITING_RESULTS = 30
-#INSTANCE_TYPES = ['m5.12xlarge','m5.16xlarge','m5.2xlarge','m5.4xlarge','m5.8xlarge','m5.large','m5.xlarge'] #change here the group you want
 
 def generate_optimizer_input(demand_path, prices_path, playpen):
 
@@ -52,7 +51,7 @@ def generate_optimizer_input(demand_path, prices_path, playpen):
 def convert_prices(price_path, family, instance_types, family_directory):
     sp_file = open(f'{family_directory}/savings_plan_config.csv', 'w')
     sp_writer = csv.writer(sp_file)
-    sp_writer.writerow(['instance','RNoUpfront1YM','duration'])
+    sp_writer.writerow(['instance','market','duration'])
 
     od_file = open(f'{family_directory}/on_demand_config.csv', 'w')
     od_writer = csv.writer(od_file)
@@ -60,13 +59,13 @@ def convert_prices(price_path, family, instance_types, family_directory):
 
     with open(price_path, mode='r') as file:
             header = file.readline().split(',')
-            
+
             while True:
                 line = file.readline()
                 if not line:
                     break
                 line = line.split(',')
-                
+
                 instance_type = line[0]
                 on_demand_hour = float(line[1])
 
@@ -87,7 +86,7 @@ def convert_prices(price_path, family, instance_types, family_directory):
 
 def read_demand(demand_path):
     demand = {}
-    
+
     with open(demand_path, mode='r') as file:
         header = file.readline().split(',')
 
@@ -122,33 +121,23 @@ def get_families(demand):
             families[family] = [instance_type]
     return families
 
-def filter_optimization_ondemand(path_to_filter, prices, current_result):
-    with open(path_to_filter, 'r') as demand_file:
-        # fill the dictionary of prices if it doesn't exists
-        all_rows = demand_file.readlines()
-        rows_ondemand = int((len(all_rows) - 1)/2)
-        for market in current_result.keys():
-            if len(current_result[market]) == 0:
-                current_result[market] = [0 for _ in range(rows_ondemand)]
-        
-        # read the allocation and put in a variable
-        demand_reader = csv.reader(all_rows)
-        # Ignore the first line(header)
-        next(demand_reader, None)
-        index = 0
-        for row in demand_reader:
-            if row[2] == 'on_demand':
-                current_result['OnDemand'][index] += float(row[4]) * prices[row[1]].on_demand
-                index += 1
+def write_allocation(raw_path, family):
+    if not os.path.isfile(f'{raw_path}/allocation.csv'):
+        os.system(f'cp {raw_path}/{family}/allocation.csv {raw_path}/allocation.csv')
+    else:
+        new_lines = []
+        with open(f'{raw_path}/allocation.csv', 'r') as old, \
+             open(f'{raw_path}/{family}/allocation.csv', 'r') as new:
+            
+            new_reader = [line for line in csv.reader(new)]
+            old_reader = [line for line in csv.reader(old)]
+            
+            for i in range(len(old_reader)):
+                new_lines.append(old_reader[i] + new_reader[i][2::])
 
-def filter_optimization_savings_plan(path_to_filter, current_result):
-    with open(path_to_filter, 'r') as demand_file:
-        demand_reader = csv.reader(demand_file)
-        # Ignore the first line(header)
-        next(demand_reader, None)
-        # The list comprehension below remove the 4th column (count_active)
-        for index, row in enumerate(demand_reader):
-            current_result['RNoUpfront'][index] += float(row[3])
+        with open(f'{raw_path}/allocation.csv', 'w') as old:
+            writer = csv.writer(old)
+            writer.writerows(new_lines)
 
 def run_optimizations(playpen):
     # Function to run optimization for a family
@@ -167,17 +156,4 @@ def run_optimizations(playpen):
             while not os.path.isfile(f'{playpen}/raw/{family}/result_cost.csv'):
                 time.sleep(TIME_WAITING_RESULTS)
 
-def prepare_output_dict(playpen, prices):
-    result = {'OnDemand': [], 'RAllUpfront': [], 'RPartialUpfront': [], 'RNoUpfront': []}
-
-    # Iterates over the families directory
-    for family in os.listdir(f"{playpen}/raw"):
-        demand_directory = os.listdir(f"{playpen}/raw/{family}/")
-        # Iterates over the demand output of a family and filter the columns
-        for demand_file in demand_directory:
-            file_type = demand_file.split('.')[0]
-            if file_type == f"total_purchases_{family}":
-                filter_optimization_ondemand(f"{playpen}/raw/{family}/{demand_file}", prices, result)
-                
-        filter_optimization_savings_plan(f"{playpen}/raw/{family}/total_purchases_savings_plan.csv", result)
-    return result
+            write_allocation(f"{playpen}/raw/", family)

@@ -11,13 +11,13 @@ class DataManagement:
         prices = {}
         with open(prices_path, mode='r') as file:
                 header = file.readline().split(',')
-                
+
                 while True:
                     line = file.readline()
                     if not line:
                         break
                     line = line.split(',')
-                    
+
                     instance_type = line[0]
                     on_demand_hour = float(line[1])
                     up_all_upfront = float(line[2])
@@ -33,12 +33,12 @@ class DataManagement:
         with open(demand_path, mode='r') as file:
                 header = file.readline().split(',')
 
-                # coloca os tipos de instância em um dicionário
+                # put the instacne types in a dictionary
                 for i in range(0, len(header)):
                     instance_type = header[i].strip('\n').strip('"')
                     demand[instance_type] = []
                 
-                # itera sobre o arquivo para formar as demandas de cada tipo
+                # iterates over the file to create the datasets of each type
                 while True:
                     line = file.readline()
                     if not line:
@@ -48,8 +48,37 @@ class DataManagement:
                     for i in range(0, len(line)):
                         instance_type = header[i].strip('\n').strip('"')
                         demand[instance_type].append(int(line[i]))
-        return demand
-    
+
+        timestamp = {'timestamp': demand['timestamp']}
+        demand.pop('timestamp')
+
+        return demand, timestamp
+
+    def read_allocation(self, allocation_path):
+        allocation = [{}, {}, {}, {}]
+
+        with open(allocation_path, mode='r') as file:
+                instance_names = file.readline().split(',')
+                market = 0
+
+                # iterates over the file to create the datasets of each type
+                while True:
+                    line = file.readline()
+                    if not line:
+                        break
+                    line = line.split(',')
+
+                    for i in range(2, len(line)):
+                        instance_name = instance_names[i].strip("\n")
+                        if instance_name in allocation[market]:
+                            allocation[market][instance_name].append(int(line[i].strip("\n")))
+                        else:
+                            allocation[market][instance_name] = [int(line[i].strip("\n"))]
+
+                    market = (market + 1) % 4
+
+        return allocation
+
     def write_output(self, output, timestamp, output_path):
         output_file = open(output_path, 'w')
         writer = csv.writer(output_file)
@@ -71,7 +100,7 @@ class DataManagement:
                 writer.writerow(l)
 
         output_file.close()
-        
+
     def write_output_summarize(self, output, timestamp, output_path):
         output_file = open(output_path, 'w')
         writer = csv.writer(output_file)
@@ -84,49 +113,11 @@ class DataManagement:
 
         output_file.close()
 
-    def allocate_demand(self, demand, proportions):
-        method = proportions[0].lower()
-        timestamp = {'timestamp': demand['timestamp']}
-        demand.pop('timestamp')
-        types = [{}, {}, {}, {}]
-        if method == 'proportion':
-            for instance_type, instance_demand in demand.items():
-                maximum = max(instance_demand)
-                allocated_no_up = math.floor(maximum * proportions[2])
-                allocated_partial_up = math.floor(maximum * proportions[3])
-                allocated_all_up = math.floor(maximum * proportions[4])
-                on_demand_margin = allocated_no_up + allocated_partial_up + allocated_all_up
-                for quantity in instance_demand:
-                    total_instances = [0] * 4
-                    total_instances[0] = max(0, quantity - on_demand_margin)
-                    total_instances[1] = allocated_no_up
-                    total_instances[2] = allocated_partial_up
-                    total_instances[3] = allocated_all_up
-                    for index, instances in enumerate(total_instances):
-                        if instance_type in types[index]:
-                            types[index][instance_type].append(instances)
-                        else:
-                            types[index][instance_type] = [instances]
-        elif method == 'absolute':
-            for instance_type, instance_demand in demand.items():
-                for quantity in instance_demand:
-                    value = quantity
-                    for index in range(1, len(types)):
-                        number = 0
-                        if value - int(proportions[index + 1]) < 0:
-                            number = value
-                            value = 0
-                        else:
-                            number = int(proportions[index + 1])
-                            value -= int(proportions[index + 1])
-                        
-                        if instance_type in types[index]:
-                            types[index][instance_type].append(number)
-                        else:
-                            types[index][instance_type] = [number]
-                    if instance_type in types[0]:
-                        types[0][instance_type].append(value)
-                    else:
-                        types[0][instance_type] = [value]
-        types.append(timestamp)
-        return types
+    def write_file(self, rows, output_path):
+        output_file = open(output_path, 'w')
+        writer = csv.writer(output_file)
+
+        for row in rows:
+            writer.writerow(row)
+
+        output_file.close()
