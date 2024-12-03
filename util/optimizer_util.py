@@ -51,7 +51,7 @@ def generate_optimizer_input(demand_path, prices_path, playpen):
 def convert_prices(price_path, family, instance_types, family_directory):
     sp_file = open(f'{family_directory}/savings_plan_config.csv', 'w')
     sp_writer = csv.writer(sp_file)
-    sp_writer.writerow(['instance','RNoUpfront1YM','duration'])
+    sp_writer.writerow(['instance','market','duration'])
 
     od_file = open(f'{family_directory}/on_demand_config.csv', 'w')
     od_writer = csv.writer(od_file)
