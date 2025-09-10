@@ -47,7 +47,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('tests/test_data/total_demand.csv', index=False)
 
-        subprocess.run('./implementations/cpp_sp_only/build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        subprocess.run('./build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
         try:
             #only checks the total cost
@@ -83,7 +83,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('tests/test_data/total_demand.csv', index=False)
 
-        out = subprocess.run('./implementations/cpp_sp_only/build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+        out = subprocess.run('./build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
     stderr=subprocess.STDOUT)
 
         try:
@@ -120,7 +120,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('tests/test_data/total_demand.csv', index=False)
 
-        out = subprocess.run('./implementations/cpp_sp_only/build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+        out = subprocess.run('./build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
     stderr=subprocess.STDOUT)
 
         try:
@@ -157,7 +157,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('tests/test_data/total_demand.csv', index=False)
 
-        out = subprocess.run('./implementations/cpp_sp_only/build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+        out = subprocess.run('./build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
     stderr=subprocess.STDOUT)
 
         try:
@@ -194,7 +194,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('tests/test_data/total_demand.csv', index=False)
 
-        out = subprocess.run('./implementations/cpp_sp_only/build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+        out = subprocess.run('./build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
     stderr=subprocess.STDOUT)
 
         try:
@@ -229,7 +229,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('tests/test_data/total_demand.csv', index=False)
 
-        out = subprocess.run('./implementations/cpp_sp_only/build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+        out = subprocess.run('./build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
     stderr=subprocess.STDOUT)
 
         try:
@@ -268,7 +268,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df = pd.DataFrame(demand)
         demand_df.to_csv('tests/test_data/total_demand.csv', index=False)
         
-        out = subprocess.run('./implementations/cpp_sp_only/build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
+        out = subprocess.run('./build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL,
     stderr=subprocess.STDOUT)
 
         try:
@@ -303,7 +303,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df.to_csv('tests/test_data/total_demand.csv', index=False)
 
         with self.assertRaises(Exception):
-            out = subprocess.run('./implementations/cpp_sp_only/build/opt', shell=True, stdout=subprocess.DEVNULL,
+            out = subprocess.run('./build/opt', shell=True, stdout=subprocess.DEVNULL,
             stderr=subprocess.STDOUT, check=True)
 
     #17
@@ -330,7 +330,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df.to_csv('tests/test_data/total_demand.csv', index=False)
 
         with self.assertRaises(Exception):
-            out = subprocess.run('./implementations/cpp_sp_only/build/opt', shell=True, stdout=subprocess.DEVNULL,
+            out = subprocess.run('./build/opt', shell=True, stdout=subprocess.DEVNULL,
             stderr=subprocess.STDOUT, check=True)
 
     #18
@@ -356,7 +356,7 @@ class TestAWSModel(unittest.TestCase):
         demand_df.to_csv('tests/test_data/total_demand.csv', index=False)
 
         with self.assertRaises(Exception):
-            out = subprocess.run('./implementations/cpp_sp_only/build/opt', shell=True, stdout=subprocess.DEVNULL,
+            out = subprocess.run('./build/opt', shell=True, stdout=subprocess.DEVNULL,
             stderr=subprocess.STDOUT, check=True)  
 
         #TO DO: wrong column names
