@@ -39,3 +39,7 @@ dopt:
 
 drun:
 	docker run -v $(DIR)/data:/optimizer-files -v $(DIR)/logs:/optimizer-logs -it optimizer:latest /bin/sh
+
+venv:
+	python -m venv .venv
+	./.venv/bin/python -m pip install -r requirements.txt

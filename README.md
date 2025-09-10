@@ -2,6 +2,20 @@
 
 AWSome Savings is a tool for optimizing costs in AWS EC2. AWS provides various market types for its instances, which have different pricing policies. The objetive is to determine how many instances should be allocated to each market, in order to satisfy the demand for those instances and minimize the cost. This tool is the implementation of a linear programming model (detailed description [here](https://www.overleaf.com/read/fyfghmzfkmtq)). It considers 3 markets: on-demand, reserve and savings plan.
 
+## Dependencies
+
+### Python
+- Python 3.9
+- [pandas](https://pandas.pydata.org/)  
+- [OR-Tools](https://developers.google.com/optimization)  
+
+### C++
+- GCC / Clang with C++17 support  
+- [CMake](https://cmake.org/)  
+- [OR-Tools](https://github.com/google/or-tools) (v9.8)
+- `build-essential`
+- (Optional) Docker, if you prefer using the prebuilt container  
+
 ## Versions
 
 There are three diferent versions of the optimization tool:
@@ -147,7 +161,7 @@ cmake --build build --config Release --target all -j4 -v
 sudo cmake --build build --config Release --target install -v
 ```
 
-This command will install the library to your `CMAKE_INSTALL_PREFIX` path (usually `/usr/local` on UNIX). You need to set your `LD_LIBRARY_PATH` variable to `lib/` inside the same path or the code won't compile:
+This command will install the library to your [`CMAKE_INSTALL_PREFIX`](https://cmake.org/cmake/help/latest/variable/CMAKE_INSTALL_PREFIX.html) path (usually `/usr/local` on UNIX). You need to set your `LD_LIBRARY_PATH` variable to `lib/` inside the same path or the code won't compile:
 
 ```sh
 export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
