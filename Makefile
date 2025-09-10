@@ -2,11 +2,12 @@ export LD_LIBRARY_PATH := /usr/local/lib:$LD_LIBRARY_PATH
 DIR := $(shell pwd)
 
 compile:
-	g++ -g -O3 -c cpp/aws_model.cpp -o cpp/build/aws_model.o
-	g++ -g -O3 -c cpp/build_simulation.cpp -o cpp/build/build_simulation.o
-	g++ -g -O3 -c cpp/csv_parser.cpp -o cpp/build/csv_parser.o
-	g++ -g -O3 -c cpp/validations.cpp -o cpp/build/validations.o
-	g++ -g -O3 cpp/build/aws_model.o cpp/build/build_simulation.o cpp/build/csv_parser.o cpp/build/validations.o -o cpp/build/opt.elf -lortools -labsl_log_internal_message
+	mkdir -p build
+	g++ -g -O3 -c implementations/cpp_sp_only/aws_model.cpp -o implementations/cpp_sp_only/build/aws_model.o
+	g++ -g -O3 -c implementations/cpp_sp_only/build_simulation.cpp -o implementations/cpp_sp_only/build/build_simulation.o
+	g++ -g -O3 -c implementations/cpp_sp_only/csv_parser.cpp -o implementations/cpp_sp_only/build/csv_parser.o
+	g++ -g -O3 -c implementations/cpp_sp_only/validations.cpp -o implementations/cpp_sp_only/build/validations.o
+	g++ -g -O3 implementations/cpp_sp_only/build/aws_model.o implementations/cpp_sp_only/build/build_simulation.o implementations/cpp_sp_only/build/csv_parser.o implementations/cpp_sp_only/build/validations.o -o build/opt.elf -lortools -labsl_log_internal_message
 
 docker-compile:
 	g++ -g -O3 -c aws_model.cpp -o build/aws_model.o
