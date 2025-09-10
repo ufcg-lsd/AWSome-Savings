@@ -111,11 +111,47 @@ There are currently two possible ways to install the dependencies for the use of
 
 #### Installing locally
 
-For a local install, all the main tools for C++ developing are needed (`gcc`, `g++`), normally included in packages such as `build-essential` in apt. Additionally, `cmake` and the `or-tools` library are needed for the local build.
+For a local install, all the main tools for C++ developing are needed. Additionally, `cmake` and the `or-tools` library are needed for the local build. The following steps should result in a local binary of the optimizer ready to run:
 
-After installing the C++ developing tools and `cmake`, seek to the [OR-Tools building manual](https://developers.google.com/optimization/install/cpp) for building the library locally or installing the binaries.
+1. Run the following command to install dependencies on Ubuntu:
 
-> Important: the code will not run if `LD_LIBRARY_PATH` variable is not set correctly pointing to the path of the installation of OR-Tools.
+```sh
+sudo apt install -y build-essential cmake lsb-release
+```
+
+2. Clone the `or-tools` code for a local build and checkout to the compatible version with the optimizer:
+
+```sh
+git clone https://github.com/google/or-tools
+git fetch --all --tags --prune
+git checkout tags/v9.8 -b v9.8
+```
+
+3. Configure the build. This command configures the dependencies for local build.
+
+```sh
+cmake -S . -B build -DBUILD_DEPS=ON -DUSE_SCIP=OFF
+```
+> For faster executing, the `-DUSE_SCIP=OFF` flag is used. If you want to test the SCIP solver, remove the flag.
+
+4. Build the source code.
+
+> **Important**: The `-j` flag controls the number of parallel compilation jobs. For example, `-j4` runs up to 4 jobs in parallel. Higher values speed up the build but increase CPU usage. Using `-j` without a number will use all available cores/threads, which can heavily load or throttle your machine.
+
+```sh
+cmake --build build --config Release --target all -j4 -v
+```
+
+5. Install or-tools on your OS:
+```sh
+sudo cmake --build build --config Release --target install -v
+```
+
+This command will install the library to your `CMAKE_INSTALL_PREFIX` path (usually `/usr/local` on UNIX). You need to set your `LD_LIBRARY_PATH` variable to `lib/` inside the same path or the code won't compile:
+
+```sh
+export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
+```
 
 #### Getting the docker image
 
@@ -135,7 +171,7 @@ Another other option is to use the container that wraps all of C++ environment a
 
 ### Compiling
 
-If using the code locally, compiling it is necessary. Assuming all the environment is setup correctly, compile the code with:
+If using the code locally, compiling it is necessary. Assuming the environment is setup correctly, compile the code with:
 
 ```
 make compile
