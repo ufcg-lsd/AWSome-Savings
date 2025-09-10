@@ -5,3 +5,4 @@ aws_model.log
 result_cost.csv
 build/*.o
 build/*.elf
+implementations/cpp_sp_only/build/
