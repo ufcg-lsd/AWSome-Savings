@@ -29,10 +29,10 @@ debug:
 	gdb --args ./build/opt.elf ./data/on_demand_config.csv ./data/savings_plan_config.csv ./data/total_demand.csv
 
 ptest:
-	python -m unittest ./tests/test_aws_model.py
+	python -m unittest ./tests/test_py.py
 
 ctest:
-	python -m unittest ./tests/test_aws_model_cpp.py
+	python -m unittest ./tests/test_cpp_sp_only.py
 
 dopt:
 	docker run -v $(DIR)/data:/optimizer-files -v $(DIR)/logs:/optimzer-logs optimizer:latest /bin/sh -c "/optimizer/build/opt.elf /optimizer-files/on_demand_config.csv /optimizer-files/savings_plan_config.csv /optimizer-files/total_demand.csv /optimizer-files/output > /optimizer-logs/output.log 2> /optimizer-logs/error.log"
