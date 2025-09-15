@@ -37,7 +37,7 @@ There are two Python implementations, one that for the on-demand, reserves and s
 
 ### Installing dependencies
 
-The tool is implemented in Python 3 and requires [pandas](https://pandas.pydata.org/) and [OR-Tools](https://developers.google.com/optimization). They can be installed using [pip](https://pypi.org/project/pip/):
+The tool requires Python 3.9, not working with newer versions. For changing the Python version, we recommend using [pyenv](https://github.com/pyenv/pyenv/tree/master). It also requires [pandas](https://pandas.pydata.org/) and [OR-Tools](https://developers.google.com/optimization). They can be installed using [pip](https://pypi.org/project/pip/):
 
 ```
 pip install pandas
@@ -46,6 +46,8 @@ pip install pandas
 ```
 python3 -m pip install --upgrade --user ortools
 ```
+
+Note that, after the Python version is changed, those commands need to be executed, in order to install the correct version of the dependencies.
 
 ### Using
 
