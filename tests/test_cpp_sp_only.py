@@ -57,6 +57,42 @@ class TestAWSModel(unittest.TestCase):
         except FileNotFoundError:
             self.fail("The file result_cost.csv was not created.")
 
+    def test_savings_plan_not_integer(self):
+        on_demand_config = {'instance': ['a', 'b'],
+                            'hourly_price': [2, 2]}
+
+        on_demand_df = pd.DataFrame(on_demand_config)
+        on_demand_df.to_csv('tests/test_data/on_demand_config.csv', index=False)
+
+        savings_plan_config = {'instance': ['a', 'b'],
+                                'hourly_price': [0.5, 0.5],
+                                'duration': [4, 4]}
+
+        savings_plan_df = pd.DataFrame(savings_plan_config)
+        savings_plan_df.to_csv('tests/test_data/savings_plan_config.csv', index=False)
+
+        demand = {'hour': [1, 2, 3, 4],
+                  'a': [10, 10, 5, 5],
+                  'b': [5, 5, 10, 10]}
+
+        demand_df = pd.DataFrame(demand)
+        demand_df.to_csv('tests/test_data/total_demand.csv', index=False)
+
+        subprocess.run('./build/opt.elf tests/test_data/on_demand_config.csv tests/test_data/savings_plan_config.csv tests/test_data/total_demand.csv', shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+
+        try:
+            result_cost = pd.read_csv('result_cost.csv')
+            actual_cost = result_cost.loc[0, 'total_cost']
+            sp_cost = result_cost.loc[1, 'total_cost']
+            a_od_cost = result_cost.loc[2, 'total_cost']
+            b_od_cost = result_cost.loc[3, 'total_cost']
+            self.assertEqual(actual_cost, 30)
+            self.assertEqual(sp_cost, 30)
+            self.assertEqual(a_od_cost, 0)
+            self.assertEqual(b_od_cost, 0)
+        except FileNotFoundError:
+            self.fail("The file result_cost.csv was not created.")
+
     #2
     # on_demand e reserved
 
