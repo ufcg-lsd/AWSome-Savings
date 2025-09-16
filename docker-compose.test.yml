@@ -7,8 +7,8 @@ services:
       dockerfile: Dockerfile.python-test
     volumes:
       - ./tests:/app/tests
-      - ./implementations/py:/app/implementations/py
-      - ./implementations/py_sp_only:/app/implementations/py_sp_only
+      - ./implementations/py:/app/implementations/py:ro
+      - ./implementations/py_sp_only:/app/implementations/py_sp_only:ro
     environment:
       - PYTHONPATH=/app
     command: [".venv/bin/python", "-m", "unittest", "discover", "-s", "tests", "-p", "test_py*.py", "-v"]
@@ -19,7 +19,7 @@ services:
       dockerfile: Dockerfile.cpp-test
     volumes:
       - ./tests:/app/tests
-      - ./implementations/cpp_sp_only:/app/implementations/cpp_sp_only
+      - ./implementations/cpp_sp_only:/app/implementations/cpp_sp_only:ro
     environment:
       - LD_LIBRARY_PATH=/usr/local/lib
     command: ["python", "-m", "unittest", "tests.test_cpp_sp_only", "-v"]
@@ -30,7 +30,7 @@ services:
       dockerfile: Dockerfile.cpp-test
     volumes:
       - ./tests:/app/tests
-      - ./implementations:/app/implementations
+      - ./implementations:/app/implementations:ro
     environment:
       - LD_LIBRARY_PATH=/usr/local/lib
       - PYTHONPATH=/app

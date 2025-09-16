@@ -4,10 +4,8 @@
 name: AWSome-Savings Tests
 
 on:
-  push:
-    branches: [ "master", "main", "main-candidate" ]
   pull_request:
-    branches: [ "master", "main", "main-candidate" ]
+    branches: [ "master", "main" ]
 
 permissions:
   contents: read
@@ -34,7 +32,7 @@ jobs:
     - name: Run Python Tests
       run: |
         docker run --rm \
-          -v ${{ github.workspace }}/tests:/app/tests:ro \
+          -v ${{ github.workspace }}/tests:/app/tests \
           -v ${{ github.workspace }}/implementations/py:/app/implementations/py:ro \
           -v ${{ github.workspace }}/implementations/py_sp_only:/app/implementations/py_sp_only:ro \
           awsome-savings:python-test
@@ -60,7 +58,7 @@ jobs:
     - name: Run C++ Tests
       run: |
         docker run --rm \
-          -v ${{ github.workspace }}/tests:/app/tests:ro \
+          -v ${{ github.workspace }}/tests:/app/tests \
           -v ${{ github.workspace }}/implementations/cpp_sp_only:/app/implementations/cpp_sp_only:ro \
           awsome-savings:cpp-test
 
