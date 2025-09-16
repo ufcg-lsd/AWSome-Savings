@@ -30,6 +30,7 @@ debug:
 
 ptest:
 	python -m unittest ./tests/test_py.py
+	python -m unittest ./tests/test_py_sp_only.py
 
 ctest:
 	python -m unittest ./tests/test_cpp_sp_only.py
