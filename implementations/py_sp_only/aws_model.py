@@ -79,7 +79,7 @@ def optimize_model(t, demand, on_demand_data, savings_plan_data, savings_plan_du
 
     x = {}
     for j in range(num_vars):
-        x[j] = solver.IntVar(0, infinity, 'x[%i]' % j)
+        x[j] = solver.NumVar(0, infinity, 'x[%i]' % j)
     logging.info('Number of variables = %d', solver.NumVariables())
 
     # Adding constraints
