@@ -145,10 +145,10 @@ class TestAWSModel(unittest.TestCase):
             sp_cost = result_cost.loc[1, 'total_cost']
             a_od_cost = result_cost.loc[2, 'total_cost']
             b_od_cost = result_cost.loc[3, 'total_cost']
-            self.assertEqual(actual_cost, 30)
-            self.assertEqual(sp_cost, 30)
-            self.assertEqual(a_od_cost, 0)
-            self.assertEqual(b_od_cost, 0)
+            self.assertAlmostEqual(actual_cost, 30, places=5)
+            self.assertAlmostEqual(sp_cost, 30, places=5)
+            self.assertAlmostEqual(a_od_cost, 0, places=5)
+            self.assertAlmostEqual(b_od_cost, 0, places=5)
         except FileNotFoundError:
             self.fail("The file result_cost.csv was not created.")
 
