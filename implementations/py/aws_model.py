@@ -63,9 +63,18 @@ def optimize_model(t, demand, markets_data, savings_plan_data, savings_plan_dura
     num_instances = len(markets_data)
     num_vars = ((2 * num_markets + 1) * num_instances + 2) * t
 
+    index_savings_plans = []
+    for i_time in range(t):
+        index_savings_plans.append(get_index(num_vars, t, i_time, 0, 0))
+        index_savings_plans.append(get_index(num_vars, t, i_time, 0, 1))
+
     x = {}
     for j in range(num_vars):
-        x[j] = solver.NumVar(0, infinity, 'x[%i]' % j)
+        # variables containing the savings plans values (both active and reserved)
+        if j in index_savings_plans:
+            x[j] = solver.NumVar(0, infinity, 'x[%i]' % j)
+        else:
+            x[j] = solver.IntVar(0, infinity, 'x[%i]' % j)
     logging.info('Number of variables = %d', solver.NumVariables())
 
     # coefficientsBase is a list in the equations format with all values 0
@@ -195,6 +204,9 @@ def create_coefficients_base(t, num_instances, num_markets): #[[[[0,0], [0,0]], 
         coefficients.append(time_coef)
     
     return coefficients
+
+def get_index(num_vars, t, i_time, i_instance, i_value):
+    return int(i_time * (num_vars / t) + i_instance * 2 + i_value)
 
 def change_coefficients_format(coefficientes, x, num_vars):
     constraint_expr = \

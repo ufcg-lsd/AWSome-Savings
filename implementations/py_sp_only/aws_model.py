@@ -77,9 +77,18 @@ def optimize_model(t, demand, on_demand_data, savings_plan_data, savings_plan_du
     num_instances = len(on_demand_data)
     num_vars = (2 * num_instances + 2) * t
 
+    index_savings_plans = []
+    for i_time in range(t):
+        index_savings_plans.append(get_index(num_vars, t, i_time, 0, 0))
+        index_savings_plans.append(get_index(num_vars, t, i_time, 0, 1))
+
     x = {}
     for j in range(num_vars):
-        x[j] = solver.NumVar(0, infinity, 'x[%i]' % j)
+        # variables containing the savings plans values (both active and reserved)
+        if j in index_savings_plans:
+            x[j] = solver.NumVar(0, infinity, 'x[%i]' % j)
+        else:
+            x[j] = solver.IntVar(0, infinity, 'x[%i]' % j)
     logging.info('Number of variables = %d', solver.NumVariables())
 
     # Adding constraints
