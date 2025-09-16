@@ -44,3 +44,27 @@ drun:
 venv:
 	python -m venv .venv
 	./.venv/bin/python -m pip install -r requirements.txt
+
+# Docker-based testing targets
+docker-test-python:
+	docker compose -f docker-compose.test.yml up --build python-tests
+
+docker-test-cpp:
+	docker compose -f docker-compose.test.yml up --build cpp-tests
+
+docker-test-all:
+	docker compose -f docker-compose.test.yml up --build all-tests
+
+docker-test-clean:
+	docker compose -f docker-compose.test.yml down --rmi all --volumes --remove-orphans
+
+# Build test images
+docker-build-test:
+	docker build -f Dockerfile.python-test -t awsome-savings:python-test .
+	docker build -f Dockerfile.cpp-test -t awsome-savings:cpp-test .
+
+# Local testing with current environment
+test-all: ptest ctest
+
+# CI testing (uses Docker)
+ci-test: docker-test-all

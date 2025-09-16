@@ -1,0 +1,17 @@
+FROM registry-git.lsd.ufcg.edu.br/pedro.serey/awsome-savings:or-tools
+
+# Copy the entire project
+COPY . /app
+WORKDIR /app
+
+# Install Python test dependencies (needed for running C++ tests via Python unittest)
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Compile the C++ optimizer
+RUN make compile
+
+# Set environment variable for OR-Tools
+ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+
+# Set the default command to run C++ tests
+CMD ["python", "-m", "unittest", "tests.test_cpp_sp_only", "-v"]

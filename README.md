@@ -31,6 +31,30 @@ This repository contains the following directories:
 - tests: contains tests for all the versions;
 - util: contains auxiliary files, such as scripts for colleting memory and cpu usage.
 
+## Testing
+
+### Quick Start (Recommended)
+
+The easiest way to run tests is using Docker containers, which handle all dependencies automatically:
+
+```bash
+make docker-test-all    # Run all tests (Python + C++)
+make docker-test-python # Test only Python implementations  
+make docker-test-cpp    # Test only C++ implementation
+```
+
+### Traditional Testing
+
+For local environment testing:
+
+```bash
+make venv               # Setup virtual environment (first time only)  
+source .venv/bin/activate
+make test-all          # Run all tests
+make ptest             # Python tests only
+make ctest             # C++ tests only (requires: make compile)
+```
+
 ## Python
 
 There are two Python implementations, one that for the on-demand, reserves and savings plans markets and another for the on-demand and savings plans markets. The second one is faster if there is no need for using the reserve market. For running the optimizer model written in python, proceed with the following steps. 
@@ -90,28 +114,32 @@ The simulation generates the following files as the output:
 
 #### Version with on-demand, reserves and savings plans
 
-The unit tests are in *tests/test_py.py* and are written using *unittest*. Currently, there are 12 tests of the model and 6 tests of the input validations. 
+The unit tests are in *tests/test_py.py* and are written using *unittest*. Currently, there are 12 tests of the model and 6 tests of the input validations.
 
-To run all tests, run the following command:
+**Docker Testing (Recommended):**
+```bash
+make docker-test-python  # Run all Python tests via Docker
 ```
-python3 -m unittest tests.test_py
-```
-To run a single test:
-```
-python3 -m unittest tests.test_py.TestAWSModel.{name of the test case}
+
+**Local Testing:**
+```bash
+python3 -m unittest tests.test_py                                      # Run all tests
+python3 -m unittest tests.test_py.TestAWSModel.{name of the test case} # Run single test
 ```
 
 #### Version with on-demand and savings plans
 
-The unit tests are in *tests/test_py_sp_only.py* and are written using *unittest*. Currently, there are 6 tests of the model and 6 tests of the input validations. 
+The unit tests are in *tests/test_py_sp_only.py* and are written using *unittest*. Currently, there are 6 tests of the model and 6 tests of the input validations.
 
-To run all tests, run the following command:
+**Docker Testing (Recommended):**
+```bash
+make docker-test-python  # Run all Python tests via Docker
 ```
-python3 -m unittest tests.test_py_sp_only
-```
-To run a single test:
-```
-python3 -m unittest tests.test_py_sp_only.TestAWSModel.{name of the test case}
+
+**Local Testing:**
+```bash
+python3 -m unittest tests.test_py_sp_only                                      # Run all tests  
+python3 -m unittest tests.test_py_sp_only.TestAWSModel.{name of the test case} # Run single test
 ```
 ### Debugging
 
@@ -244,15 +272,18 @@ The simulation generates the following files as the output:
 
 ### Tests
 
-The unit tests are in *tests/test_cpp.py* and are written using *unittest*. Currently, there are 6 tests of the model and 6 tests of the input validations. 
+The unit tests are in *tests/test_cpp_sp_only.py* and are written using *unittest*. Currently, there are 6 tests of the model and 6 tests of the input validations.
 
-To run all tests, run the following command:
+**Docker Testing (Recommended):**
+```bash
+make docker-test-cpp  # Run C++ tests via Docker (handles compilation automatically)
 ```
-python3 -m unittest tests.test_cpp_sp_only
-```
-To run a single test:
-```
-python3 -m unittest tests.test_cpp_sp_only.TestAWSModel.{name of the test case}
+
+**Local Testing:**
+```bash
+make compile  # Compile C++ code first
+python3 -m unittest tests.test_cpp_sp_only                                      # Run all tests
+python3 -m unittest tests.test_cpp_sp_only.TestAWSModel.{name of the test case} # Run single test
 ```
 ### Debugging
 
