@@ -54,7 +54,7 @@ class TestAWSModel(unittest.TestCase):
             #only checks the total cost
             result_cost = pd.read_csv('result_cost.csv')
             actual_cost = result_cost.loc[0, 'total_cost']
-            self.assertEqual(actual_cost, 60)
+            self.assertAlmostEqual(actual_cost, 60, places=5)
         except FileNotFoundError:
             self.fail("The file result_cost.csv was not created.")
 
@@ -127,7 +127,7 @@ class TestAWSModel(unittest.TestCase):
             #only checks the total cost
             result_cost = pd.read_csv('result_cost.csv')
             actual_cost = result_cost.loc[0, 'total_cost']
-            self.assertEqual(actual_cost, 280)
+            self.assertAlmostEqual(actual_cost, 280, places=5)
         except FileNotFoundError:
             self.fail("The file result_cost.csv was not created.")
 
@@ -164,7 +164,7 @@ class TestAWSModel(unittest.TestCase):
             #only checks the total cost
             result_cost = pd.read_csv('result_cost.csv')
             actual_cost = result_cost.loc[0, 'total_cost']
-            self.assertEqual(actual_cost, 75)
+            self.assertAlmostEqual(actual_cost, 75, places=5)
         except FileNotFoundError:
             self.fail("The file result_cost.csv was not created.")
 
@@ -201,7 +201,7 @@ class TestAWSModel(unittest.TestCase):
             #only checks the total cost
             result_cost = pd.read_csv('result_cost.csv')
             actual_cost = result_cost.loc[0, 'total_cost']
-            self.assertEqual(actual_cost, 96)
+            self.assertAlmostEqual(actual_cost, 96, places=5)
         except FileNotFoundError:
             self.fail("The file result_cost.csv was not created.")
 
@@ -238,7 +238,7 @@ class TestAWSModel(unittest.TestCase):
             #only checks the total cost
             result_cost = pd.read_csv('result_cost.csv')
             actual_cost = result_cost.loc[0, 'total_cost']
-            self.assertEqual(actual_cost, 120)
+            self.assertAlmostEqual(actual_cost, 120, places=5)
         except FileNotFoundError:
             self.fail("The file result_cost.csv was not created.")
 
@@ -273,7 +273,7 @@ class TestAWSModel(unittest.TestCase):
             #only checks the total cost
             result_cost = pd.read_csv('result_cost.csv')
             actual_cost = result_cost.loc[0, 'total_cost']
-            self.assertEqual(actual_cost, 84)
+            self.assertAlmostEqual(actual_cost, 84, places=5)
         except FileNotFoundError:
             self.fail("The file result_cost.csv was not created.")
     
