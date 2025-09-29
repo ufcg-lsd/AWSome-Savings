@@ -162,8 +162,24 @@ pair<double, vector<double>> optimize_model(int t,
   int num_vars = (2 * num_instances + 2) * t;
   unordered_map<int, MPVariable *> x;
 
+  // Collect indices of savings plan variables (both active and reserved)
+  vector<int> index_savings_plans;
+  for (int i_time = 0; i_time < t; ++i_time) {
+    index_savings_plans.push_back(get_index(num_vars, t, i_time, 0, 0));
+    index_savings_plans.push_back(get_index(num_vars, t, i_time, 0, 1));
+  }
+
   for (int j = 0; j < num_vars; ++j) {
-    x[j] = solver->MakeIntVar(0.0, infinity, "x[" + to_string(j) + "]");
+    // Check if this variable is a savings plan variable
+    bool is_savings_plan =
+        find(index_savings_plans.begin(), index_savings_plans.end(), j) !=
+        index_savings_plans.end();
+
+    if (is_savings_plan) {
+      x[j] = solver->MakeNumVar(0.0, infinity, "x[" + to_string(j) + "]");
+    } else {
+      x[j] = solver->MakeIntVar(0.0, infinity, "x[" + to_string(j) + "]");
+    }
   }
   LOG(INFO) << "Number of variables = " << solver->NumVariables();
 
