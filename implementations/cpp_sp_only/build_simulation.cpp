@@ -2,6 +2,7 @@
 #include "csv_parser.h"
 #include "validations.h"
 #include <algorithm>
+#include <google/protobuf/stubs/common.h>
 #include <iostream>
 #include <string>
 #include <utility>
@@ -28,21 +29,44 @@ void generate_total_purchases(vector<vector<vector<double>>> values,
                               vector<string> market_names,
                               string out_directory);
 int main(int argc, char *argv[]) {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   string out_directory = ".";
-
-  if (argc < 4) {
-    cerr << "Usage: " << argv[0]
-         << "opt.elf <on_demand_config_path> <savings_plan_config_path> "
-            "<demand_path> <out_directory>\n";
+  bool build_constraints_mode = false;
+  bool solve_mode = false;
+  string protobuf_path = "";
+  
+  // Parse command line arguments
+  int config_start_index = 1; // Default start index for config files
+  
+  // Check for flags
+  if (argc >= 3) {
+    if (string(argv[1]) == "--build-constraints") {
+      build_constraints_mode = true;
+      protobuf_path = argv[2];
+      config_start_index = 3;
+    } else if (string(argv[1]) == "--solve") {
+      solve_mode = true;
+      protobuf_path = argv[2];
+      config_start_index = 3;
+    }
+  }
+  
+  // Validate arguments based on mode
+  int required_args = config_start_index + 3; // 3 config files needed
+  if (argc < required_args) {
+    cerr << "Usage:\n";
+    cerr << "  Default mode: " << argv[0] << " <on_demand_config_path> <savings_plan_config_path> <demand_path> [out_directory]\n";
+    cerr << "  Build constraints: " << argv[0] << " --build-constraints <protobuf_path> <on_demand_config_path> <savings_plan_config_path> <demand_path> [out_directory]\n";
+    cerr << "  Solve mode: " << argv[0] << " --solve <protobuf_path> <on_demand_config_path> <savings_plan_config_path> <demand_path> [out_directory]\n";
     return 1;
-  } else if (argc == 5) {
-    out_directory = argv[4];
+  } else if (argc == required_args + 1) {
+    out_directory = argv[required_args];
   }
   // read CSVs
-  auto on_demand_config = read_csv(argv[1]);
-  auto savings_plan_config = read_csv(argv[2]);
-  auto raw_demand = read_csv(argv[3]);
+  auto on_demand_config = read_csv(argv[config_start_index]);
+  auto savings_plan_config = read_csv(argv[config_start_index + 1]);
+  auto raw_demand = read_csv(argv[config_start_index + 2]);
 
   // validating data
   vector<string> instances = get_column(on_demand_config, "instance");
@@ -76,9 +100,25 @@ int main(int argc, char *argv[]) {
   int savings_plan_duration =
       stoi(get_value_by_index(savings_plan_config, 0, "duration"));
 
-  pair<double, vector<double>> result =
-      optimize_model(t, total_demand, on_demand_data, savings_plan_data,
-                     savings_plan_duration);
+  // Execute based on mode
+  if (build_constraints_mode) {
+    // Build constraints and save to protobuf file, then exit
+    cout << "Building constraints and saving to: " << protobuf_path << endl;
+    build_constraints(t, total_demand, on_demand_data, savings_plan_data,
+                     savings_plan_duration, protobuf_path);
+    cout << "Constraints built and saved successfully." << endl;
+    return 0;
+  }
+
+  pair<double, vector<double>> result;
+  if (solve_mode) {
+    cout << "Loading and solving model from: " << protobuf_path << endl;
+    result = solve_model(protobuf_path);
+  } else {
+    // Default mode - use optimize_model
+    result = optimize_model(t, total_demand, on_demand_data, savings_plan_data,
+                           savings_plan_duration);
+  }
 
   double total_cost = result.first;
   auto values =

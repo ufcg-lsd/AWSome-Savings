@@ -308,6 +308,7 @@ pair<double, vector<double>> solve_model(const fs::path& model_path) {
   }
 
   LOG(FATAL) << "The problem does not have an optimal solution";
+  return std::make_pair(0.0, std::vector<double>());
 }
 
 pair<double, vector<double>> optimize_model(int t,
@@ -389,8 +390,9 @@ pair<double, vector<double>> optimize_model(int t,
     LOG(INFO) << "Objective value = " << total_value;
     LOG(INFO) << "Problem solved in " << solver->wall_time()
               << " millisseconds";
-    LOG(INFO) << "Problem solved in " << solver->iterations() << "
-    iterations"; LOG(INFO) << "Problem solved in " << solver->nodes()
+    LOG(INFO) << "Problem solved in " << solver->iterations()
+              << " iterations";
+    LOG(INFO) << "Problem solved in " << solver->nodes()
               << " branch-and-bound nodes";
   
     vector<double> values = vector<double>();
@@ -404,4 +406,5 @@ pair<double, vector<double>> optimize_model(int t,
   
 
   LOG(FATAL) << "The problem does not have an optimal solution";
+  return make_pair(0.0, vector<double>());
 }
