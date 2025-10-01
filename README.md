@@ -217,11 +217,24 @@ Another other option is to use the container that wraps all of C++ environment a
 
 If using the code locally, compiling it is necessary. Assuming the environment is setup correctly, compile the code with:
 
-```
-make compile
-```
+1. Compiling with `make`
 
-The binary will be located at `build/opt.elf`.
+  ```
+  make compile
+  ```
+
+  The binary will be located at `build/opt.elf`.
+
+2. Compiling with `cmake`
+
+  ```
+  cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+  cmake --build build -j
+  ```
+
+  The binary will be located at `build/opt`.
+
+> Replace the `opt.elf` by `opt` in every command if you choose to compile with `cmake`
 
 ### Using
 
