@@ -217,24 +217,18 @@ Another other option is to use the container that wraps all of C++ environment a
 
 If using the code locally, compiling it is necessary. Assuming the environment is setup correctly, compile the code with:
 
-1. Compiling with `make`
+```
+make compile
+```
 
-  ```
-  make compile
-  ```
+This will use CMake to build the project. Alternatively, you can use CMake directly:
 
-  The binary will be located at `build/opt.elf`.
+```
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
+```
 
-2. Compiling with `cmake`
-
-  ```
-  cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-  cmake --build build -j
-  ```
-
-  The binary will be located at `build/opt`.
-
-> Replace the `opt.elf` by `opt` in every command if you choose to compile with `cmake`
+The binary will be located at `build/opt`.
 
 ### Using
 
@@ -243,15 +237,15 @@ If using the code locally, compiling it is necessary. Assuming the environment i
 With a compiled binary, it's possible to run the optimization with:
 
 ```
-./build/opt.elf {path of on_demand_config} {path of savings_plan_config} {path of demand}
+./build/opt {path of on_demand_config} {path of savings_plan_config} {path of demand}
 ```
 
 For example, with the example files:
 ```
-./build/opt.elf data/on_demand_config.csv data/savings_plan_config.csv data/total_demand.csv
+./build/opt data/on_demand_config.csv data/savings_plan_config.csv data/total_demand.csv
 ```
 
-> As a fourth optional parameter, is possible to add the path to the directory for saving the results. The current directory is the default (don't add the `/` to the end of the directory name)
+> As a fourth optional parameter, you can specify the path to the directory for saving the results. When using Docker commands like `make dopt`, results are saved to the `logs/output/` directory by default.
 
 #### Container
 
@@ -264,24 +258,22 @@ docker run -v {local path to files}/data:/optimizer-files -v {local path to logs
 Inside the container, it's possible to run the commands as running locally:
 
 ```
-./build/opt.elf /optimizer-files/on_demand_config.csv /optimizer-files/savings_plan_config.csv /optimizer-files/total_demand.csv /optimizer-files > /optimizer-logs/output.log 2> /optimizer-logs/error.log
+./build/opt /optimizer-files/on_demand_config.csv /optimizer-files/savings_plan_config.csv /optimizer-files/total_demand.csv /optimizer-logs/output > /optimizer-logs/output.log 2> /optimizer-logs/error.log
 ```
 
 You can detach the container and leave it running the optimization or even run with as a daemon without interacting:
 ```
-docker run -v {local path to files}/data:/optimizer-files -v {local path to logs}/logs:/optimzer-logs -d optimizer:latest /bin/sh -c "/optimizer/build/opt.elf /optimizer-files/on_demand_config.csv /optimizer-files/savings_plan_config.csv /optimizer-files/total_demand.csv /optimizer-files/output > /optimizer-logs/output.log 2> /optimizer-logs/error.log"
+docker run -v {local path to files}/data:/optimizer-files -v {local path to logs}/logs:/optimizer-logs -d optimizer:latest /bin/sh -c "/optimizer/build/opt /optimizer-files/on_demand_config.csv /optimizer-files/savings_plan_config.csv /optimizer-files/total_demand.csv /optimizer-logs/output > /optimizer-logs/output.log 2> /optimizer-logs/error.log"
 ```
 
 #### Output
 
-The simulation generates the following files as the output:
-- result_cost: the total cost of the simulation, the cost for every instance and the total 
-    savings plan cost;
-- total_purchases_savings_plan: for every hour, the active value and the value reserved 
-    for savings plan;
-- total_purchases_{instance_name}: one file for every instance. It has, for every hour 
-    and every market type (including savings plan), the number of active instances and 
-    the number of reserves made.
+The simulation generates the following files as output:
+- `result_cost.csv`: the total cost of the simulation, the cost for every instance and the total savings plan cost
+- `total_purchases_savings_plan.csv`: for every hour, the active value and the value reserved for savings plan
+- `total_purchases_{instance_name}.csv`: one file for every instance. It has, for every hour and every market type (including savings plan), the number of active instances and the number of reserves made
+
+When using Docker commands (like `make dopt`), these files are saved in the `logs/output/` directory.
 
 ### Tests
 

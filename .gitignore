@@ -1,12 +1,18 @@
 __pycache__/
+.venv/
 total_purchases*.csv
 aws_model.log
-.venv/
 result_cost.csv
 build/*.o
 build/*.elf
+build/opt
 implementations/cpp_sp_only/build/
 .python-version
+
+### Docker testing ###
+logs/error.log
+logs/output.log
+logs/output/*.csv
 
 ### CMake ###
 CMakeLists.txt.user

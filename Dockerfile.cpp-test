@@ -7,6 +7,9 @@ WORKDIR /app
 # Install Python test dependencies (needed for running C++ tests via Python unittest)
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install cmake if not already present
+RUN apt-get update && apt-get install -y cmake && rm -rf /var/lib/apt/lists/*
+
 # Compile the C++ optimizer
 RUN make compile
 
