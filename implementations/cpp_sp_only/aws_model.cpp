@@ -1,8 +1,13 @@
+#include <filesystem>
+#include <fstream>
 #include <memory>
 #include <ortools/linear_solver/linear_solver.h>
+#include <ortools/linear_solver/linear_solver.pb.h>
 
 using namespace std;
 using namespace operations_research;
+
+namespace fs = std::filesystem;
 
 template <typename T>
 vector<T> multiply_vector(vector<T> &input_vector, int multiplier) {
@@ -146,6 +151,165 @@ void constraint4(MPSolver *solver, unordered_map<int, MPVariable *> x,
   }
 }
 
+void write_bytes(const fs::path &final_path, const std::string &bytes) {
+  // create directory and get final file path
+  fs::create_directories(final_path.parent_path());
+  auto tmp = final_path;
+  tmp += ".tmp";
+
+  // create stream and write datas to .tmp file
+  {
+    std::ofstream out(tmp, std::ios::binary);
+    out.write(bytes.data(), static_cast<std::streamsize>(bytes.size()));
+    out.flush();
+    out.close();
+  }
+
+  std::error_code ec;
+  fs::rename(tmp, final_path, ec);
+}
+
+void save_model_proto(const operations_research::MPModelProto &model,
+                      const fs::path &path) {
+  std::string bytes;
+  model.SerializeToString(&bytes);
+
+  write_bytes(path, bytes);
+}
+
+std::unique_ptr<MPSolver> load_model(const fs::path &model_path,
+                                     const std::string &solver_name = "GLOP") {
+  std::ifstream in(model_path, std::ios::binary);
+  if (!in) {
+    throw std::runtime_error("load_model: open failed: " + model_path.string());
+  }
+  std::string bytes((std::istreambuf_iterator<char>(in)),
+                    std::istreambuf_iterator<char>());
+
+  operations_research::MPModelProto model;
+  if (!model.ParseFromString(bytes)) {
+    throw std::runtime_error("load_model: ParseFromString failed: " +
+                             model_path.string());
+  }
+
+  std::unique_ptr<MPSolver> solver(MPSolver::CreateSolver(solver_name));
+
+std:
+  string err;
+  solver->LoadModelFromProto(model, &err);
+
+  return solver;
+}
+
+void build_constraints(int t, vector<vector<double>> demand,
+                       vector<double> on_demand_data,
+                       vector<double> savings_plan_data, 
+                       int savings_plan_duration,
+                       const fs::path& model_path) {
+  unique_ptr<MPSolver> solver(MPSolver::CreateSolver("GLOP"));
+  if (!solver) {
+    LOG(WARNING) << "GLOP solver unavailable.";
+    throw runtime_error("GLOP solver unavaliable");
+  }
+
+  const double infinity = solver->infinity();
+  int num_instances = on_demand_data.size();
+  int num_vars = (2 * num_instances + 2) * t;
+  unordered_map<int, MPVariable *> x;
+
+  // Collect indices of savings plan variables (both active and reserved)
+  vector<int> index_savings_plans;
+  for (int i_time = 0; i_time < t; ++i_time) {
+    index_savings_plans.push_back(get_index(num_vars, t, i_time, 0, 0));
+    index_savings_plans.push_back(get_index(num_vars, t, i_time, 0, 1));
+  }
+
+  for (int j = 0; j < num_vars; ++j) {
+    // Check if this variable is a savings plan variable
+    bool is_savings_plan =
+        find(index_savings_plans.begin(), index_savings_plans.end(), j) !=
+        index_savings_plans.end();
+
+    if (is_savings_plan) {
+      x[j] = solver->MakeNumVar(0.0, infinity, "x[" + to_string(j) + "]");
+    } else {
+      x[j] = solver->MakeIntVar(0.0, infinity, "x[" + to_string(j) + "]");
+    }
+  }
+  LOG(INFO) << "Number of variables = " << solver->NumVariables();
+
+  // adding constraints
+  LOG(INFO) << "Generating constraint 1";
+  constraint1(solver.get(), x, num_vars, demand, t, num_instances);
+  LOG(INFO) << "Generating constraint 3 (constraint 2 was removed)";
+  constraint3(solver.get(), x, num_vars, t, num_instances, savings_plan_data);
+  LOG(INFO) << "Generating constraint 4";
+  constraint4(solver.get(), x, num_vars, t, num_instances,
+              savings_plan_duration);
+
+  // creating objective function
+  LOG(INFO) << "Generating objective function";
+  vector<double> obj_func = {0.0, 1.0 * savings_plan_duration};
+
+  for (double instance : on_demand_data) {
+    double on_demand_price = instance;
+    obj_func.push_back(
+        0); // coeff of number of active instances in SP (a_t, i, SP)
+    obj_func.push_back(on_demand_price); // a_t, i, OD * on-demand hourly price
+  }
+
+  // repeat obj_func vector t times
+  // ex: multiply_vector({1, 2}, 3) = {1, 2, 1, 2, 1, 2}
+  obj_func = multiply_vector(obj_func, t);
+
+  MPObjective *const objective = solver->MutableObjective();
+
+  for (int j = 0; j < num_vars; ++j) {
+    objective->SetCoefficient(x[j], obj_func[j]);
+  }
+
+  objective->SetMinimization();
+
+  operations_research::MPModelProto model;
+  solver->ExportModelToProto(&model);
+
+  save_model_proto(model, model_path);
+  LOG(INFO) << "Model constraints built and saved to: " << model_path.string();
+}
+
+pair<double, vector<double>> solve_model(const fs::path& model_path) {
+  auto loaded_solver = load_model(model_path);
+
+  LOG(INFO) << "Starting optimization";
+  const MPSolver::ResultStatus status = loaded_solver->Solve();
+  LOG(INFO) << "End of optimization";
+
+  if (status == MPSolver::OPTIMAL) {
+    // Read results FROM loaded_solver
+    const double total_value = loaded_solver->Objective().Value();
+
+    LOG(INFO) << "Objective value = " << total_value;
+    LOG(INFO) << "Problem solved in " << loaded_solver->wall_time()
+              << " millisseconds";
+    LOG(INFO) << "Problem solved in " << loaded_solver->iterations()
+              << " iterations";
+    LOG(INFO) << "Problem solved in " << loaded_solver->nodes()
+              << " branch-and-bound nodes";
+
+    std::vector<double> values;
+    values.reserve(loaded_solver->NumVariables());
+    for (int j = 0; j < loaded_solver->NumVariables(); ++j) {
+      const MPVariable *v =
+          loaded_solver->variable(j); // same instance we solved
+      values.push_back(v->solution_value());
+    }
+
+    return std::make_pair(total_value, std::move(values));
+  }
+
+  LOG(FATAL) << "The problem does not have an optimal solution";
+}
+
 pair<double, vector<double>> optimize_model(int t,
                                             vector<vector<double>> demand,
                                             vector<double> on_demand_data,
@@ -221,22 +385,23 @@ pair<double, vector<double>> optimize_model(int t,
 
   if (status == MPSolver::OPTIMAL) {
     double total_value = objective->Value();
-
+  
     LOG(INFO) << "Objective value = " << total_value;
     LOG(INFO) << "Problem solved in " << solver->wall_time()
               << " millisseconds";
-    LOG(INFO) << "Problem solved in " << solver->iterations() << " iterations";
-    LOG(INFO) << "Problem solved in " << solver->nodes()
+    LOG(INFO) << "Problem solved in " << solver->iterations() << "
+    iterations"; LOG(INFO) << "Problem solved in " << solver->nodes()
               << " branch-and-bound nodes";
-
+  
     vector<double> values = vector<double>();
-
+  
     for (int j = 0; j < num_vars; ++j) {
       values.push_back(x[j]->solution_value());
     }
-
+  
     return make_pair(total_value, values);
   }
+  
 
   LOG(FATAL) << "The problem does not have an optimal solution";
 }
