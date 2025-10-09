@@ -295,8 +295,12 @@ make csolve PROTO_PATH=/path/to/model.pb OUTPUT_DIR=results/  # Solve pre-built 
 make cworkflow [MODEL_PATH=/tmp/model.pb] [OUTPUT_DIR=results/]  # Complete workflow
 
 # Docker execution (no local compilation needed)
-make dbuild PROTO_NAME=model.pb                   # Build constraints in Docker
-make dsolve PROTO_NAME=model.pb                   # Solve pre-built model in Docker
+make dcbuild PROTO_PATH=/path/to/model.pb         # Build constraints in Docker (like cbuild)
+make dcsolve PROTO_PATH=/path/to/model.pb OUTPUT_DIR=results/  # Solve in Docker (like csolve)
+
+# Docker execution with logs directory (alternative interface)
+make dbuild PROTO_NAME=model.pb                   # Build constraints (saves to logs/)
+make dsolve PROTO_NAME=model.pb                   # Solve pre-built model (from logs/)
 make dworkflow [PROTO_NAME=model.pb]              # Complete workflow in Docker
 ```
 
