@@ -234,6 +234,8 @@ The binary will be located at `build/opt`.
 
 #### Binary
 
+##### Standard Operation (All-in-One)
+
 With a compiled binary, it's possible to run the optimization with:
 
 ```
@@ -246,6 +248,61 @@ For example, with the example files:
 ```
 
 > As a fourth optional parameter, you can specify the path to the directory for saving the results. When using Docker commands like `make dopt`, results are saved to the `logs/output/` directory by default.
+
+##### Separate Build and Solve Operations
+
+The C++ implementation supports separating the constraint building phase from the solving phase. This is useful for:
+- **Parallel processing**: Build constraints on one machine, solve on another
+- **Debugging**: Inspect the model before solving
+- **Performance analysis**: Measure build vs. solve times separately  
+- **Resource optimization**: Use different hardware for different phases
+
+**Build Constraints Only:**
+```bash
+./build/opt --build-constraints <protobuf_path> <on_demand_config> <savings_plan_config> <demand>
+```
+
+This creates an optimization model with all constraints and saves it to a Protocol Buffer file for later solving.
+
+**Solve Pre-built Model:**
+```bash  
+./build/opt --solve <protobuf_path> <on_demand_config> <savings_plan_config> <demand> [output_directory]
+```
+
+This loads a previously built model and solves it, generating all output files.
+
+**Example Workflow:**
+```bash
+# Step 1: Build constraints and save to model file
+./build/opt --build-constraints /tmp/model.pb data/on_demand_config.csv data/savings_plan_config.csv data/total_demand.csv
+
+# Step 2: Solve the model (can be run later or on different machine)
+./build/opt --solve /tmp/model.pb data/on_demand_config.csv data/savings_plan_config.csv data/total_demand.csv results/
+
+# Alternative: Use Makefile shortcuts
+make cbuild PROTO_PATH=/tmp/model.pb
+make csolve PROTO_PATH=/tmp/model.pb OUTPUT_DIR=results/
+```
+
+**Makefile Shortcuts:**
+
+The Makefile provides convenient rules for common build/solve operations:
+
+```bash
+# Local execution (requires compilation)
+make cbuild PROTO_PATH=/path/to/model.pb          # Build constraints only
+make csolve PROTO_PATH=/path/to/model.pb OUTPUT_DIR=results/  # Solve pre-built model  
+make cworkflow [MODEL_PATH=/tmp/model.pb] [OUTPUT_DIR=results/]  # Complete workflow
+
+# Docker execution (no local compilation needed)
+make dbuild PROTO_NAME=model.pb                   # Build constraints in Docker
+make dsolve PROTO_NAME=model.pb                   # Solve pre-built model in Docker
+make dworkflow [PROTO_NAME=model.pb]              # Complete workflow in Docker
+```
+
+For Docker commands, model files and logs are saved in the `logs/` directory, and results are saved in `logs/output/`.
+
+> **Note**: The CSV files are still required during the solve phase to generate properly formatted output files with correct instance names and metadata.
 
 #### Container
 
