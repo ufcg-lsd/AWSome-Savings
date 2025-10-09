@@ -8,6 +8,8 @@ WORKDIR /optimizer
 
 RUN make compile && \
     chmod +x ./run_optimization_cpp.sh && \
+    chmod +x ./run_build.sh && \
+    chmod +x ./run_solve.sh && \
     chmod +x ./collect-cpu-usage.sh && \
     chmod +x ./collect-memory-usage.sh
 
