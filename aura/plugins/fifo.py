@@ -63,10 +63,8 @@ class FifoHeuristic:
             return []
         
         # Sort candidates by creation time (FIFO - oldest first)
-        sorted_candidates = sorted(
-            available_candidates,
-            key=lambda job: job.created_at or job.id  # Fallback to ID if created_at is None
-        )
+        # created_at is always present due to Job.__post_init__()
+        sorted_candidates = sorted(available_candidates, key=lambda job: job.created_at)
         
         selected = []
         remaining_total = capacity_total
