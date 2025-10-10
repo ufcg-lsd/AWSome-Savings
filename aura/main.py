@@ -82,7 +82,7 @@ def main() -> None:
     # Parse command line arguments
     args = parse_args()
     
-    logger.info("Starting Aura orchestrator")
+    logger.info("Starting AURA orchestrator")
     logger.info(f"Demand root: {args.demand_root}")
     logger.info(f"Plugin: {args.plugin}")
     logger.info(f"Max build jobs: {args.max_build}")
