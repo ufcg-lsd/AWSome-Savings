@@ -8,9 +8,10 @@ from CSV files generated during job execution.
 import csv
 import statistics
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional
 
-from aura.core.job import Job
+if TYPE_CHECKING:
+    from aura.core.job import Job
 
 
 def extract_metrics(job: "Job") -> Dict[str, Dict[str, Optional[float]]]:

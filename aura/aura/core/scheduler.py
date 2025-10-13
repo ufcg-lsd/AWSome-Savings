@@ -220,7 +220,7 @@ class Scheduler:
                 self._logger.error(f"Exception in {phase} for job {job_id}: {e}")
                 self._on_phase_finished(job, phase, False, {"error": str(e)})
     
-    def _phase_for(self, job: Job) -> Optional[str]:
+    def _phase_for(self, job: "Job") -> Optional[str]:
         """
         Return 'build' if state==CREATED, 'solve' if state==BUILT; otherwise None/''.
         
@@ -237,7 +237,7 @@ class Scheduler:
         else:
             return None
     
-    def _start_next_phase(self, job: Job) -> None:
+    def _start_next_phase(self, job: "Job") -> None:
         """
         Dispatch correct phase via ThreadPoolExecutor:
         - build → runner.run_build(job)
@@ -273,7 +273,7 @@ class Scheduler:
         
         self._logger.info(f"Started {phase} for job {job.id}")
     
-    def _on_phase_finished(self, job: Job, phase: str, ok: bool, meta: Dict) -> None:
+    def _on_phase_finished(self, job: "Job", phase: str, ok: bool, meta: Dict) -> None:
         """
         - Update running phase counters.
         - Call store.record_event(job, phase, 'finished', meta).

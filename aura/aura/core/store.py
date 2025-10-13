@@ -8,12 +8,12 @@ job lifecycle events for monitoring and analysis purposes.
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Optional
+from typing import TYPE_CHECKING, Dict, Optional
 
-from aura.core.job import Job
+from aura.config import get_runs_dir
 
-# Base directory for orchestrator run logs
-RUNS_DIR = Path("./orchestrator_runs")
+if TYPE_CHECKING:
+    from aura.core.job import Job
 
 
 def record_event(
@@ -25,8 +25,8 @@ def record_event(
     """
     Record a job event to JSONL storage.
     
-    Events are stored in ./orchestrator_runs/<job_id>.jsonl with one JSON
-    object per line containing event metadata and timestamps.
+    Events are stored in configured runs directory (default: ./orchestrator_runs/<job_id>.jsonl)
+    with one JSON object per line containing event metadata and timestamps.
     
     Args:
         job: Job instance the event relates to
@@ -34,8 +34,9 @@ def record_event(
         kind: Event kind ('started', 'finished', etc.)
         meta: Optional additional metadata to include in the event
     """
-    # Ensure runs directory exists
-    RUNS_DIR.mkdir(exist_ok=True)
+    # Get runs directory from config and ensure it exists
+    runs_dir = Path(get_runs_dir())
+    runs_dir.mkdir(exist_ok=True)
     
     # Prepare event data
     event_data = {
@@ -56,7 +57,7 @@ def record_event(
         event_data["meta"] = {}
     
     # Determine log file path
-    log_file = RUNS_DIR / f"{job.id}.jsonl"
+    log_file = runs_dir / f"{job.id}.jsonl"
     
     # Append event as JSON line
     with open(log_file, 'a', encoding='utf-8') as f:
@@ -74,7 +75,8 @@ def get_job_events(job_id: str) -> list[Dict]:
     Returns:
         List of event dictionaries in chronological order
     """
-    log_file = RUNS_DIR / f"{job_id}.jsonl"
+    runs_dir = Path(get_runs_dir())
+    log_file = runs_dir / f"{job_id}.jsonl"
     
     if not log_file.exists():
         return []
@@ -105,11 +107,12 @@ def list_job_ids() -> list[str]:
     Returns:
         List of job IDs (without .jsonl extension)
     """
-    if not RUNS_DIR.exists():
+    runs_dir = Path(get_runs_dir())
+    if not runs_dir.exists():
         return []
     
     job_ids = []
-    for log_file in RUNS_DIR.glob("*.jsonl"):
+    for log_file in runs_dir.glob("*.jsonl"):
         job_ids.append(log_file.stem)
     
     return sorted(job_ids)
@@ -125,10 +128,11 @@ def cleanup_old_runs(keep_latest: int = 100) -> int:
     Returns:
         Number of log files removed
     """
-    if not RUNS_DIR.exists():
+    runs_dir = Path(get_runs_dir())
+    if not runs_dir.exists():
         return 0
     
-    log_files = list(RUNS_DIR.glob("*.jsonl"))
+    log_files = list(runs_dir.glob("*.jsonl"))
     
     if len(log_files) <= keep_latest:
         return 0

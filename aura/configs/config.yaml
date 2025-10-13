@@ -1,0 +1,19 @@
+# Aura Configuration File
+# AWS Optimizer Orchestrator Settings
+
+# Direct field mapping for Pydantic Settings
+optimizer_image: "registry-git.lsd.ufcg.edu.br/pedro.serey/awsome-savings:or-tools"
+monitor_log_dir: "./monitor_logs"
+default_max_build: 2
+default_max_solve: 1
+default_poll_interval: 0.2
+runs_dir: "./orchestrator_runs"
+max_old_runs: 100
+log_level: "INFO"
+log_format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+job_timeout: 3600
+families_mount: "/optimizer-files"
+proto_mount: "/optimizer-proto"
+logs_mount: "/optimizer-logs"
+verbose_docker: false
+dry_run: false

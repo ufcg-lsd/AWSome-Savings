@@ -1,21 +1,14 @@
 import logging
-import os
 import shlex
 import subprocess
 import time
-from typing import Dict
+from pathlib import Path
+from typing import TYPE_CHECKING, Dict
 
-from dotenv import load_dotenv
+from aura.config import get_config
 
-from aura.core.job import Job
-
-# Load environment variables
-load_dotenv()
-
-# Get optimizer image from environment
-OPTIMIZER_IMAGE = os.getenv("OPTIMIZER_IMAGE")
-if not OPTIMIZER_IMAGE:
-    raise RuntimeError("OPTIMIZER_IMAGE environment variable is required but not set")
+if TYPE_CHECKING:
+    from aura.core.job import Job
 
 logger = logging.getLogger(__name__)
 
@@ -35,16 +28,18 @@ def _check_docker_available() -> None:
         raise RuntimeError("Docker command failed. Please check Docker installation.")
 
 
-def _build_docker_command(job: Job, script_name: str) -> list[str]:
+def _build_docker_command(job: "Job", script_name: str) -> list[str]:
     """Build docker run command for the given job and script."""
+    config = get_config()
+    
     return [
         "docker", "run", "--rm",
-        "-v", f"{job.family_dir}:/optimizer-files",
-        "-v", f"{job.family_dir}:/optimizer-proto", 
-        "-v", f"{job.output_dir}:/optimizer-logs",
-        OPTIMIZER_IMAGE,
+        "-v", f"{job.family_dir}:{config.families_mount}",
+        "-v", f"{job.family_dir}:{config.proto_mount}", 
+        "-v", f"{job.output_dir}:{config.logs_mount}",
+        config.optimizer_image,
         "/bin/sh", "-c",
-        f"/optimizer/{script_name} /optimizer-files /optimizer-logs /optimizer-proto/model.pb"
+        f"/optimizer/{script_name} {config.families_mount} {config.logs_mount} {config.proto_mount}/model.pb"
     ]
 
 
@@ -70,7 +65,7 @@ def _run_docker_command(cmd: list[str]) -> tuple[int, float]:
     return exit_code, duration
 
 
-def run_build(job: Job) -> Dict:
+def run_build(job: "Job") -> Dict:
     """
     Run build phase for the given job.
     
@@ -108,7 +103,7 @@ def run_build(job: Job) -> Dict:
             "ok": success,
             "exit_code": exit_code,
             "duration_sec": duration,
-            "image": OPTIMIZER_IMAGE,
+            "image": get_config().optimizer_image,
             "cmd": cmd_str,
             "logs": {
                 "output": str(job.output_log),
@@ -127,7 +122,7 @@ def run_build(job: Job) -> Dict:
         raise
 
 
-def run_solve(job: Job) -> Dict:
+def run_solve(job: "Job") -> Dict:
     """
     Run solve phase for the given job.
     
@@ -165,7 +160,7 @@ def run_solve(job: Job) -> Dict:
             "ok": success,
             "exit_code": exit_code,
             "duration_sec": duration,
-            "image": OPTIMIZER_IMAGE,
+            "image": get_config().optimizer_image,
             "cmd": cmd_str,
             "logs": {
                 "output": str(job.output_log),

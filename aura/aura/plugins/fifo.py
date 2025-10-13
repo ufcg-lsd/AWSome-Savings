@@ -8,10 +8,10 @@ jobs based on their creation time while respecting phase-specific capacity limit
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
-    from ..core.job import Job, JobState
+    from aura.core.job import Job, JobState
 else:
     # Import at runtime to avoid circular imports
-    from ..core.job import JobState
+    from aura.core.job import JobState
 
 
 class FifoHeuristic:

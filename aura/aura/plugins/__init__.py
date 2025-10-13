@@ -10,7 +10,7 @@ import importlib
 import logging
 
 if TYPE_CHECKING:
-    from ..core.job import Job
+    from aura.core.job import Job
 
 logger = logging.getLogger(__name__)
 
