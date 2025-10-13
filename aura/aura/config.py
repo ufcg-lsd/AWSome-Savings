@@ -9,7 +9,8 @@ from pathlib import Path
 from typing import Optional
 
 from pydantic import BaseModel, Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, SettingsConfigDict, YamlConfigSettingsSource
+from pydantic_settings.sources import PydanticBaseSettingsSource
 
 
 class DockerConfig(BaseModel):
@@ -120,6 +121,38 @@ class AuraConfig(BaseSettings):
     storage: StorageConfig = Field(default_factory=StorageConfig)
     monitoring: MonitoringConfig = Field(default_factory=MonitoringConfig)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
+    
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        """
+        Customize settings sources to include YAML file loading.
+        
+        Order of precedence (highest to lowest):
+        1. init_settings (arguments passed to constructor)
+        2. env_settings (environment variables)
+        3. yaml_settings (YAML file)
+        4. dotenv_settings (.env file)
+        5. file_secret_settings (Docker secrets)
+        """
+        yaml_settings = YamlConfigSettingsSource(
+            settings_cls,
+            yaml_file=settings_cls.model_config.get('yaml_file'),
+            yaml_file_encoding=settings_cls.model_config.get('yaml_file_encoding', 'utf-8'),
+        )
+        return (
+            init_settings,
+            env_settings, 
+            yaml_settings,
+            dotenv_settings,
+            file_secret_settings,
+        )
     
     # Convenience properties for backward compatibility
     @property
