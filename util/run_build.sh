@@ -13,8 +13,8 @@ cleanup_collectors() {
 }
 
 # Start collectors
-./collect-cpu-usage.sh > "$logs_directory/cpu_output.csv" &
-./collect-memory-usage.sh > "$logs_directory/memory_output.csv" &
+./collect-cpu-usage.sh > "$logs_directory/build_cpu_output.csv" &
+./collect-memory-usage.sh > "$logs_directory/build_memory_output.csv" &
 
-nohup /optimizer/build/opt --build-constraints "$proto_path" "$output_directory/on_demand_config.csv" "$output_directory/savings_plan_config.csv" "$output_directory/total_demand.csv" > "$logs_directory/output.log" 2> "$logs_directory/error.log"
+nohup /optimizer/build/opt --build-constraints "$proto_path" "$output_directory/on_demand_config.csv" "$output_directory/savings_plan_config.csv" "$output_directory/total_demand.csv" > "$logs_directory/build_output.log" 2> "$logs_directory/build_error.log"
 opt_exit_code=$?
