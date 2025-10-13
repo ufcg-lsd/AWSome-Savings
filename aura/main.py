@@ -12,8 +12,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from . import plugins
-from .core.scheduler import Scheduler
+from aura import plugins
+from aura.core.scheduler import Scheduler
 
 
 def setup_logging() -> None:

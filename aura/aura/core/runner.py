@@ -3,13 +3,11 @@ import os
 import shlex
 import subprocess
 import time
-from pathlib import Path
-from typing import TYPE_CHECKING, Dict
+from typing import Dict
 
 from dotenv import load_dotenv
 
-if TYPE_CHECKING:
-    from .job import Job
+from aura.core.job import Job
 
 # Load environment variables
 load_dotenv()

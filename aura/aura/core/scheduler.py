@@ -6,8 +6,8 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Optional, Protocol, Set, Tuple
 
-from . import monitor, runner, store
-from .job import Job, JobState
+from aura.core import monitor, runner, store
+from aura.core.job import Job, JobState
 
 if TYPE_CHECKING:
     class HeuristicPluginProtocol(Protocol):

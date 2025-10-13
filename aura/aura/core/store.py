@@ -8,10 +8,9 @@ job lifecycle events for monitoring and analysis purposes.
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, Optional
+from typing import Dict, Optional
 
-if TYPE_CHECKING:
-    from .job import Job
+from aura.core.job import Job
 
 # Base directory for orchestrator run logs
 RUNS_DIR = Path("./orchestrator_runs")
