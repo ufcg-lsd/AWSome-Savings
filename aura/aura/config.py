@@ -8,13 +8,98 @@ with support for YAML files, environment variables, and defaults.
 from pathlib import Path
 from typing import Optional
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class DockerConfig(BaseModel):
+    """Docker-related configuration."""
+    optimizer_image: str = Field(
+        default="registry-git.lsd.ufcg.edu.br/pedro.serey/awsome-savings:or-tools",
+        description="Docker image for the optimizer container"
+    )
+    families_mount: str = Field(
+        default="/optimizer-files",
+        description="Where to mount job family directories in container"
+    )
+    proto_mount: str = Field(
+        default="/optimizer-proto",
+        description="Where to mount proto files in container"
+    )
+    logs_mount: str = Field(
+        default="/optimizer-logs",
+        description="Where to mount logs in container"
+    )
+    verbose_docker: bool = Field(
+        default=False,
+        description="Enable verbose Docker output"
+    )
+    dry_run: bool = Field(
+        default=False,
+        description="Dry run mode (don't actually execute containers)"
+    )
+
+
+class SchedulerConfig(BaseModel):
+    """Scheduler-related configuration."""
+    default_max_build: int = Field(
+        default=2,
+        description="Default maximum concurrent build jobs",
+        ge=1
+    )
+    default_max_solve: int = Field(
+        default=1,
+        description="Default maximum concurrent solve jobs",
+        ge=1
+    )
+    default_poll_interval: float = Field(
+        default=0.2,
+        description="Default polling interval in seconds",
+        gt=0.0
+    )
+    job_timeout: int = Field(
+        default=3600,
+        description="Maximum time to wait for a job to complete (seconds)",
+        gt=0
+    )
+
+
+class StorageConfig(BaseModel):
+    """Storage-related configuration."""
+    runs_dir: str = Field(
+        default="./orchestrator_runs",
+        description="Directory for orchestrator run logs (JSONL files)"
+    )
+    max_old_runs: int = Field(
+        default=100,
+        description="Maximum number of old run logs to keep",
+        ge=1
+    )
+
+
+class MonitoringConfig(BaseModel):
+    """Monitoring-related configuration."""
+    log_dir: str = Field(
+        default="./monitor_logs",
+        description="Directory where monitoring logs will be stored"
+    )
+
+
+class LoggingConfig(BaseModel):
+    """Logging-related configuration."""
+    level: str = Field(
+        default="INFO",
+        description="Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)"
+    )
+    format: str = Field(
+        default="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        description="Log format string"
+    )
 
 
 class AuraConfig(BaseSettings):
     """
-    Aura configuration using Pydantic Settings.
+    Aura configuration using Pydantic Settings with nested sections.
     
     Automatically loads from:
     1. configs/config.yaml (or custom YAML file)
@@ -30,93 +115,72 @@ class AuraConfig(BaseSettings):
         case_sensitive=False,
     )
     
-    # Docker settings
-    optimizer_image: str = Field(
-        default="registry-git.lsd.ufcg.edu.br/pedro.serey/awsome-savings:or-tools",
-        description="Docker image for the optimizer container"
-    )
+    docker: DockerConfig = Field(default_factory=DockerConfig)
+    scheduler: SchedulerConfig = Field(default_factory=SchedulerConfig)
+    storage: StorageConfig = Field(default_factory=StorageConfig)
+    monitoring: MonitoringConfig = Field(default_factory=MonitoringConfig)
+    logging: LoggingConfig = Field(default_factory=LoggingConfig)
     
-    # Monitoring settings
-    monitor_log_dir: str = Field(
-        default="./monitor_logs",
-        description="Directory where monitoring logs will be stored"
-    )
+    # Convenience properties for backward compatibility
+    @property
+    def optimizer_image(self) -> str:
+        return self.docker.optimizer_image
     
-    # Scheduler settings
-    default_max_build: int = Field(
-        default=2,
-        description="Default maximum concurrent build jobs",
-        ge=1
-    )
+    @property
+    def default_max_build(self) -> int:
+        return self.scheduler.default_max_build
     
-    default_max_solve: int = Field(
-        default=1,
-        description="Default maximum concurrent solve jobs",
-        ge=1
-    )
+    @property
+    def default_max_solve(self) -> int:
+        return self.scheduler.default_max_solve
     
-    default_poll_interval: float = Field(
-        default=0.2,
-        description="Default polling interval in seconds",
-        gt=0.0
-    )
+    @property
+    def default_poll_interval(self) -> float:
+        return self.scheduler.default_poll_interval
     
-    # Storage settings
-    runs_dir: str = Field(
-        default="./orchestrator_runs",
-        description="Directory for orchestrator run logs (JSONL files)"
-    )
+    @property
+    def runs_dir(self) -> str:
+        return self.storage.runs_dir
     
-    max_old_runs: int = Field(
-        default=100,
-        description="Maximum number of old run logs to keep",
-        ge=1
-    )
+    @property
+    def monitor_log_dir(self) -> str:
+        return self.monitoring.log_dir
     
-    # Logging settings
-    log_level: str = Field(
-        default="INFO",
-        description="Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)"
-    )
+    @property
+    def families_mount(self) -> str:
+        return self.docker.families_mount
     
-    log_format: str = Field(
-        default="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        description="Log format string"
-    )
+    @property
+    def proto_mount(self) -> str:
+        return self.docker.proto_mount
     
-    # Health and execution settings
-    job_timeout: int = Field(
-        default=3600,
-        description="Maximum time to wait for a job to complete (seconds)",
-        gt=0
-    )
+    @property
+    def logs_mount(self) -> str:
+        return self.docker.logs_mount
     
-    # Docker execution settings
-    families_mount: str = Field(
-        default="/optimizer-files",
-        description="Where to mount job family directories in container"
-    )
+    @property
+    def log_level(self) -> str:
+        return self.logging.level
     
-    proto_mount: str = Field(
-        default="/optimizer-proto",
-        description="Where to mount proto files in container"
-    )
+    @property
+    def log_format(self) -> str:
+        return self.logging.format
     
-    logs_mount: str = Field(
-        default="/optimizer-logs",
-        description="Where to mount logs in container"
-    )
+    @property
+    def job_timeout(self) -> int:
+        return self.scheduler.job_timeout
     
-    # Debug settings
-    verbose_docker: bool = Field(
-        default=False,
-        description="Enable verbose Docker output"
-    )
+    @property
+    def verbose_docker(self) -> bool:
+        return self.docker.verbose_docker
     
-    dry_run: bool = Field(
-        default=False,
-        description="Dry run mode (don't actually execute containers)"
-    )
+    @property
+    def dry_run(self) -> bool:
+        return self.docker.dry_run
+    
+    @property
+    def max_old_runs(self) -> int:
+        return self.storage.max_old_runs
 
 
 # Global configuration instance

@@ -1,0 +1,50 @@
+# Aura Configuration File - Complete Example
+# AWS Optimizer Orchestrator Settings
+
+# Docker configuration
+docker:
+  # Docker image for the optimizer container
+  optimizer_image: "registry-git.lsd.ufcg.edu.br/pedro.serey/awsome-savings:optimizer"
+  
+  # Container mount points
+  families_mount: "/optimizer-files"    # Where to mount job family directories
+  proto_mount: "/optimizer-proto"       # Where to mount proto files
+  logs_mount: "/optimizer-logs"         # Where to mount logs
+  
+  # Debug settings
+  verbose_docker: false                 # Enable verbose Docker output
+  dry_run: false                        # Dry run mode (don't execute containers)
+
+# Scheduler configuration
+scheduler:
+  # Concurrency limits
+  default_max_build: 2                  # Maximum concurrent build jobs
+  default_max_solve: 1                  # Maximum concurrent solve jobs
+  
+  # Timing settings
+  default_poll_interval: 0.2            # Polling interval in seconds
+  job_timeout: 3600                     # Job timeout in seconds (1 hour)
+
+# Storage configuration
+storage:
+  # Event storage
+  runs_dir: "./orchestrator_runs"       # Directory for job event logs (JSONL)
+  max_old_runs: 100                     # Keep last N job logs
+
+# Monitoring configuration
+monitoring:
+  # Metrics storage
+  log_dir: "./monitor_logs"             # Directory for monitoring logs
+
+# Logging configuration
+logging:
+  # Application logging
+  level: "INFO"                         # Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"  # Log format
+
+# Environment variable overrides:
+# Use AURA_ prefix with double underscore for nested values:
+#   AURA_DOCKER__OPTIMIZER_IMAGE="custom:latest"
+#   AURA_SCHEDULER__DEFAULT_MAX_BUILD=4
+#   AURA_STORAGE__RUNS_DIR="/custom/path"
+#   AURA_LOGGING__LEVEL="DEBUG"

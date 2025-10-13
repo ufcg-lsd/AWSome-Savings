@@ -26,34 +26,53 @@ uv pip install .
 
 ## Configuration
 
-Configure Aura using the `configs/config.yaml` file. Key settings:
+Configure Aura using the `configs/config.yaml` file organized in logical sections:
 
 ```yaml
-# Docker image for optimizer
-optimizer_image: "registry-git.lsd.ufcg.edu.br/pedro.serey/awsome-savings:or-tools"
+# Docker configuration
+docker:
+  optimizer_image: "registry-git.lsd.ufcg.edu.br/pedro.serey/awsome-savings:or-tools"
+  families_mount: "/optimizer-files"
+  proto_mount: "/optimizer-proto"
+  logs_mount: "/optimizer-logs"
+  verbose_docker: false
+  dry_run: false
 
-# Concurrency limits
-default_max_build: 2
-default_max_solve: 1
+# Scheduler configuration  
+scheduler:
+  default_max_build: 2
+  default_max_solve: 1
+  default_poll_interval: 0.2
+  job_timeout: 3600
 
-# Directories
-runs_dir: "./orchestrator_runs"
-monitor_log_dir: "./monitor_logs"
+# Storage configuration
+storage:
+  runs_dir: "./orchestrator_runs"
+  max_old_runs: 100
 
-# Docker mounts
-families_mount: "/optimizer-files"
-proto_mount: "/optimizer-proto"
-logs_mount: "/optimizer-logs"
+# Monitoring configuration
+monitoring:
+  log_dir: "./monitor_logs"
+
+# Logging configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 ```
 
 ### Environment Variable Overrides
 
-You can override any configuration using environment variables with the `AURA_` prefix:
+You can override any configuration using environment variables with the `AURA_` prefix. Use double underscores (`__`) for nested values:
 
 ```bash
-export AURA_OPTIMIZER_IMAGE="my-custom-image:latest"
-export AURA_DEFAULT_MAX_BUILD=4
-export AURA_LOG_LEVEL="DEBUG"
+# Simple values
+export AURA_LOGGING__LEVEL="DEBUG"
+
+# Nested configuration sections
+export AURA_DOCKER__OPTIMIZER_IMAGE="my-custom-image:latest"
+export AURA_SCHEDULER__DEFAULT_MAX_BUILD=4
+export AURA_STORAGE__RUNS_DIR="/custom/path"
+export AURA_MONITORING__LOG_DIR="/custom/monitor/path"
 ```
 
 ## Usage
@@ -91,6 +110,11 @@ from aura.core.scheduler import Scheduler
 
 # Load configuration
 config = get_config()
+
+# Access configuration values (both ways work)
+print(f"Docker image: {config.optimizer_image}")              # Via convenience property
+print(f"Docker image: {config.docker.optimizer_image}")       # Via nested access
+print(f"Max build: {config.scheduler.default_max_build}")     # Direct section access
 
 # Load heuristic plugin
 plugin = load_plugin("fifo")
