@@ -3,6 +3,7 @@ from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from typing import Optional
+import logging
 import uuid
 
 
@@ -104,6 +105,56 @@ class Job:
             self.state = JobState.SOLVED
         else:
             self.state = JobState.FAILED
+    
+    def cleanup_model(self) -> dict:
+        """
+        Clean up the model.pb file to save disk space after solve completion.
+        
+        This method should be called after a successful solve, as the model file
+        is no longer needed and can be quite large (300-400MB).
+        
+        Returns:
+            Dictionary with cleanup results containing 'success', 'file_size_mb', 
+            'file_existed' and optional 'error' information.
+        """
+        logger = logging.getLogger(__name__)
+        result = {
+            'success': False,
+            'file_existed': False,
+            'file_size_mb': 0.0,
+            'path': str(self.proto_path)
+        }
+        
+        try:
+            if self.proto_path and self.proto_path.exists():
+                result['file_existed'] = True
+                
+                # Get file size in MB before deletion
+                file_size_bytes = self.proto_path.stat().st_size
+                result['file_size_mb'] = round(file_size_bytes / (1024 * 1024), 2)
+                
+                # Delete the file
+                self.proto_path.unlink()
+                result['success'] = True
+                
+                logger.info(
+                    f"Successfully cleaned up model file for job {self.id}: "
+                    f"{result['file_size_mb']}MB saved from {self.proto_path}"
+                )
+                
+            else:
+                # File doesn't exist, consider it successful cleanup
+                result['success'] = True
+                logger.debug(f"Model file already absent for job {self.id}: {self.proto_path}")
+                
+        except Exception as e:
+            result['success'] = False
+            result['error'] = str(e)
+            logger.error(
+                f"Failed to cleanup model file for job {self.id} at {self.proto_path}: {e}"
+            )
+        
+        return result
 
 
 def new_job(family_dir: Path | str, id: Optional[str] = None) -> Job:

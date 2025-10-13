@@ -15,6 +15,7 @@ scheduler:
 storage:
   runs_dir: "./orchestrator_runs"
   max_old_runs: 100
+  cleanup_model_after_solve: true
 
 monitoring:
   log_dir: "./monitor_logs"

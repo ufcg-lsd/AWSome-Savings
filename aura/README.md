@@ -11,6 +11,7 @@ Aura is a job scheduling and execution system for AWS optimization workloads. It
 - **Monitoring**: CPU and memory usage tracking
 - **Event Storage**: JSONL-based event logging for analysis
 - **Configuration**: YAML-based configuration with environment variable overrides
+- **Automatic Cleanup**: Optional deletion of large model.pb files after solve completion (saves 300-400MB per job)
 
 ## Installation
 
@@ -49,6 +50,7 @@ scheduler:
 storage:
   runs_dir: "./orchestrator_runs"
   max_old_runs: 100
+  cleanup_model_after_solve: true      # Auto-delete model.pb after solve (saves 300-400MB per job)
 
 # Monitoring configuration
 monitoring:
@@ -72,6 +74,7 @@ export AURA_LOGGING__LEVEL="DEBUG"
 export AURA_DOCKER__OPTIMIZER_IMAGE="my-custom-image:latest"
 export AURA_SCHEDULER__DEFAULT_MAX_BUILD=4
 export AURA_STORAGE__RUNS_DIR="/custom/path"
+export AURA_STORAGE__CLEANUP_MODEL_AFTER_SOLVE=false
 export AURA_MONITORING__LOG_DIR="/custom/monitor/path"
 ```
 
@@ -200,11 +203,37 @@ Job events are stored in `{runs_dir}/{job_id}.jsonl`:
 ```json
 {"ts": "2025-01-10T14:30:00", "job_id": "abc-123", "family": "family1", "phase": "build", "kind": "started", "state_at_write": "BUILDING", "meta": {...}}
 {"ts": "2025-01-10T14:30:45", "job_id": "abc-123", "family": "family1", "phase": "build", "kind": "finished", "state_at_write": "BUILT", "meta": {"ok": true, "duration_sec": 45.2}}
+{"ts": "2025-01-10T14:35:20", "job_id": "abc-123", "family": "family1", "phase": "solve", "kind": "finished", "state_at_write": "SOLVED", "meta": {"ok": true, "duration_sec": 120.5, "model_cleanup": {"success": true, "file_size_mb": 387.2}}}
 ```
 
 ### Metrics
 
 CPU and memory metrics are extracted from job-generated CSV files and included in event metadata.
+
+## Model File Cleanup
+
+Aura automatically deletes large `model.pb` files after successful solve completion to save disk space:
+
+- **Automatic**: Enabled by default (`cleanup_model_after_solve: true`)
+- **Space Savings**: Typically 300-400MB per job for 1-year demand files
+- **Safe**: Only deletes after successful solve completion
+- **Logged**: Cleanup results included in event logs with file size information
+- **Configurable**: Can be disabled via configuration or environment variable
+
+```bash
+# Disable cleanup globally
+export AURA_STORAGE__CLEANUP_MODEL_AFTER_SOLVE=false
+
+# Or in config.yaml
+storage:
+  cleanup_model_after_solve: false
+```
+
+The cleanup process:
+1. Runs automatically after successful solve completion
+2. Records original file size before deletion
+3. Logs success/failure with details
+4. Updates event metadata with cleanup results
 
 ## Development
 

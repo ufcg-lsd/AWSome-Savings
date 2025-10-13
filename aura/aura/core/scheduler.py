@@ -6,6 +6,7 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Optional, Protocol, Set, Tuple
 
+from aura.config import get_config
 from aura.core import monitor, runner, store
 from aura.core.job import Job, JobState
 
@@ -305,6 +306,23 @@ class Scheduler:
                 self._logger.info(f"Job {job.id} build completed successfully - ready for solve")
             elif phase == "solve" and job.state == JobState.SOLVED:
                 self._logger.info(f"Job {job.id} solve completed successfully")
+                
+                # Cleanup model.pb after successful solve if enabled
+                config = get_config()
+                if config.storage.cleanup_model_after_solve:
+                    cleanup_result = job.cleanup_model()
+                    finish_meta["model_cleanup"] = cleanup_result
+                    
+                    if cleanup_result["success"] and cleanup_result["file_existed"]:
+                        self._logger.info(
+                            f"Model cleanup completed for job {job.id}: "
+                            f"freed {cleanup_result['file_size_mb']}MB"
+                        )
+                    elif not cleanup_result["success"]:
+                        self._logger.warning(
+                            f"Model cleanup failed for job {job.id}: "
+                            f"{cleanup_result.get('error', 'Unknown error')}"
+                        )
         else:
             self._logger.error(f"Job {job.id} {phase} failed")
     

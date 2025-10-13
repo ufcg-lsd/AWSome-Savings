@@ -30,6 +30,9 @@ storage:
   # Event storage
   runs_dir: "./orchestrator_runs"       # Directory for job event logs (JSONL)
   max_old_runs: 100                     # Keep last N job logs
+  
+  # Model cleanup (saves disk space)
+  cleanup_model_after_solve: true       # Delete model.pb after successful solve (recommended for large demand files)
 
 # Monitoring configuration
 monitoring:

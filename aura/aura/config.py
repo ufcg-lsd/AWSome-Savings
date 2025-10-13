@@ -76,6 +76,10 @@ class StorageConfig(BaseModel):
         description="Maximum number of old run logs to keep",
         ge=1
     )
+    cleanup_model_after_solve: bool = Field(
+        default=True,
+        description="Automatically delete model.pb file after successful solve to save disk space"
+    )
 
 
 class MonitoringConfig(BaseModel):
