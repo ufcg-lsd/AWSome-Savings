@@ -8,6 +8,7 @@ from CSV files generated during job execution.
 import csv
 import json
 import logging
+import re
 import statistics
 import subprocess
 import threading
@@ -29,14 +30,16 @@ class MetricsCollector:
     providing much lower latency (~100ms vs ~1.5s) and reduced overhead compared to polling.
     """
     
-    def __init__(self, container_id: str):
+    def __init__(self, container_id: str, csv_file: Optional[Path] = None):
         """
         Initialize metrics collector for a specific container.
         
         Args:
             container_id: Docker container ID to monitor
+            csv_file: Optional path to save granular metrics CSV
         """
         self.container_id = container_id
+        self.csv_file = csv_file
         self._stop_event = threading.Event()
         self._thread = None
         self._process = None
@@ -47,6 +50,10 @@ class MetricsCollector:
         self._memory_samples: List[float] = []  # in MB
         self._timestamps: List[float] = []
         
+        # CSV writing
+        self._csv_writer = None
+        self._csv_handle = None
+        
         self._is_running = False
         
     def start(self) -> None:
@@ -54,12 +61,17 @@ class MetricsCollector:
         if self._is_running:
             logger.warning(f"MetricsCollector for {self.container_id} is already running")
             return
+        
+        # Initialize CSV file if specified
+        if self.csv_file:
+            self._init_csv_file()
             
         self._stop_event.clear()
         self._thread = threading.Thread(target=self._stream_loop, daemon=True)
         self._thread.start()
         self._is_running = True
-        logger.info(f"Started metrics streaming for container {self.container_id}")
+        csv_info = f" (CSV: {self.csv_file})" if self.csv_file else ""
+        logger.info(f"Started metrics streaming for container {self.container_id}{csv_info}")
         
     def stop(self) -> None:
         """Stop metrics streaming and cleanup processes."""
@@ -82,10 +94,14 @@ class MetricsCollector:
         # Wait for thread to finish
         if self._thread and self._thread.is_alive():
             self._thread.join(timeout=5.0)
+        
+        # Close CSV file
+        self._close_csv_file()
             
         self._is_running = False
         samples_count = len(self._cpu_samples)
-        logger.info(f"Stopped metrics streaming for container {self.container_id}, collected {samples_count} samples")
+        csv_info = f" (saved to {self.csv_file})" if self.csv_file else ""
+        logger.info(f"Stopped metrics streaming for container {self.container_id}, collected {samples_count} samples{csv_info}")
         
     def get_stats(self) -> Dict[str, Dict[str, Optional[float]]]:
         """
@@ -107,6 +123,74 @@ class MetricsCollector:
                     "method": "streaming"
                 }
             }
+    
+    def _init_csv_file(self) -> None:
+        """Initialize CSV file for granular metrics storage."""
+        try:
+            # Ensure directory exists
+            self.csv_file.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Open CSV file and write header
+            self._csv_handle = open(self.csv_file, 'w', newline='', encoding='utf-8')
+            self._csv_writer = csv.writer(self._csv_handle)
+            
+            # Write CSV header
+            self._csv_writer.writerow([
+                'timestamp',           # ISO format timestamp
+                'container_id',        # Container ID
+                'cpu_percent',         # CPU percentage
+                'memory_mb',           # Memory usage in MB
+                'elapsed_seconds'      # Seconds since collection started
+            ])
+            self._csv_handle.flush()
+            
+            logger.debug(f"Initialized CSV metrics file: {self.csv_file}")
+            
+        except Exception as e:
+            logger.error(f"Failed to initialize CSV file {self.csv_file}: {e}")
+            self._csv_writer = None
+            self._csv_handle = None
+    
+    def _write_csv_sample(self, cpu_perc: float, memory_mb: float, timestamp: float) -> None:
+        """Write a single metrics sample to CSV file."""
+        if not self._csv_writer or not self._csv_handle:
+            return
+            
+        try:
+            from datetime import datetime
+            
+            # Convert monotonic timestamp to datetime
+            current_time = datetime.now()
+            
+            # Calculate elapsed seconds from first timestamp
+            if self._timestamps:
+                elapsed = timestamp - self._timestamps[0]
+            else:
+                elapsed = 0.0
+            
+            # Write CSV row
+            self._csv_writer.writerow([
+                current_time.isoformat(),      # Human-readable timestamp
+                self.container_id,             # Container ID
+                round(cpu_perc, 2),            # CPU percentage
+                round(memory_mb, 2),           # Memory in MB
+                round(elapsed, 2)              # Elapsed seconds
+            ])
+            self._csv_handle.flush()  # Ensure data is written immediately
+            
+        except Exception as e:
+            logger.error(f"Failed to write CSV sample: {e}")
+    
+    def _close_csv_file(self) -> None:
+        """Close CSV file and cleanup resources."""
+        try:
+            if self._csv_handle:
+                self._csv_handle.close()
+                self._csv_handle = None
+                self._csv_writer = None
+                logger.debug(f"Closed CSV metrics file: {self.csv_file}")
+        except Exception as e:
+            logger.error(f"Error closing CSV file: {e}")
     
     def _stream_loop(self) -> None:
         """Main streaming loop that runs in background thread."""
@@ -152,6 +236,10 @@ class MetricsCollector:
                         if memory_mb is not None:
                             self._memory_samples.append(memory_mb)
                         self._timestamps.append(timestamp)
+                    
+                    # Write to CSV if both metrics are valid and CSV is enabled
+                    if cpu_perc is not None and memory_mb is not None and self.csv_file:
+                        self._write_csv_sample(cpu_perc, memory_mb, timestamp)
                     
                     logger.debug(f"Streamed sample for {self.container_id}: CPU={cpu_perc}%, Memory={memory_mb}MB")
                     
@@ -205,18 +293,30 @@ class MetricsCollector:
         Parse metrics from a single docker stats JSON line.
         
         Args:
-            line: JSON line from docker stats
+            line: JSON line from docker stats (may contain ANSI escape codes)
             
         Returns:
             Tuple of (cpu_percentage, memory_mb) or (None, None) if failed
         """
         try:
-            stats_data = json.loads(line.strip())
+            # Clean ANSI escape codes from docker stats output
+            clean_line = self._clean_ansi_codes(line.strip())
+            
+            # Skip empty lines or lines that don't look like JSON
+            if not clean_line or not clean_line.startswith('{'):
+                return None, None
+                
+            # Skip lines with placeholder values (docker stats initial output)
+            if '"--"' in clean_line or '"CPUPerc":"--"' in clean_line:
+                logger.debug(f"Skipping placeholder stats line for {self.container_id}")
+                return None, None
+            
+            stats_data = json.loads(clean_line)
             
             # Extract CPU percentage
             cpu_perc = None
             cpu_perc_str = stats_data.get("CPUPerc", "").replace('%', '')
-            if cpu_perc_str:
+            if cpu_perc_str and cpu_perc_str != "--":
                 try:
                     cpu_perc = float(cpu_perc_str)
                 except ValueError:
@@ -225,21 +325,53 @@ class MetricsCollector:
             # Extract memory usage
             memory_mb = None
             mem_usage_str = stats_data.get("MemUsage", "")
-            if mem_usage_str:
+            if mem_usage_str and mem_usage_str != "-- / --":
                 try:
                     mem_current = mem_usage_str.split(' / ')[0].strip()
                     memory_mb = _parse_memory_size(mem_current)
                 except (ValueError, IndexError):
                     pass
             
-            return cpu_perc, memory_mb
+            # Only return valid data (not None values)
+            if cpu_perc is not None and memory_mb is not None:
+                logger.debug(f"Parsed valid stats for {self.container_id}: CPU={cpu_perc}%, Mem={memory_mb}MB")
+                return cpu_perc, memory_mb
+            else:
+                return None, None
             
         except json.JSONDecodeError as e:
-            logger.debug(f"Invalid JSON in docker stats output: {e}")
+            logger.debug(f"Invalid JSON in docker stats output: {e} | Line: {line[:100]}")
             return None, None
         except Exception as e:
             logger.debug(f"Error parsing stats line: {e}")
             return None, None
+    
+    def _clean_ansi_codes(self, text: str) -> str:
+        """
+        Remove ANSI escape codes from text.
+        
+        Docker stats in streaming mode includes ANSI codes for terminal display:
+        - ESC[H (move cursor to home)
+        - ESC[K (clear line) 
+        - ESC[J (clear screen)
+        
+        Args:
+            text: Raw text from docker stats
+            
+        Returns:
+            Clean text without ANSI codes
+        """
+        # Remove ANSI escape sequences
+        # Pattern matches: ESC[...letter (where letter is any alphabetic character)
+        ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+        clean_text = ansi_escape.sub('', text)
+        
+        # Also remove other common control characters
+        clean_text = clean_text.replace('\x1B[H', '')  # Home cursor
+        clean_text = clean_text.replace('\x1B[K', '')  # Clear line
+        clean_text = clean_text.replace('\x1B[J', '')  # Clear screen
+        
+        return clean_text.strip()
     
     def _compute_stats(self, samples: List[float], unit: str) -> Dict[str, Optional[float]]:
         """Compute statistics from collected samples."""

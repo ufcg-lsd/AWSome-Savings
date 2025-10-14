@@ -153,16 +153,21 @@ class Job:
         """
         # Import here to avoid circular import
         from aura.core.monitor import MetricsCollector
+        from aura.config import get_runs_dir
         
         # Stop any existing collector
         self.stop_metrics_collection()
         
+        # Create CSV file path for granular metrics
+        runs_dir = Path(get_runs_dir())
+        csv_file = runs_dir / f"{self.id}_{phase}_metrics.csv"
+        
         # Start new collector
         try:
-            self._metrics_collector = MetricsCollector(container_id)
+            self._metrics_collector = MetricsCollector(container_id, csv_file=csv_file)
             self._metrics_collector.start()
             self.set_container_id(container_id, phase)
-            logger.info(f"Started metrics collection for job {self.id} container {container_id}")
+            logger.info(f"Started metrics collection for job {self.id} container {container_id} (CSV: {csv_file})")
         except Exception as e:
             logger.error(f"Failed to start metrics collection for job {self.id}: {e}")
             self._metrics_collector = None
