@@ -56,13 +56,15 @@ def _build_docker_command(job: "Job", script_name: str) -> Tuple[list[str], str]
     return cmd, container_name
 
 
-def _run_docker_command_with_tracking(cmd: list[str], container_name: str, job: "Job", phase: str) -> tuple[int, float, str]:
+def _run_docker_command_with_tracking(cmd: list[str], container_name: str, job: "Job", phase: str) -> tuple[int, float, str, Dict]:
     """
-    Run docker command and return exit code, duration, and container ID.
-    Also sets the container ID on the job for real-time tracking.
+    Run docker command with continuous metrics collection.
+    
+    Starts metrics streaming, waits for container completion, then stops
+    collection and returns execution metadata along with collected metrics.
     
     Returns:
-        Tuple of (exit_code, duration_in_seconds, container_id)
+        Tuple of (exit_code, duration_in_seconds, container_id, metrics_stats)
     """
     start_time = time.monotonic()
     container_id = ""
@@ -80,8 +82,9 @@ def _run_docker_command_with_tracking(cmd: list[str], container_name: str, job: 
             id_result = subprocess.run(get_id_cmd, capture_output=True, text=True, check=False)
             if id_result.returncode == 0 and id_result.stdout.strip():
                 container_id = id_result.stdout.strip()
-                job.set_container_id(container_id, phase)
-                logger.debug(f"Captured container ID {container_id} for job {job.id} phase {phase}")
+                # Start continuous metrics collection
+                job.start_metrics_collection(container_id, phase)
+                logger.debug(f"Started metrics collection for job {job.id} container {container_id}")
         except Exception as e:
             logger.warning(f"Could not capture container ID for job {job.id}: {e}")
         
@@ -89,10 +92,13 @@ def _run_docker_command_with_tracking(cmd: list[str], container_name: str, job: 
         stdout, stderr = process.communicate()
         duration = time.monotonic() - start_time
         
+        # Stop metrics collection and get final stats
+        metrics_stats = job.stop_metrics_collection()
+        
         if stderr and process.returncode != 0:
             logger.error(f"Docker command failed: {stderr}")
         
-        return process.returncode, duration, container_id
+        return process.returncode, duration, container_id, metrics_stats
         
     except Exception as e:
         duration = time.monotonic() - start_time
@@ -125,8 +131,8 @@ def run_build(job: "Job") -> Dict:
         
         logger.info(f"Running build command: {cmd_str}")
         
-        # Execute command with container tracking
-        exit_code, duration, container_id = _run_docker_command_with_tracking(cmd, container_name, job, "build")
+        # Execute command with container tracking and metrics collection
+        exit_code, duration, container_id, metrics_stats = _run_docker_command_with_tracking(cmd, container_name, job, "build")
         
         # Determine success
         success = (exit_code == 0)
@@ -149,7 +155,8 @@ def run_build(job: "Job") -> Dict:
             "metrics": {
                 "cpu": str(job.cpu_csv),
                 "memory": str(job.mem_csv)
-            }
+            },
+            "streaming_metrics": metrics_stats
         }
         
     except Exception as e:
@@ -184,8 +191,8 @@ def run_solve(job: "Job") -> Dict:
         
         logger.info(f"Running solve command: {cmd_str}")
         
-        # Execute command with container tracking
-        exit_code, duration, container_id = _run_docker_command_with_tracking(cmd, container_name, job, "solve")
+        # Execute command with container tracking and metrics collection
+        exit_code, duration, container_id, metrics_stats = _run_docker_command_with_tracking(cmd, container_name, job, "solve")
         
         # Determine success
         success = (exit_code == 0)
@@ -208,7 +215,8 @@ def run_solve(job: "Job") -> Dict:
             "metrics": {
                 "cpu": str(job.cpu_csv),
                 "memory": str(job.mem_csv)
-            }
+            },
+            "streaming_metrics": metrics_stats
         }
         
     except Exception as e:

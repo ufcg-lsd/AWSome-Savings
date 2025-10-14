@@ -2,9 +2,14 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional, TYPE_CHECKING
 import logging
 import uuid
+
+if TYPE_CHECKING:
+    from aura.core.monitor import MetricsCollector
+
+logger = logging.getLogger(__name__)
 
 
 class JobState(Enum):
@@ -32,6 +37,9 @@ class Job:
     current_container_id: Optional[str] = None
     build_container_id: Optional[str] = None
     solve_container_id: Optional[str] = None
+    
+    # Continuous metrics collection
+    _metrics_collector: Optional["MetricsCollector"] = field(default=None, init=False, repr=False)
     
     def __post_init__(self) -> None:
         """
@@ -134,6 +142,88 @@ class Job:
     def clear_container_id(self) -> None:
         """Clear current container ID when phase finishes."""
         self.current_container_id = None
+    
+    def start_metrics_collection(self, container_id: str, phase: str) -> None:
+        """
+        Start continuous metrics collection for the current phase.
+        
+        Args:
+            container_id: Docker container ID to monitor
+            phase: Current phase ('build' or 'solve')
+        """
+        # Import here to avoid circular import
+        from aura.core.monitor import MetricsCollector
+        
+        # Stop any existing collector
+        self.stop_metrics_collection()
+        
+        # Start new collector
+        try:
+            self._metrics_collector = MetricsCollector(container_id)
+            self._metrics_collector.start()
+            self.set_container_id(container_id, phase)
+            logger.info(f"Started metrics collection for job {self.id} container {container_id}")
+        except Exception as e:
+            logger.error(f"Failed to start metrics collection for job {self.id}: {e}")
+            self._metrics_collector = None
+    
+    def stop_metrics_collection(self) -> Dict:
+        """
+        Stop continuous metrics collection and return collected stats.
+        
+        Returns:
+            Dictionary with collected metrics statistics
+        """
+        if self._metrics_collector is None:
+            return {
+                "cpu": {"max": None, "mean": None, "min": None, "count": 0},
+                "memory": {"max": None, "mean": None, "min": None, "count": 0},
+                "collection": {"samples_count": 0, "method": "none"}
+            }
+        
+        try:
+            # Get stats before stopping
+            stats = self._metrics_collector.get_stats()
+            
+            # Stop the collector
+            self._metrics_collector.stop()
+            self._metrics_collector = None
+            
+            logger.info(f"Stopped metrics collection for job {self.id}, collected {stats['collection']['samples_count']} samples")
+            return stats
+            
+        except Exception as e:
+            logger.error(f"Error stopping metrics collection for job {self.id}: {e}")
+            self._metrics_collector = None
+            return {
+                "cpu": {"max": None, "mean": None, "min": None, "count": 0},
+                "memory": {"max": None, "mean": None, "min": None, "count": 0},
+                "collection": {"samples_count": 0, "method": "error"}
+            }
+    
+    def get_current_metrics(self) -> Dict:
+        """
+        Get current metrics without stopping collection.
+        
+        Returns:
+            Dictionary with current metrics statistics
+        """
+        if self._metrics_collector is None:
+            return {
+                "cpu": {"max": None, "mean": None, "min": None, "count": 0},
+                "memory": {"max": None, "mean": None, "min": None, "count": 0},
+                "collection": {"samples_count": 0, "method": "none"}
+            }
+        
+        try:
+            return self._metrics_collector.get_stats()
+        except Exception as e:
+            logger.error(f"Error getting current metrics for job {self.id}: {e}")
+            return {
+                "cpu": {"max": None, "mean": None, "min": None, "count": 0},
+                "memory": {"max": None, "mean": None, "min": None, "count": 0},
+                "collection": {"samples_count": 0, "method": "error"}
+            }
     
     def get_container_id_for_phase(self, phase: str) -> Optional[str]:
         """
