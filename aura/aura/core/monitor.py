@@ -80,10 +80,9 @@ def _extract_container_stats(container_id: str) -> Dict[str, Dict[str, Optional[
     }
     
     try:
-        # Get single snapshot of container stats
+        # Get single snapshot of container stats using JSON format
         cmd = [
-            "docker", "stats", "--no-stream", "--format", 
-            "{{.CPUPerc}},{{.MemUsage}},{{.MemPerc}}", 
+            "docker", "stats", "--no-stream", "--format", "{{json .}}", 
             container_id
         ]
         
@@ -98,40 +97,43 @@ def _extract_container_stats(container_id: str) -> Dict[str, Dict[str, Optional[
             logger.debug(f"No stats output for container {container_id}")
             return default_stats
         
-        # Parse the stats output format: "CPUPerc,MemUsage,MemPerc"
-        # Example: "0.25%,1.5GiB / 8GiB,18.75%"
-        parts = output.split(',')
-        if len(parts) >= 3:
-            cpu_perc_str = parts[0].strip().replace('%', '')
-            mem_usage_str = parts[1].strip() 
-            mem_perc_str = parts[2].strip().replace('%', '')
-            
-            # Parse CPU percentage
-            cpu_perc = None
+        # Parse JSON output
+        try:
+            stats_data = json.loads(output)
+        except json.JSONDecodeError as e:
+            logger.warning(f"Failed to parse docker stats JSON for container {container_id}: {e}")
+            return default_stats
+        
+        # Extract CPU percentage
+        cpu_perc = None
+        cpu_perc_str = stats_data.get("CPUPerc", "").replace('%', '')
+        if cpu_perc_str:
             try:
                 cpu_perc = float(cpu_perc_str)
             except ValueError:
                 logger.debug(f"Could not parse CPU percentage: {cpu_perc_str}")
-            
-            # Parse memory usage (extract current usage from "1.5GiB / 8GiB" format)
-            mem_usage_mb = None
+        
+        # Extract memory usage (format: "59.04MiB / 31.33GiB")
+        mem_usage_mb = None
+        mem_usage_str = stats_data.get("MemUsage", "")
+        if mem_usage_str:
             try:
                 mem_current = mem_usage_str.split(' / ')[0].strip()
                 mem_usage_mb = _parse_memory_size(mem_current)
             except (ValueError, IndexError):
                 logger.debug(f"Could not parse memory usage: {mem_usage_str}")
-            
-            # For single snapshot, max and mean are the same
-            return {
-                "cpu": {
-                    "max": cpu_perc,
-                    "mean": cpu_perc
-                },
-                "memory": {
-                    "max": mem_usage_mb,
-                    "mean": mem_usage_mb
-                }
+        
+        # For single snapshot, max and mean are the same
+        return {
+            "cpu": {
+                "max": cpu_perc,
+                "mean": cpu_perc
+            },
+            "memory": {
+                "max": mem_usage_mb,
+                "mean": mem_usage_mb
             }
+        }
         
     except subprocess.TimeoutExpired:
         logger.warning(f"Timeout getting docker stats for container {container_id}")
