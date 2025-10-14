@@ -53,6 +53,7 @@ class MetricsCollector:
         # CSV writing
         self._csv_writer = None
         self._csv_handle = None
+        self._last_csv_write_time = 0.0  # Timestamp of last CSV write for throttling
         
         self._is_running = False
         
@@ -134,13 +135,13 @@ class MetricsCollector:
             self._csv_handle = open(self.csv_file, 'w', newline='', encoding='utf-8')
             self._csv_writer = csv.writer(self._csv_handle)
             
-            # Write CSV header
+            # Write CSV header (1-second granularity)
             self._csv_writer.writerow([
-                'timestamp',           # ISO format timestamp
+                'timestamp',           # ISO format timestamp  
                 'container_id',        # Container ID
                 'cpu_percent',         # CPU percentage
                 'memory_mb',           # Memory usage in MB
-                'elapsed_seconds'      # Seconds since collection started
+                'elapsed_seconds'      # Seconds since collection started (1s intervals)
             ])
             self._csv_handle.flush()
             
@@ -152,9 +153,18 @@ class MetricsCollector:
             self._csv_handle = None
     
     def _write_csv_sample(self, cpu_perc: float, memory_mb: float, timestamp: float) -> None:
-        """Write a single metrics sample to CSV file."""
+        """
+        Write a single metrics sample to CSV file with 1-second granularity throttling.
+        
+        Only writes to CSV if at least 1 second has passed since the last write,
+        preventing overly large files for long-running jobs.
+        """
         if not self._csv_writer or not self._csv_handle:
             return
+        
+        # Throttle CSV writes to maximum 1 per second
+        if self._last_csv_write_time > 0.0 and (timestamp - self._last_csv_write_time) < 1.0:
+            return  # Skip this sample - not enough time has passed
             
         try:
             from datetime import datetime
@@ -177,6 +187,11 @@ class MetricsCollector:
                 round(elapsed, 2)              # Elapsed seconds
             ])
             self._csv_handle.flush()  # Ensure data is written immediately
+            
+            # Update last write timestamp
+            self._last_csv_write_time = timestamp
+            
+            logger.debug(f"CSV sample written for {self.container_id}: CPU={cpu_perc}%, Memory={memory_mb}MB")
             
         except Exception as e:
             logger.error(f"Failed to write CSV sample: {e}")
