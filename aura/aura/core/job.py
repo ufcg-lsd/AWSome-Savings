@@ -28,6 +28,10 @@ class Job:
     build_finished_at: Optional[datetime] = None
     solve_started_at: Optional[datetime] = None
     solve_finished_at: Optional[datetime] = None
+    # Container tracking for precise metrics
+    current_container_id: Optional[str] = None
+    build_container_id: Optional[str] = None
+    solve_container_id: Optional[str] = None
     
     def __post_init__(self) -> None:
         """
@@ -90,6 +94,9 @@ class Job:
             self.state = JobState.BUILT
         else:
             self.state = JobState.FAILED
+        
+        # Clear current container ID as phase is finished
+        self.current_container_id = None
     
     def mark_solve_started(self) -> None:
         """Mark the job as starting the solve phase."""
@@ -105,6 +112,45 @@ class Job:
             self.state = JobState.SOLVED
         else:
             self.state = JobState.FAILED
+        
+        # Clear current container ID as phase is finished
+        self.current_container_id = None
+    
+    def set_container_id(self, container_id: str, phase: str) -> None:
+        """
+        Set container ID for the current running phase.
+        
+        Args:
+            container_id: Docker container ID
+            phase: Current phase ('build' or 'solve')
+        """
+        self.current_container_id = container_id
+        
+        if phase == "build":
+            self.build_container_id = container_id
+        elif phase == "solve":
+            self.solve_container_id = container_id
+    
+    def clear_container_id(self) -> None:
+        """Clear current container ID when phase finishes."""
+        self.current_container_id = None
+    
+    def get_container_id_for_phase(self, phase: str) -> Optional[str]:
+        """
+        Get container ID for a specific phase.
+        
+        Args:
+            phase: Phase name ('build' or 'solve')
+            
+        Returns:
+            Container ID for the phase or None if not available
+        """
+        if phase == "build":
+            return self.build_container_id
+        elif phase == "solve":
+            return self.solve_container_id
+        else:
+            return self.current_container_id
     
     def cleanup_model(self) -> dict:
         """

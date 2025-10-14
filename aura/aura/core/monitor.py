@@ -6,23 +6,28 @@ from CSV files generated during job execution.
 """
 
 import csv
+import json
+import logging
 import statistics
+import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 if TYPE_CHECKING:
     from aura.core.job import Job
 
+logger = logging.getLogger(__name__)
+
 
 def extract_metrics(job: "Job") -> Dict[str, Dict[str, Optional[float]]]:
     """
-    Extract CPU and memory usage statistics from job CSV files.
+    Extract CPU and memory usage statistics from job.
     
-    Reads job.cpu_csv and job.mem_csv (if they exist) and calculates
-    max and mean of the first numeric column found in each file.
+    Attempts to get precise metrics from Docker stats if container_id is available,
+    otherwise falls back to reading CSV files generated during job execution.
     
     Args:
-        job: Job instance containing paths to metric CSV files
+        job: Job instance containing container ID or paths to metric CSV files
         
     Returns:
         Dictionary with structure:
@@ -31,8 +36,180 @@ def extract_metrics(job: "Job") -> Dict[str, Dict[str, Optional[float]]]:
           "memory": {"max": float | None, "mean": float | None}
         }
         
-        Returns None for max/mean if file doesn't exist or no numeric data found.
+        Returns None for max/mean if no data available.
     """
+    # Try to get metrics from container stats first (more accurate)
+    if job.current_container_id:
+        logger.debug(f"Extracting container metrics for job {job.id} container {job.current_container_id}")
+        container_stats = _extract_container_stats(job.current_container_id)
+        if container_stats["cpu"]["max"] is not None or container_stats["memory"]["max"] is not None:
+            return container_stats
+        logger.debug(f"Container stats unavailable for {job.current_container_id}, falling back to CSV")
+    
+    # Fallback to CSV parsing (legacy method)
+    logger.debug(f"Extracting CSV metrics for job {job.id}")
+    cpu_stats = _extract_csv_stats(job.cpu_csv)
+    memory_stats = _extract_csv_stats(job.mem_csv)
+    
+    return {
+        "cpu": cpu_stats,
+        "memory": memory_stats
+    }
+
+
+def _extract_container_stats(container_id: str) -> Dict[str, Dict[str, Optional[float]]]:
+    """
+    Extract CPU and memory usage statistics from Docker container stats.
+    
+    Uses 'docker stats' command to get real-time resource usage metrics
+    for the specified container.
+    
+    Args:
+        container_id: Docker container ID
+        
+    Returns:
+        Dictionary with structure matching extract_metrics:
+        {
+          "cpu": {"max": float | None, "mean": float | None},
+          "memory": {"max": float | None, "mean": float | None}
+        }
+    """
+    default_stats = {
+        "cpu": {"max": None, "mean": None},
+        "memory": {"max": None, "mean": None}
+    }
+    
+    try:
+        # Get single snapshot of container stats
+        cmd = [
+            "docker", "stats", "--no-stream", "--format", 
+            "{{.CPUPerc}},{{.MemUsage}},{{.MemPerc}}", 
+            container_id
+        ]
+        
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+        
+        if result.returncode != 0:
+            logger.warning(f"Failed to get docker stats for container {container_id}: {result.stderr}")
+            return default_stats
+        
+        output = result.stdout.strip()
+        if not output:
+            logger.debug(f"No stats output for container {container_id}")
+            return default_stats
+        
+        # Parse the stats output format: "CPUPerc,MemUsage,MemPerc"
+        # Example: "0.25%,1.5GiB / 8GiB,18.75%"
+        parts = output.split(',')
+        if len(parts) >= 3:
+            cpu_perc_str = parts[0].strip().replace('%', '')
+            mem_usage_str = parts[1].strip() 
+            mem_perc_str = parts[2].strip().replace('%', '')
+            
+            # Parse CPU percentage
+            cpu_perc = None
+            try:
+                cpu_perc = float(cpu_perc_str)
+            except ValueError:
+                logger.debug(f"Could not parse CPU percentage: {cpu_perc_str}")
+            
+            # Parse memory usage (extract current usage from "1.5GiB / 8GiB" format)
+            mem_usage_mb = None
+            try:
+                mem_current = mem_usage_str.split(' / ')[0].strip()
+                mem_usage_mb = _parse_memory_size(mem_current)
+            except (ValueError, IndexError):
+                logger.debug(f"Could not parse memory usage: {mem_usage_str}")
+            
+            # For single snapshot, max and mean are the same
+            return {
+                "cpu": {
+                    "max": cpu_perc,
+                    "mean": cpu_perc
+                },
+                "memory": {
+                    "max": mem_usage_mb,
+                    "mean": mem_usage_mb
+                }
+            }
+        
+    except subprocess.TimeoutExpired:
+        logger.warning(f"Timeout getting docker stats for container {container_id}")
+    except Exception as e:
+        logger.error(f"Error getting docker stats for container {container_id}: {e}")
+    
+    return default_stats
+
+
+def _parse_memory_size(size_str: str) -> Optional[float]:
+    """
+    Parse memory size string to MB.
+    
+    Handles formats like "1.5GiB", "512MiB", "2.1GB", etc.
+    
+    Args:
+        size_str: Memory size string from docker stats
+        
+    Returns:
+        Memory size in MB, or None if parsing fails
+    """
+    try:
+        size_str = size_str.strip()
+        
+        # Extract number and unit
+        import re
+        match = re.match(r'^([0-9.]+)\s*([A-Za-z]+)$', size_str)
+        if not match:
+            return None
+        
+        value = float(match.group(1))
+        unit = match.group(2).upper()
+        
+        # Convert to MB
+        if unit in ['B', 'BYTES']:
+            return value / (1024 * 1024)
+        elif unit in ['KB', 'KIB']:
+            return value / 1024
+        elif unit in ['MB', 'MIB']:
+            return value
+        elif unit in ['GB', 'GIB']:
+            return value * 1024
+        elif unit in ['TB', 'TIB']:
+            return value * 1024 * 1024
+        else:
+            logger.debug(f"Unknown memory unit: {unit}")
+            return None
+            
+    except Exception as e:
+        logger.debug(f"Error parsing memory size '{size_str}': {e}")
+        return None
+
+
+def extract_historical_metrics(job: "Job", phase: str) -> Dict[str, Dict[str, Optional[float]]]:
+    """
+    Extract historical metrics for a completed job phase.
+    
+    This function is designed to extract metrics after a job phase has completed,
+    using the stored container ID for that specific phase.
+    
+    Args:
+        job: Job instance
+        phase: Phase name ('build' or 'solve')
+        
+    Returns:
+        Dictionary with CPU and memory metrics, or fallback to CSV if container unavailable
+    """
+    container_id = job.get_container_id_for_phase(phase)
+    
+    if container_id:
+        logger.debug(f"Extracting historical container metrics for job {job.id} phase {phase}")
+        # Try to get final stats from the container (may not work if container is removed)
+        container_stats = _extract_container_stats(container_id)
+        if container_stats["cpu"]["max"] is not None or container_stats["memory"]["max"] is not None:
+            return container_stats
+    
+    # Fallback to CSV parsing
+    logger.debug(f"Extracting historical CSV metrics for job {job.id} phase {phase}")
     cpu_stats = _extract_csv_stats(job.cpu_csv)
     memory_stats = _extract_csv_stats(job.mem_csv)
     

@@ -1,9 +1,10 @@
 import logging
+import re
 import shlex
 import subprocess
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING, Dict, Tuple
 
 from aura.config import get_config
 
@@ -28,12 +29,22 @@ def _check_docker_available() -> None:
         raise RuntimeError("Docker command failed. Please check Docker installation.")
 
 
-def _build_docker_command(job: "Job", script_name: str) -> list[str]:
-    """Build docker run command for the given job and script."""
+def _build_docker_command(job: "Job", script_name: str) -> Tuple[list[str], str]:
+    """
+    Build docker run command for the given job and script.
+    
+    Returns:
+        Tuple of (command_list, container_name)
+    """
     config = get_config()
     
-    return [
+    # Create unique container name for tracking
+    phase = script_name.replace("run_", "").replace(".sh", "")
+    container_name = f"aura-{job.id[:8]}-{phase}"
+    
+    cmd = [
         "docker", "run", "--rm",
+        "--name", container_name,
         "-v", f"{job.family_dir}:{config.families_mount}",
         "-v", f"{job.family_dir}:{config.proto_mount}", 
         "-v", f"{job.output_dir}:{config.logs_mount}",
@@ -41,28 +52,52 @@ def _build_docker_command(job: "Job", script_name: str) -> list[str]:
         "/bin/sh", "-c",
         f"/optimizer/{script_name} {config.families_mount} {config.logs_mount} {config.proto_mount}/model.pb"
     ]
+    
+    return cmd, container_name
 
 
-def _run_docker_command(cmd: list[str]) -> tuple[int, float]:
+def _run_docker_command_with_tracking(cmd: list[str], container_name: str, job: "Job", phase: str) -> tuple[int, float, str]:
     """
-    Run docker command and return exit code and duration.
+    Run docker command and return exit code, duration, and container ID.
+    Also sets the container ID on the job for real-time tracking.
     
     Returns:
-        Tuple of (exit_code, duration_in_seconds)
+        Tuple of (exit_code, duration_in_seconds, container_id)
     """
     start_time = time.monotonic()
+    container_id = ""
     
     try:
-        result = subprocess.run(cmd, capture_output=False, text=True)
-        exit_code = result.returncode
+        # Start the docker container
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        
+        # Give container a moment to start, then get its ID
+        time.sleep(0.1)  # Brief pause to ensure container is registered
+        
+        try:
+            # Get container ID using container name
+            get_id_cmd = ["docker", "ps", "-aqf", f"name=^{container_name}$"]
+            id_result = subprocess.run(get_id_cmd, capture_output=True, text=True, check=False)
+            if id_result.returncode == 0 and id_result.stdout.strip():
+                container_id = id_result.stdout.strip()
+                job.set_container_id(container_id, phase)
+                logger.debug(f"Captured container ID {container_id} for job {job.id} phase {phase}")
+        except Exception as e:
+            logger.warning(f"Could not capture container ID for job {job.id}: {e}")
+        
+        # Wait for container to complete
+        stdout, stderr = process.communicate()
+        duration = time.monotonic() - start_time
+        
+        if stderr and process.returncode != 0:
+            logger.error(f"Docker command failed: {stderr}")
+        
+        return process.returncode, duration, container_id
+        
     except Exception as e:
-        logger.error(f"Error running docker command: {e}")
-        exit_code = 1
-    
-    end_time = time.monotonic()
-    duration = end_time - start_time
-    
-    return exit_code, duration
+        duration = time.monotonic() - start_time
+        logger.error(f"Failed to run docker command: {e}")
+        raise
 
 
 def run_build(job: "Job") -> Dict:
@@ -85,13 +120,13 @@ def run_build(job: "Job") -> Dict:
     
     try:
         # Build docker command
-        cmd = _build_docker_command(job, "run_build.sh")
+        cmd, container_name = _build_docker_command(job, "run_build.sh")
         cmd_str = shlex.join(cmd)
         
         logger.info(f"Running build command: {cmd_str}")
         
-        # Execute command
-        exit_code, duration = _run_docker_command(cmd)
+        # Execute command with container tracking
+        exit_code, duration, container_id = _run_docker_command_with_tracking(cmd, container_name, job, "build")
         
         # Determine success
         success = (exit_code == 0)
@@ -105,6 +140,8 @@ def run_build(job: "Job") -> Dict:
             "duration_sec": duration,
             "image": get_config().optimizer_image,
             "cmd": cmd_str,
+            "container_id": container_id,
+            "container_name": container_name,
             "logs": {
                 "output": str(job.output_log),
                 "error": str(job.error_log)
@@ -142,13 +179,13 @@ def run_solve(job: "Job") -> Dict:
     
     try:
         # Build docker command
-        cmd = _build_docker_command(job, "run_solve.sh")
+        cmd, container_name = _build_docker_command(job, "run_solve.sh")
         cmd_str = shlex.join(cmd)
         
         logger.info(f"Running solve command: {cmd_str}")
         
-        # Execute command
-        exit_code, duration = _run_docker_command(cmd)
+        # Execute command with container tracking
+        exit_code, duration, container_id = _run_docker_command_with_tracking(cmd, container_name, job, "solve")
         
         # Determine success
         success = (exit_code == 0)
@@ -162,6 +199,8 @@ def run_solve(job: "Job") -> Dict:
             "duration_sec": duration,
             "image": get_config().optimizer_image,
             "cmd": cmd_str,
+            "container_id": container_id,
+            "container_name": container_name,
             "logs": {
                 "output": str(job.output_log),
                 "error": str(job.error_log)
