@@ -1,41 +1,87 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+# AWSome-Savings CI/CD Pipeline
+# Tests both Python and C++ implementations using Docker containers
 
-name: Python application
+name: AWSome-Savings Tests
 
 on:
-  push:
-    branches: [ "master" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "main" ]
 
 permissions:
   contents: read
 
 jobs:
-  build:
-
+  python-tests:
     runs-on: ubuntu-latest
-
+    name: Python Implementation Tests
+    
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build Python Test Image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile.python-test
+        tags: awsome-savings:python-test
+        load: true
+    
+    - name: Run Python Tests
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}/tests:/app/tests \
+          -v ${{ github.workspace }}/implementations/py:/app/implementations/py:ro \
+          -v ${{ github.workspace }}/implementations/py_sp_only:/app/implementations/py_sp_only:ro \
+          awsome-savings:python-test
+
+  cpp-tests:
+    runs-on: ubuntu-latest
+    name: C++ Implementation Tests
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build C++ Test Image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile.cpp-test
+        tags: awsome-savings:cpp-test
+        load: true
+    
+    - name: Run C++ Tests
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}/tests:/app/tests \
+          -v ${{ github.workspace }}/implementations/cpp_sp_only:/app/implementations/cpp_sp_only:ro \
+          awsome-savings:cpp-test
+
+  lint:
+    runs-on: ubuntu-latest
+    name: Code Linting
+    
+    steps:
+    - uses: actions/checkout@v4
+    
     - name: Set up Python 3.10
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: "3.10"
-    - name: Install dependencies
+        
+    - name: Install linting dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 pytest
-        pip install ortools
-        pip install pandas
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install flake8
+        
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
-      run: |
-        python -m unittest
